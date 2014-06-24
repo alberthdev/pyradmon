@@ -1,0 +1,328 @@
+config:
+  base_directory: MERRA2/
+  data_step: anl|ges
+  data_start_date: 1991-01-01 00z
+  data_end_date: 1991-02-28 18z
+  experiment_id: d5124_m2_jan91
+  data_instrument_sat: ssmi_f08
+  data_channels: 1-7
+
+plot1:
+  output: plots/test_plot_1_ch%CHANNEL%.png
+  settings:
+    dpi: 50
+    target_size: [595, 770]
+  title: '%INSTRUMENT_SAT%   %START_DATE%-%END_DATE%
+
+    Channel %CHANNEL%  %FREQUENCY%       %ASSIMILATION_STATUS%
+
+    Global  All    %EXPERIMENT_ID%'
+  plots:
+  - subplot1_id:
+      axes:
+        x: {label: null, ticks: 6}
+        y: {label: null, ticks: 5}
+      data:
+        colors: [blue, red]
+        labels: ['Avg (K)
+
+            %AVERAGE%', 'Sdv (K)
+
+            %AVERAGE%']
+        x: timestamp
+        y: [ges|bc_total|mean, ges|bc_total|stddev]
+      legend: {border: false, line: true}
+      title: Total Bias
+  - subplot2_id:
+      axes:
+        x: {label: null, ticks: 6}
+        y: {label: null, ticks: 5}
+      data:
+        colors: [blue, red]
+        labels: ['Avg (K)
+
+            %AVERAGE%', 'Sdv (K)
+
+            %AVERAGE%']
+        x: timestamp
+        y: [ges|bc_fixang|mean, ges|bc_fixang|stddev]
+      legend: {border: false, line: true}
+      title: Scan Angle
+  - subplot3_id:
+      axes:
+        x: {label: null, ticks: 6}
+        y: {label: null, ticks: 5}
+      data:
+        colors: [blue, red]
+        labels: ['Avg (K)
+
+            %AVERAGE%', 'Sdv (K)
+
+            %AVERAGE%']
+        x: timestamp
+        y: [ges|bc_const|mean, ges|bc_const|stddev]
+      legend: {border: false, line: true}
+      title: Mean
+  - subplot4_id:
+      axes:
+        x: {label: null, ticks: 6}
+        y: {label: null, ticks: 5}
+      data:
+        colors: [blue, red]
+        labels: ['Avg (K)
+
+            %AVERAGE%', 'Sdv (K)
+
+            %AVERAGE%']
+        x: timestamp
+        y: [ges|bc_satang|mean, ges|bc_satang|stddev]
+      legend: {border: false, line: true}
+      title: Sat Zen Ang
+  - subplot5_id:
+      axes:
+        x: {label: null, ticks: 6}
+        y: {label: null, ticks: 5}
+      data:
+        colors: [blue, red]
+        labels: ['Avg (K)
+
+            %AVERAGE%', 'Sdv (K)
+
+            %AVERAGE%']
+        x: timestamp
+        y: [ges|bc_tlap|mean, ges|bc_tlap|stddev]
+      legend: {border: false, line: true}
+      title: Lapse Rate
+  - subplot6_id:
+      axes:
+        x: {label: null, ticks: 6}
+        y: {label: null, ticks: 5}
+      data:
+        colors: [blue, red]
+        labels: ['Avg (K)
+
+            %AVERAGE%', 'Sdv (K)
+
+            %AVERAGE%']
+        x: timestamp
+        y: [ges|bc_tlap2|mean, ges|bc_tlap2|stddev]
+      legend: {border: false, line: true}
+      title: Lapse Rate**2
+  - subplot7_id:
+      axes:
+        x: {label: null, ticks: 6}
+        y: {label: null, ticks: 5}
+      data:
+        colors: [blue, red]
+        labels: ['Avg (K)
+
+            %AVERAGE%', 'Sdv (K)
+
+            %AVERAGE%']
+        x: timestamp
+        y: [ges|bc_clw|mean, ges|bc_clw|stddev]
+      legend: {border: false, line: true}
+      title: CLW
+  - subplot8_id:
+      axes:
+        x: {label: null, ticks: 6}
+        y: {label: null, ticks: 5}
+      data:
+        colors: [blue, red]
+        labels: ['Avg (K)
+
+            %AVERAGE%', 'Sdv (K)
+
+            %AVERAGE%']
+        x: timestamp
+        y: [ges|bc_coslat|mean, ges|bc_coslat|stddev]
+      legend: {border: false, line: true}
+      title: Cosine Lat
+  - subplot9_id:
+      axes:
+        x: {label: null, ticks: 6}
+        y: {label: null, ticks: 5}
+      data:
+        colors: [blue, red]
+        labels: ['Avg (K)
+
+            %AVERAGE%', 'Sdv (K)
+
+            %AVERAGE%']
+        x: timestamp
+        y: [ges|bc_sinlat|mean, ges|bc_sinlat|stddev]
+      legend: {border: false, line: true}
+      title: Sine lat
+plot2:
+  output: plots/test_plot_2_ch%CHANNEL%.png
+  settings:
+    dpi: 50
+    target_size: [595, 770]
+  title: '%INSTRUMENT_SAT%   %START_DATE%-%END_DATE%
+
+    Channel %CHANNEL%  %FREQUENCY%       %ASSIMILATION_STATUS%
+
+    Global  All    %EXPERIMENT_ID%'
+  plots:
+  - subplot1_id:
+      axes:
+        x: {label: null, ticks: 6}
+        y: {label: null, ticks: 5}
+      data:
+        colors: [blue, red]
+        labels: ['All Obs
+
+            %AVERAGE%', 'Used Obs
+
+            %AVERAGE%']
+        x: timestamp
+        y: [ges|#total obs, ges|#assim obs]
+      legend: {border: false, line: true, title: null}
+      title: Number of Radiance
+  - subplot2_id:
+      axes:
+        x: {label: null, ticks: 6}
+        y: {label: null, ticks: 5}
+      data:
+        colors: [blue, red]
+        labels: ['Err Bkg (K)
+
+            %AVERAGE%', 'Err Anl (K)
+
+            %AVERAGE%']
+        x: timestamp
+        y: [ges|Obs Error|mean, anl|Obs Error|mean]
+      legend: {border: false, line: true, title: null}
+      title: Observation Error
+  - subplot3_id:
+      axes:
+        x: {label: null, ticks: 6}
+        y: {label: null, ticks: 5}
+      data:
+        colors: [blue, red]
+        labels: ['Jo Bkg (K)
+
+            %AVERAGE%', 'Jo Anl (K)
+
+            %AVERAGE%']
+        x: timestamp
+        y: [ges|Cost (Jo)|mean, anl|Cost (Jo)|mean]
+      legend: {border: false, line: true, title: null}
+      title: Penalty Contribution
+  - subplot4_id:
+      axes:
+        x: {label: null, ticks: 6}
+        y: {label: null, ticks: 5}
+      data:
+        colors: [red, green]
+        labels: ['O-F (K)
+
+            %AVERAGE%', 'O-A (K)
+
+            %AVERAGE%']
+        x: timestamp
+        y: [ges|O-F BC|mean, anl|O-F BC|mean]
+      legend: {border: false, line: true, title: null}
+      title: O-F & O-A Mean
+  - subplot5_id:
+      axes:
+        x: {label: null, ticks: 6}
+        y: {label: null, ticks: 5}
+      data:
+        colors: [red, green]
+        labels: ['O-F (K)
+
+            %AVERAGE%', 'O-A (K)
+
+            %AVERAGE%']
+        x: timestamp
+        y: [ges|O-F BC|stddev, anl|O-F BC|stddev]
+      legend: {border: false, line: true, title: null}
+      title: O-F & O-A Standard Deviation
+
+plot3:
+  output: plots/test_plot_3_ch%CHANNEL%.png
+  settings:
+    dpi: 50
+    target_size: [595, 770]
+  title: '%INSTRUMENT_SAT%   %START_DATE%-%END_DATE%
+
+    Channel %CHANNEL%  %FREQUENCY%       %ASSIMILATION_STATUS%
+
+    Global  All    %EXPERIMENT_ID%'
+  plots:
+  - subplot1_id:
+      axes:
+        x: {label: null, ticks: 6}
+        y: {label: null, ticks: 5}
+      data:
+        colors: [blue, red]
+        labels: ['All Obs
+
+            %AVERAGE%', 'Used Obs
+
+            %AVERAGE%']
+        x: timestamp
+        y: [ges|#total obs, ges|#assim obs]
+      legend: {border: false, line: true, title: null}
+      title: Number of Radiance
+  - subplot2_id:
+      axes:
+        x: {label: null, ticks: 6}
+        y: {label: null, ticks: 5}
+      data:
+        colors: [blue, red]
+        labels: ['All Obs (K)
+
+            %AVERAGE%', 'Used Obs (K)
+
+            %AVERAGE%']
+        x: timestamp
+        y: [ges|Tb-Total|mean, ges|Tb-Assim|mean]
+      legend: {border: false, line: true, title: null}
+      title: Brightness Temperature
+  - subplot3_id:
+      axes:
+        x: {label: null, ticks: 6}
+        y: {label: null, ticks: 5}
+      data:
+        colors: [blue, red]
+        labels: ['Avg (K)
+
+            %AVERAGE%', 'Sdv (K)
+
+            %AVERAGE%']
+        x: timestamp
+        y: [ges|bc_total|mean, ges|bc_total|mean]
+      legend: {border: false, line: true, title: null}
+      title: Total Bias Correction
+  - subplot4_id:
+      axes:
+        x: {label: null, ticks: 6}
+        y: {label: null, ticks: 5}
+      data:
+        colors: [green, red]
+        labels: ['BC (K)
+
+            %AVERAGE%', 'no BC (K)
+
+            %AVERAGE%']
+        x: timestamp
+        y: [ges|O-F BC|mean, ges|O-F noBC|mean]
+      legend: {border: false, line: true, title: null}
+      title: O-F Mean
+  - subplot5_id:
+      axes:
+        x: {label: null, ticks: 6}
+        y: {label: null, ticks: 5}
+      data:
+        colors: [green, red]
+        labels: ['BC (K)
+
+            %AVERAGE%', 'no BC (K)
+
+            %AVERAGE%']
+        x: timestamp
+        y: [ges|O-F BC|stddev, ges|O-F noBC|stddev]
+      legend: {border: false, line: true, title: null}
+      title: O-F Standard Deviation
