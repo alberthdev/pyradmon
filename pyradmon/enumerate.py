@@ -248,7 +248,10 @@ def enumerate(**opts):
     # Make reference datetimes
     cur_date = datetime.datetime(int(start_year), int(start_month), int(start_day), int(start_hour))
     end_date = datetime.datetime(int(end_year), int(end_month), int(end_day), int(end_hour))
-
+    
+    if time_delta:
+        info("Using custom delta for file enumeration.")
+    
     while 1:
         if (cur_date <= end_date):
             # Rebuild formatted parts
@@ -281,13 +284,17 @@ def enumerate(**opts):
                         # Add new entry
                         file_path = os.path.join(data_dir, syear, smonth, sday, shour, datdict["filename"])
                         newdatdict = { "instrument_sat" : datdict["instrument_sat"], "type" : datdict["type"], "filename" : file_path }
-                        files_to_read.append(newdatdict)
+                        
+                        # BUGFIX: If using minutes or less, this will cause duplicate entries.
+                        # Check to make sure we're not adding dups!
+                        
+                        if not newdatdict in files_to_read:
+                            files_to_read.append(newdatdict)
             except KeyError:
                 pass
             
             # Increment time
             if time_delta:
-                info("Using custom delta for file enumeration.")
                 cur_date = cur_date + time_delta
             else:
                 cur_date = cur_date + datetime.timedelta(hours=1)

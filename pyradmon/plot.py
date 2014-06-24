@@ -98,8 +98,8 @@ def plot(plot_dict, data_dict, metadata_dict):
             plot_title = plot_title.replace("%CHANNEL%", str(metadata_dict["channel"]))
             plot_title = plot_title.replace("%FREQUENCY%", str(data_dict["frequency"]))
             plot_title = plot_title.replace("%ASSIMILATION_STATUS%", "    .......................")
-            plot_title = plot_title.replace("%START_DATE%", metadata_dict['start_year'] + metadata_dict['start_month'] + metadata_dict['start_day'])
-            plot_title = plot_title.replace("%END_DATE%", metadata_dict['end_year'] + metadata_dict['end_month'] + metadata_dict['end_day'])
+            plot_title = plot_title.replace("%START_DATE%", str(metadata_dict['start_year']) + str(metadata_dict['start_month']) + str(metadata_dict['start_day']))
+            plot_title = plot_title.replace("%END_DATE%", str(metadata_dict['end_year']) + str(metadata_dict['end_month']) + str(metadata_dict['end_day']))
             
             if isset("iuse", data_dict):
                 if data_dict["iuse"] == -1:
@@ -233,7 +233,8 @@ def plot(plot_dict, data_dict, metadata_dict):
                 '''if isset("title", subplot["legend"]):
                     legend_kwargs["title"] = subplot["legend"]["title"]'''
                 
-                legend_kwargs["title"] = subplot["legend"]["title"]
+                if "title" in subplot["legend"]:
+                    legend_kwargs["title"] = subplot["legend"]["title"]
                 legend = axe.legend(loc='center left', bbox_to_anchor=(-0.3, 0.5), borderaxespad=0., handlelength=0, **legend_kwargs)
                 
                 #print "Adding legend..."
@@ -275,6 +276,7 @@ def plot(plot_dict, data_dict, metadata_dict):
         
         if isset("output", plot):
             plot_output = plot["output"]
+            plot_output = plot_output.replace("%CHANNEL%", str(metadata_dict["channel"]))
         else:
             warn("Output path not specified, will save to 'magical_plot_please_specify_output_path_next_time.png'")
             plot_output = "magical_plot_please_specify_output_path_next_time.png"

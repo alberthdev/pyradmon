@@ -330,7 +330,7 @@ def print_table(table_dict, pause = True, table_debug = False):
     #print boldline
     
 def display(pyradmon_config, plot_dict, pause = True, table_debug = False):
-    validate(pyradmon_config, plot_dict)
+    validate(pyradmon_config, plot_dict, False)
     # PyRadmon Configuration
     if pyradmon_config:
         pyradmon_disp = []
