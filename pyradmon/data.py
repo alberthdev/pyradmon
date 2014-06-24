@@ -92,8 +92,8 @@ def get_data(files_to_read, data_vars, selected_channel, data_assim_only = False
             # Check to see if the beginning part of the data_var is a
             # valid prefix (or data type). If not, raise exception.
             if not data_var.split("|")[0] in VALID_PREFIX:
-                die("ERROR: Ambiguous variable found - %s must be prefixed before the actual var!" % \
-                    (VALID_PREFIX[0] if len(VALID_PREFIX) == 1 else \
+                die("ERROR: Ambiguous variable '%s' found - %s must be prefixed before the actual var!" % \
+                    (data_var, VALID_PREFIX[0] if len(VALID_PREFIX) == 1 else \
                         " or ".join(VALID_PREFIX) if len(VALID_PREFIX) == 2 else (", ".join(VALID_PREFIX[:-1]) + ", or " + VALID_PREFIX[-1])))
     # Last one - check for any dups!
     data_vars_dups = set([x for x in data_vars if data_vars.count(x) > 1])
@@ -242,6 +242,17 @@ def get_data(files_to_read, data_vars, selected_channel, data_assim_only = False
                                         # Save the frequency for the first (and final) time
                                         data_dict["frequency"] = data_elements[data_column]
                                 
+                                # iuse enforcement
+                                if data_assim_only:
+                                    data_column = column_reader.getColumnIndex("iuse", False)
+                                    
+                                    if check_int(data_elements[data_column]):
+                                        if int(data_elements[data_column]) < 0:
+                                            continue
+                                    else:
+                                        warn("iuse is not a digit! Skipping. (iuse = %s)" % data_elements[data_column])
+                                        continue
+                                    
                                 # iuse (assimilated) data variable handling
                                 if "iuse" in data_vars:
                                     data_column = column_reader.getColumnIndex("iuse", False)

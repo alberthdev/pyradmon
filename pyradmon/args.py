@@ -18,7 +18,6 @@
 #   library for parsing command line arguments
 # 
 
-#!/usr/bin/env python
 import argparse
 import textwrap
 import os
@@ -26,6 +25,8 @@ import sys
 
 from core import *
 import config
+import config_printer
+from config import SPECIAL_FIELDS
 import log
 
 import logging
@@ -528,13 +529,13 @@ def parse_to_config(parse):
             
             if res == None:
                 print "ERROR: Could not open configuration file!"
-                return False
+                return (None, None, None)
             
             pyradmon_config = res[0]
             plot_dict = res[1]
         else:
             print "ERROR: Configuration file path does not exist!"
-            return False
+            return (None, None, None)
         
         # Validate configuration
         config.validate(pyradmon_config, plot_dict)
@@ -558,7 +559,7 @@ def parse_to_config(parse):
                 final_logging_output.append(sys.stderr)
             else:
                 print "ERROR: Invalid logging output! Valid output: stdout, stderr, file"
-                return False
+                return (None, None, None)
         logging_output = final_logging_output
     else:
         logging_output = None
@@ -584,7 +585,7 @@ def parse_to_config(parse):
         else:
             print "ERROR: Invalid logging level specified!"
             print "Valid levels: INFO, WARNING, ERROR, CRITICAL, DEBUG"
-            return False
+            return (None, None, None)
     else:
         logging_level = logging.INFO
     
@@ -609,13 +610,13 @@ def parse_to_config(parse):
                 
                 if res == None:
                     critical("ERROR: Could not open configuration file!")
-                    return False
+                    return (None, None, None)
                 
                 pyradmon_config = res[0]
                 plot_dict = res[1]
             else:
                 critical("ERROR: Configuration file path does not exist!")
-                return False
+                return (None, None, None)
             
             # Validate configuration
             config.validate(pyradmon_config, plot_dict)
@@ -1083,13 +1084,120 @@ def parse_to_config(parse):
                         plot_dict[settings_def_plot]["settings"][kvpair[0]] = kvpair[1]
                 
                 # Done!!!!!1111
+    
+    ## Dump args
+    if parse.verb == "dump" or parse.verb == "plot" or parse.verb == "config":
+        # --dump-columns
+        if isset_obj("dump_columns", parse):
+            for data_column in (parse.dump_columns).split(","):
+                data_column = data_column.strip()
+                if not data_column in SPECIAL_FIELDS:
+                    if not ((data_column.startswith("ges|") or data_column.startswith("anl|"))):
+                        die("ERROR: Invalid data column '%s' specified in --dump-columns! Must have ges| or anl| as a prefix." % data_column)
+            
+            pyradmon_config["data_columns"] = parse.dump_columns
         
-        import pprint
-        pprint.pprint(plot_dict)
+        # --dump-channels
+        if isset_obj("dump_channels", parse):
+            for data_channel in (parse.dump_channels).split(","):
+                data_channel = data_channel.strip()
+                
+                if not ( (data_channel.isdigit()) or \
+                    ( (len(data_channel.split("-")) == 2) and data_channel.split("-")[0].isdigit() and data_channel.split("-")[1].isdigit() ) ):
+                    die("ERROR: Invalid data channel '%s' specified in --dump-channels! Must be a number or a numeric range (#-#)." % data_channel)
+            
+            pyradmon_config["data_channels"] = parse.dump_channels
         
-        #print plot_dict
+        # --dump-assim-only
+        if isset_obj("dump_assim_only", parse):
+            pyradmon_config["data_assim_only"] = parse.dump_assim_only
+    
+    ## List args
+    if parse.verb == "list" or parse.verb == "dump" or parse.verb == "plot" or parse.verb == "config":
+        # --data-all (action flag) 
+        if isset_obj("data_all", parse):
+            pyradmon_config["data_all"] = parse.data_all
         
+        # --data-single-date (action flag)
+        if isset_obj("data_single_date", parse):
+            if isset_obj("data_all", parse):
+                die("ERROR: You can not specify --data-all and --data-single-date at the same time!")
+            pyradmon_config["data_single_date"] = parse.data_single_date
+        
+        # --data-base-directory 
+        if isset_obj("data_base_directory", parse):
+            pyradmon_config["data_base_directory"] = parse.data_base_directory
+        
+        # --data-experiment-id
+        if isset_obj("data_experiment_id", parse):
+            pyradmon_config["data_experiment_id"] = parse.data_experiment_id
+        
+        # --data-start-date
+        if isset_obj("data_start_date", parse):
+            if isset_obj("data_all", parse):
+                die("ERROR: You can not specify --data-all and --data-start-date at the same time!")
+            if isset_obj("data_single_date", parse):
+                die("ERROR: You can not specify --data-single-date and --data-start-date at the same time!")
+            
+            # FORMAT: YYYY-MM-DD HHz
+            pyradmon_config["data_start_date"] = parse.data_start_date
+            
+            if not (pyradmon_config["data_start_date"][:4].isdigit() and \
+                pyradmon_config["data_start_date"][5:7].isdigit() and \
+                pyradmon_config["data_start_date"][8:10].isdigit() and \
+                pyradmon_config["data_start_date"][11:13].isdigit()):
+                die("ERROR: Start date '%s' specified in --data-start-date is not valid! It must be in 'YYYY-MM-DD HHz' format!" % pyradmon_config["data_start_date"])
+        
+        # --data-end-date
+        if isset_obj("data_end_date", parse):
+            if isset_obj("data_all", parse):
+                die("ERROR: You can not specify --data-all and --data-end-date at the same time!")
+            if isset_obj("data_single_date", parse):
+                die("ERROR: You can not specify --data-single-date and --data-end-date at the same time!")
+            
+            # FORMAT: YYYY-MM-DD HHz
+            pyradmon_config["data_end_date"] = parse.data_end_date
+            
+            if not (pyradmon_config["data_end_date"][:4].isdigit() and \
+                pyradmon_config["data_end_date"][5:7].isdigit() and \
+                pyradmon_config["data_end_date"][8:10].isdigit() and \
+                pyradmon_config["data_end_date"][11:13].isdigit()):
+                die("ERROR: End date '%s' specified in --data-end-date is not valid! It must be in 'YYYY-MM-DD HHz' format!" % pyradmon_config["data_end_date"])
+        
+        # --data-instrument-sat
+        if isset_obj("data_instrument_sat", parse):
+            pyradmon_config["data_instrument_sat"] = parse.data_instrument_sat
+        
+        # --data-step
+        if isset_obj("data_step", parse):
+            pyradmon_config["data_step"] = parse.data_step
+            if not ((pyradmon_config['data_step'] == "anl") or \
+                (pyradmon_config['data_step'] == "ges") or \
+                (pyradmon_config['data_step'] == "anl|ges") or \
+                (pyradmon_config['data_step'] == "ges|anl")):
+                die("ERROR: Data step '%s' specified in --date-step is not valid! Must either be 'anl', 'ges', or the two combined with a pipe ('anl|ges')." % pyradmon_config["data_step"])
+        
+        # --data-time-delta
+        if isset_obj("data_time_delta", parse):
+            pyradmon_config["data_time_delta"] = parse.data_time_delta
+            
+            dtd_split = pyradmon_config['data_time_delta'].split(" ")
+            unit_valid = [ "s", "w", "m", "M", "h", "y", "d" ]
+            
+            for dtd in dtd_split:
+                #  s: seconds    m: minutes    h: hours    d: days
+                #  w: weeks      M: months     y: years
+                if not ( (dtd[-1] in unit_valid) and (dtd[:-1].isdigit()) ):
+                    die("ERROR: Invalid delta time '%s' specified in --data-delta-time! Must be a # followed by a valid unit letter. ([s]ecs, [m]inutes, [h]ours, [d]ays, [w]eeks, [M]onths, [y]ears)" % pyradmon_config["data_delta_time"])
+    
+    #import pprint
+    #pprint.pprint(plot_dict)
+        
+    #print plot_dict
+    
+    return (pyradmon_config, plot_dict, parse)
+
 if __name__ == "__main__":
     parser = make_argparser()
     parse = parser.parse_args()
-    parse_to_config(parse)
+    print parse_to_config(parse)

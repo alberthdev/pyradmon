@@ -44,6 +44,9 @@ def load(config_file):
     except IOError:
         error("ERROR: Could not read configuration file!")
         return None
+    except yaml.parser.ParserError:
+        error("ERROR: Could not parse configuration file!")
+        return None
     except:
         error("ERROR: Something bad occurred...")
         return None
@@ -125,7 +128,7 @@ def postprocess_config(pyradmon_config):
     
     if 'data_time_delta' in pyradmon_config:
         delta_dict = {}
-        fields = [ "seconds", "minutes", "hours", "days", "weeks", "months" ]
+        fields = [ "seconds", "minutes", "hours", "days", "weeks" ]
         # Initialize them all to zero...
         for field in fields:
             delta_dict[field] = 0
@@ -149,7 +152,7 @@ def postprocess_config(pyradmon_config):
             if delta[-1] == "w":
                 delta_dict["weeks"]   += int(delta[:-1])
             if delta[-1] == "M":
-                delta_dict["months"]  += int(delta[:-1])
+                delta_dict["days"]  += int(delta[:-1]) * 30.4375
             if delta[-1] == "y":
                 # Hacky - since we can't use actual years, we use
                 # 365 days instead.
@@ -161,14 +164,20 @@ def postprocess_config(pyradmon_config):
         if copy_var in pyradmon_config:
             enum_opts_dict[copy_var] = pyradmon_config[copy_var]
     
+    if 'data_columns' in pyradmon_config:
+        enum_opts_dict['data_columns'] = [ x.strip() for x in pyradmon_config['data_columns'].split(",") ]
+    
+    if 'data_channels' in pyradmon_config:
+        enum_opts_dict['data_channels'] = [ x.strip() for x in pyradmon_config['data_channels'].split(",") ]
+    
     #############################################
     ## Data assim only flag for data.get_data()
     #############################################
     data_assim_only = None
     if 'data_assim_only' in pyradmon_config:
-        data_assim_only = pyradmon_config['data_assim_only']
+        enum_opts_dict['data_assim_only'] = pyradmon_config['data_assim_only']
     
-    return (enum_opts_dict, data_assim_only)
+    return enum_opts_dict
 
 def postprocess_plot(plot_dict):
     #############################################
@@ -183,22 +192,39 @@ def postprocess_plot(plot_dict):
         plot = plot_dict[plotID]
         for subplotDict in plot["plots"]:
             subplotID = subplotDict.keys()[0]
-            subplot = plot["plots"][subplotID]
+            subplot = subplotDict[subplotID]
             if not subplot["data"]["x"] in data_var_list:
                 data_var_list.append(subplot["data"]["x"])
             for var in subplot["data"]["y"]:
                 if not var in data_var_list:
                     data_var_list.append(var)
     
+    if not "frequency" in data_var_list:
+        data_var_list.append("frequency")
+    
+    if not "iuse" in data_var_list:
+        data_var_list.append("iuse")
+    
     return data_var_list
 
 def postprocess(pyradmon_config, plot_dict):
-    (enum_opts_dict, data_assim_only) = postprocess_config(pyradmon_config)
+    enum_opts_dict = postprocess_config(pyradmon_config)
     data_var_list = postprocess_plot(plot_dict)
     
-    return (enum_opts_dict, data_var_list, data_assim_only)
+    return (enum_opts_dict, data_var_list)
 
-def validate_config(pyradmon_config):
+def gen_channel_list_generator(chan_arr):
+    for chan_entry in chan_arr:
+        if "-" in chan_entry:
+            num_entry = [ int(num) for num in chan_entry.split("-") ]
+            for i in xrange(num_entry[0], num_entry[1]+1): yield i 
+        else:
+            yield int(chan_entry)
+
+def gen_channel_list(chan_arr):
+    return list(gen_channel_list_generator(chan_arr))
+
+def validate_config(pyradmon_config, skip_dir_check = False):
     # Validate pyradmon_config
     required_var_list = [
                             'base_directory',
@@ -216,15 +242,16 @@ def validate_config(pyradmon_config):
     if pyradmon_config == None:
         die("ERROR: No PyRadmon configuration found! A configuration must be defined to run.")
     
-    if 'base_directory' in pyradmon_config:
-        if not os.path.isdir(pyradmon_config['base_directory']):
-            die("ERROR: Directory '%s' specified in base_directory does not exist!" % pyradmon_config['base_directory'])
-        # Yes, this is done on purpose - without base_directory we can't
-        # figure out whether experiment_id is valid or not.
-        if 'experiment_id' in pyradmon_config:
-            if not os.path.isdir(os.path.join(pyradmon_config['base_directory'], pyradmon_config['experiment_id'])):
-                logging.critical("ERROR: Experiment ID '%s' specified in experiment_id does not exist!" % pyradmon_config['experiment_id'])
-                die("ERROR: Experiment ID '%s' specified in experiment_id does not exist!" % pyradmon_config['experiment_id'])
+    if not skip_dir_check:
+        if 'base_directory' in pyradmon_config:
+            if not os.path.isdir(pyradmon_config['base_directory']):
+                die("ERROR: Directory '%s' specified in base_directory does not exist!" % pyradmon_config['base_directory'])
+            # Yes, this is done on purpose - without base_directory we can't
+            # figure out whether experiment_id is valid or not.
+            if 'experiment_id' in pyradmon_config:
+                if not os.path.isdir(os.path.join(pyradmon_config['base_directory'], pyradmon_config['experiment_id'])):
+                    logging.critical("ERROR: Experiment ID '%s' specified in experiment_id does not exist!" % pyradmon_config['experiment_id'])
+                    die("ERROR: Experiment ID '%s' specified in experiment_id does not exist!" % pyradmon_config['experiment_id'])
     
     if 'data_start_date' in pyradmon_config:
         # FORMAT: YYYY-MM-DD HHz
@@ -365,8 +392,8 @@ def validate_plot(plot_dict):
                 if type(subplot["title"]) != str:
                     die("ERROR: Subplot title '%s' is not a str for subplot '%s'." % (str(subplot["title"]), subplotID))
                 
-def validate(pyradmon_config, plot_dict):
-    validate_config(pyradmon_config)
+def validate(pyradmon_config, plot_dict, skip_dir_check = False):
+    validate_config(pyradmon_config, skip_dir_check)
     validate_plot(plot_dict)
 
 if __name__ == "__main__":

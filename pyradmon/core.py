@@ -31,6 +31,8 @@ import time
 import os
 import sys
 
+import types
+
 def isset(key, thedict):
     if key in thedict:
         if thedict[key] != None:
@@ -42,6 +44,9 @@ def isset_obj(key, theobj):
         if getattr(theobj, key) != None:
             return True
     return False
+
+def isgen(gen):
+    return isinstance(gen, types.GeneratorType)
 
 def get_key_press():
     if KEYPRESS_ENABLED:
@@ -103,3 +108,7 @@ def info(i):
 
 def debug(d):
     logging.debug(d)
+
+def pprinter(obj):
+    import pprint
+    pprint.pprint(obj)
