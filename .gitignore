@@ -53,12 +53,18 @@ coverage.xml
 docs/_build/
 
 # Ignore generated plots
+plots
 *.png
 *.jpg
 *.gif
 *.tiff
+plots/*.png
+plots/*.jpg
+plots/*.gif
+plots/*.tiff
 
 # Ignore old files
 *.py~
 *.txt~
 [#]*[#]
+
