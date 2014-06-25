@@ -118,7 +118,10 @@ class ColumnReadBase():
     def _warn(self, msg):
         # Warning printing function
         print "getColumnID(): WARNING: "+msg
-        
+    
+    def getColumnDict(self):
+        return self.column_dict
+    
     def getColumnIndex(self, col_search_name, suppress_warnings = True):
         """Based on the column parsing, determine the column index
         given the column name.
