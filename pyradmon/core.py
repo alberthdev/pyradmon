@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# PyRadmon v1.0 - Python Radiance Monitoring Tool
+# PyRadmon - Python Radiance Monitoring Tool
 # Copyright 2014 Albert Huang.
 # 
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -103,6 +103,12 @@ def sortOD(od):
             res[k] = sortOD(v)
         else:
             res[k] = v
+    return res
+
+def sortODShallow(od):
+    res = OrderedDict()
+    for k, v in sorted(od.items()):
+        res[k] = v
     return res
 
 def die(reason):

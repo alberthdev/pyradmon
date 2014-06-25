@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# PyRadmon v1.0 - Python Radiance Monitoring Tool
+# PyRadmon - Python Radiance Monitoring Tool
 # Copyright 2014 Albert Huang.
 # 
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -22,6 +22,8 @@ import argparse
 import textwrap
 import os
 import sys
+
+from _version import __version__
 
 from core import *
 import config
@@ -242,7 +244,8 @@ def make_argparser():
                     Make plots and log output:
                       %(prog)s --config-file=config.yaml --logging-output="stdout,file" \\
                                --logging-file="mylog.txt"
-                  """))
+                  """),
+                version = 'PyRadmon v' + __version__) # Old: %(prog)s evals to pyradmon.py
 
     subparsers = parser.add_subparsers(metavar="verb", dest = "verb", help='Description')
 
@@ -1122,7 +1125,8 @@ def parse_to_config(parse):
         if isset_obj("data_single_date", parse):
             if isset_obj("data_all", parse):
                 die("ERROR: You can not specify --data-all and --data-single-date at the same time!")
-            pyradmon_config["data_single_date"] = parse.data_single_date
+            pyradmon_config["data_start_date"] = parse.data_single_date
+            pyradmon_config["data_end_date"] = parse.data_single_date
         
         # --data-base-directory 
         if isset_obj("data_base_directory", parse):

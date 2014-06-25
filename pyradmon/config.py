@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# PyRadmon v1.0 - Python Radiance Monitoring Tool
+# PyRadmon - Python Radiance Monitoring Tool
 # Copyright 2014 Albert Huang.
 # 
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -168,7 +168,10 @@ def postprocess_config(pyradmon_config):
         enum_opts_dict['data_columns'] = [ x.strip() for x in pyradmon_config['data_columns'].split(",") ]
     
     if 'data_channels' in pyradmon_config:
-        enum_opts_dict['data_channels'] = [ x.strip() for x in pyradmon_config['data_channels'].split(",") ]
+        if type(pyradmon_config['data_channels']) == str:
+            enum_opts_dict['data_channels'] = [ x.strip() for x in pyradmon_config['data_channels'].split(",") ]
+        else:
+            enum_opts_dict['data_channels'] = str(pyradmon_config['data_channels'])
     
     #############################################
     ## Data assim only flag for data.get_data()
@@ -297,12 +300,18 @@ def validate_config(pyradmon_config, skip_dir_check = False):
                     edie("ERROR: Invalid data column '%s' specified in data_columns! Must have ges| or anl| as a prefix." % data_column)
     
     if 'data_channels' in pyradmon_config:
-        for data_channel in pyradmon_config['data_channels'].split(","):
-            data_channel = data_channel.strip()
-            
-            if not ( (data_channel.isdigit()) or \
-                ( (len(data_channel.split("-")) == 2) and data_channel.split("-")[0].isdigit() and data_channel.split("-")[1].isdigit() ) ):
-                edie("ERROR: Invalid data channel '%s' specified in data_channels! Must be a number or a numeric range (#-#)." % data_channel)
+        if type(pyradmon_config['data_channels']) == str:
+            for data_channel in pyradmon_config['data_channels'].split(","):
+                data_channel = data_channel.strip()
+                
+                if not ( (data_channel.isdigit()) or \
+                    ( (len(data_channel.split("-")) == 2) and data_channel.split("-")[0].isdigit() and data_channel.split("-")[1].isdigit() ) ):
+                    edie("ERROR: Invalid data channel '%s' specified in data_channels! Must be a number or a numeric range (#-#)." % data_channel)
+        elif type(pyradmon_config['data_channels']) == int:
+            # All good!
+            pass
+        else:
+            edie("ERROR: Invalid data channel '%s' specified in data_channels! Must be a number or a numeric range (#-#)." % data_channel)
     
     if 'data_assim_only' in pyradmon_config:
         if type(pyradmon_config['data_assim_only']) != bool:

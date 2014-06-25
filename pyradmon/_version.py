@@ -14,15 +14,8 @@
 # implied. See the License for the specific language governing
 # permissions and limitations under the License.
 # 
-# Module __init__
+# Bug Report Library -
+#   library for detecting and reporting bugs
 # 
-import enumerate
-import data
-import plot
-import test
-import columnread
-import config
-import wrapper
-import enumerate
-import args
-import debug
+
+__version__ = "0.5a1"

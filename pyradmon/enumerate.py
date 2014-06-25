@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# PyRadmon v1.0 - Python Radiance Monitoring Tool
+# PyRadmon - Python Radiance Monitoring Tool
 # Copyright 2014 Albert Huang.
 # 
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -246,6 +246,17 @@ def enumerate(**opts):
     # Now loop and generate a list of files to read!
     files_to_read = []
     
+    # Data vars
+    available_instrument_sat = []
+    available_data_type = []
+    interval_count = 0
+    interval_measurements = 0
+    
+    total_files = 0
+    criteria_total_files = 0
+    
+    average_interval = 0
+    
     # Make reference datetimes
     cur_date = datetime.datetime(int(start_year), int(start_month), int(start_day), int(start_hour))
     end_date = datetime.datetime(int(end_year), int(end_month), int(end_day), int(end_hour))
@@ -261,6 +272,16 @@ def enumerate(**opts):
             sday = "D" + str(cur_date.day).zfill(2)
             shour = "H" + str(cur_date.hour).zfill(2)
             try:
+                # Try to access it
+                tmp_notmp = data_dict[syear][smonth][sday][shour]
+                
+                # Success! Calculate the interval average!
+                average_interval = ((average_interval * interval_measurements) + interval_count) / (interval_measurements + 1)
+                
+                # Reset interval count and increment measurement count.
+                interval_count = 0
+                interval_measurements += 1
+                
                 for datdict in data_dict[syear][smonth][sday][shour]:
                     # Check if the variable is a string or a list. If 
                     # it's a string, match it. If it's a list, check to
@@ -291,7 +312,17 @@ def enumerate(**opts):
                         
                         if not newdatdict in files_to_read:
                             files_to_read.append(newdatdict)
+                        
+                        if not datdict["instrument_sat"] in available_instrument_sat:
+                            available_instrument_sat.append(datdict["instrument_sat"])
+                        
+                        if not datdict["type"] in available_data_type:
+                            available_data_type.append(datdict["type"])
+                            
+                        criteria_total_files += 1
+                    total_files += 1
             except KeyError:
+                interval_count += 1
                 pass
             
             # Increment time
@@ -302,8 +333,26 @@ def enumerate(**opts):
         else:
             break
     
+    stats_dict = {}
+    stats_dict["start_year"]               = int(start_year)
+    stats_dict["start_month"]              = int(start_month)
+    stats_dict["start_day"]                = int(start_day)
+    stats_dict["start_hour"]               = int(start_hour)
+                                           
+    stats_dict["end_year"]                 = int(end_year)
+    stats_dict["end_month"]                = int(end_month)
+    stats_dict["end_day"]                  = int(end_day)
+    stats_dict["end_hour"]                 = int(end_hour)
+    
+    stats_dict["available_instrument_sat"] = available_instrument_sat
+    stats_dict["available_data_type"]      = available_data_type
+    stats_dict["average_interval"]         = average_interval
+    
+    stats_dict["total_files"]              = total_files
+    stats_dict["criteria_total_files"]     = criteria_total_files
+    
     # Done!
-    return files_to_read
+    return (files_to_read, stats_dict)
 
 def enumerate_all(**opts):
     """Returns a tuple with a list of files that matches the given

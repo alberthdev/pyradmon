@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# PyRadmon v1.0 - Python Radiance Monitoring Tool
+# PyRadmon - Python Radiance Monitoring Tool
 # Copyright 2014 Albert Huang.
 # 
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -31,6 +31,7 @@ from data import get_data, get_data_columns, post_data_columns, SPECIAL_FIELDS
 from plot import plot, subst_data
 
 try:
+    # Should be embedded
     from prettytable import PrettyTable
 except:
     print "ERROR: PrettyTable is needed to run this script!"
@@ -68,16 +69,15 @@ def main():
                 data_var_list = []
         else:
             (enum_opts_dict, data_var_list) = config.postprocess(pyradmon_config, plot_dict)
-            pprinter(enum_opts_dict)
+            #pprinter(enum_opts_dict)
         
         if "data_all" in pyradmon_config and pyradmon_config["data_all"]:
             info(" ** Enumerating ALL data files...")
             (en, stats) = enumerate_all(**enum_opts_dict)
         else:
-            en = enumerate(**enum_opts_dict)
-            (tmp_en, stats) = enumerate_all(**enum_opts_dict)
+            (en, stats) = enumerate(**enum_opts_dict)
         
-    pprinter(en)
+    #pprinter(en)
     if parse.verb == "plot" or parse.verb == "dump":
         chans = enum_opts_dict["data_channels"]
         
@@ -158,7 +158,93 @@ def main():
         sys.exit(0)
     
     if parse.verb == "dump":
-        pprinter(dat)
+        #pprinter(dat)
+        
+        # DIRTY HACK ALERT! DIRTY HACK ALERT!
+        # We don't know whether the dat dictionary is a single
+        # channel dictionary or a multi channel one.
+        # The hack? Just check to see if the first key is an int or
+        # not. If it is, it's probably multi-channel. If not, single.
+        # (This technically should work everytime since keys for single
+        # channel tend to only be strings, not ints. And vice versa.)
+        # 
+        # TODO: fix this by adding a key/value pair inside the dict
+        # to indicate this!
+        if type(dat.keys()[0]) == int:
+            # Multichanel mode
+            
+            dat_sorted = sortODShallow(dat)
+            
+            # Iterate channels!
+            for chan in dat_sorted.keys():
+                # Print channel!
+                print "=" * 20
+                print "Channel %i:" % chan
+                print "=" * 20
+                
+                # Set up headers!
+                table = PrettyTable(dat[chan].keys())
+                
+                for key in dat[chan].keys():
+                    table.align[key] = "l" # Left align city names
+                
+                table.padding_width = 1 # One space between column edges and contents (default)
+                
+                # Quick validation!
+                data_length = 0
+                for key in dat[chan].keys():
+                    if data_length == 0:
+                        data_length = len(dat[chan][key])
+                    else:
+                        if (type(dat[chan][key]) == list) and (len(dat[chan][key]) != data_length):
+                            critical("ERROR: Data length is not consistant across all keys! (Multi-channel mode - current %i vs first %i)" % (len(dat[chan][key]), data_length))
+                            #print dat[chan][key]
+                            sys.exit(1)
+                
+                # OK, we're good!
+                for i in xrange(0, data_length):
+                    data_arr = []
+                    for key in dat[chan].keys():
+                        if type(dat[chan][key]) == list:
+                            data_arr.append(dat[chan][key][i])
+                        else:
+                            data_arr.append(dat[chan][key])
+                    table.add_row(data_arr)
+                
+                print table
+        else:
+            # Single channel mode
+            
+            # Set up headers!
+            table = PrettyTable(dat.keys())
+            
+            for key in dat.keys():
+                table.align[key] = "l" # Left align city names
+            
+            table.padding_width = 1 # One space between column edges and contents (default)
+            
+            # Quick validation!
+            data_length = 0
+            for key in dat.keys():
+                if data_length == 0:
+                    data_length = len(dat[key])
+                else:
+                    if (type(dat[key]) == list) and (len(dat[key]) != data_length):
+                        critical("ERROR: Data length is not consistant across all keys! (Single channel mode - current %i vs first %i)" % (len(dat[key]), data_length))
+                        sys.exit(1)
+            
+            # OK, we're good!
+            for i in xrange(0, data_length):
+                data_arr = []
+                for key in dat.keys():
+                    if type(dat[key]) == list:
+                        data_arr.append(dat[key][i])
+                    else:
+                        data_arr.append(dat[key])
+                table.add_row(data_arr)
+            
+            print table
+            
         sys.exit(0)
     
     if parse.verb == "plot":
@@ -167,17 +253,32 @@ def main():
             
             enum_opts_dict["channel"] = channel
             
-            try:
-                plot_dict_subs = subst_data(plot_dict, dat[channel])
-                plot(plot_dict_subs, dat[channel], enum_opts_dict)
-                del plot_dict_subs
-            except:
-                critical("An error occurred! Error follows:")
-                critical(traceback.format_exc())
-                #print "Dumping data_dict:"
-                #pprint.pprint(dat)
-                critical("Exiting.")
-                sys.exit(1)
+            # HACK - see above for multichannel/single channel hack
+            if type(dat.keys()[0]) == int:
+                # Multichanel mode
+                try:
+                    plot_dict_subs = subst_data(plot_dict, dat[channel])
+                    plot(plot_dict_subs, dat[channel], enum_opts_dict)
+                    del plot_dict_subs
+                except:
+                    critical("An error occurred! Error follows:")
+                    critical(traceback.format_exc())
+                    #print "Dumping data_dict:"
+                    #pprint.pprint(dat)
+                    critical("Exiting.")
+                    sys.exit(1)
+            else:
+                try:
+                    plot_dict_subs = subst_data(plot_dict, dat)
+                    plot(plot_dict_subs, dat, enum_opts_dict)
+                    del plot_dict_subs
+                except:
+                    critical("An error occurred! Error follows:")
+                    critical(traceback.format_exc())
+                    #print "Dumping data_dict:"
+                    #pprint.pprint(dat)
+                    critical("Exiting.")
+                    sys.exit(1)
 
 if __name__ == "__main__":
     main()

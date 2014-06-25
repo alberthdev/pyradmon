@@ -1,0 +1,51 @@
+config:
+  base_directory: MERRA2/
+  data_step: anl|ges
+  data_start_date: 1991-01-01 00z
+  data_end_date: 1991-02-28 18z
+  experiment_id: d5124_m2_jan91
+  data_instrument_sat: ssmi_f08
+  data_channels: 4
+
+plot1:
+  output: plots/test_plot_1_ch4_2plots_only.png
+  settings:
+    dpi: 50
+    target_size: [595, 770]
+  title: '%INSTRUMENT_SAT%   %START_DATE%-%END_DATE%
+
+    Channel %CHANNEL%  %FREQUENCY%       %ASSIMILATION_STATUS%
+
+    Global  All    %EXPERIMENT_ID%'
+  plots:
+  - subplot1_id:
+      axes:
+        x: {label: null, ticks: 6}
+        y: {label: null, ticks: 5}
+      data:
+        colors: [blue, red]
+        labels: ['Avg (K)
+
+            %AVERAGE%', 'Sdv (K)
+
+            %AVERAGE%']
+        x: timestamp
+        y: [ges|bc_total|mean, ges|bc_total|stddev]
+      legend: {border: false, line: true}
+      title: Total Bias
+  - subplot2_id:
+      axes:
+        x: {label: null, ticks: 6}
+        y: {label: null, ticks: 5}
+      data:
+        colors: [blue, red]
+        labels: ['Avg (K)
+
+            %AVERAGE%', 'Sdv (K)
+
+            %AVERAGE%']
+        x: timestamp
+        y: [ges|bc_fixang|mean, ges|bc_fixang|stddev]
+      legend: {border: false, line: true}
+      title: Scan Angle
+
