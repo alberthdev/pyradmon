@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# PyRadmon v1.0 - Python Radience Monitor Tool
+# PyRadmon v1.0 - Python Radiance Monitoring Tool
 # Copyright 2014 Albert Huang.
 # 
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -32,6 +32,15 @@ import os
 import sys
 
 import types
+
+try:
+    from collections import OrderedDict
+except:
+    try:
+        from ordereddict import OrderedDict
+    except:
+        print "ERROR: OrderedDict not found! It is required to run this script."
+        sys.exit(1)
 
 def isset(key, thedict):
     if key in thedict:
@@ -87,7 +96,20 @@ def get_key_press():
     else:
         raw_input("[Press ENTER to continue...]")
 
+def sortOD(od):
+    res = OrderedDict()
+    for k, v in sorted(od.items()):
+        if isinstance(v, dict):
+            res[k] = sortOD(v)
+        else:
+            res[k] = v
+    return res
+
 def die(reason):
+    logging.critical(reason)
+    sys.exit(1)
+
+def edie(reason):
     logging.critical(reason)
     raise Exception(reason)
 

@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# PyRadmon v1.0 - Python Radience Monitor Tool
+# PyRadmon v1.0 - Python Radiance Monitoring Tool
 # Copyright 2014 Albert Huang.
 # 
 # Licensed under the Apache License, Version 2.0 (the "License");

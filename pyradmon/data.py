@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# PyRadmon v1.0 - Python Radience Monitor Tool
+# PyRadmon v1.0 - Python Radiance Monitoring Tool
 # Copyright 2014 Albert Huang.
 # 
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -92,14 +92,14 @@ def get_data(files_to_read, data_vars, selected_channel, data_assim_only = False
             # Check to see if the beginning part of the data_var is a
             # valid prefix (or data type). If not, raise exception.
             if not data_var.split("|")[0] in VALID_PREFIX:
-                die("ERROR: Ambiguous variable '%s' found - %s must be prefixed before the actual var!" % \
+                edie("ERROR: Ambiguous variable '%s' found - %s must be prefixed before the actual var!" % \
                     (data_var, VALID_PREFIX[0] if len(VALID_PREFIX) == 1 else \
                         " or ".join(VALID_PREFIX) if len(VALID_PREFIX) == 2 else (", ".join(VALID_PREFIX[:-1]) + ", or " + VALID_PREFIX[-1])))
     # Last one - check for any dups!
     data_vars_dups = set([x for x in data_vars if data_vars.count(x) > 1])
     data_vars_dups_l = list(data_vars_dups)
     if len(data_vars_dups_l) > 0:
-        die("ERROR: Duplicate variables found - %s!" % \
+        edie("ERROR: Duplicate variables found - %s!" % \
                     (data_vars_dups_l[0] + " is a duplicate" if len(data_vars_dups_l) == 1 else \
                         " and ".join(data_vars_dups_l) + " are duplicates" if len(data_vars_dups_l) == 2 else (", ".join(data_vars_dups_l[:-1]) + ", and " + data_vars_dups_l[-1] + " are duplicates")))
     
@@ -223,7 +223,7 @@ def get_data(files_to_read, data_vars, selected_channel, data_assim_only = False
                                         # Now fetch the column index!
                                         data_column = column_reader.getColumnIndex(real_data_var, False)
                                         if data_column == None:
-                                            die("ERROR: Unable to fetch column index. See above for details.")
+                                            edie("ERROR: Unable to fetch column index. See above for details.")
                                         
                                         # Finally, nab the real data!
                                         data_dict[data_var].append(Decimal(data_elements[data_column]))
@@ -280,7 +280,7 @@ def get_data(files_to_read, data_vars, selected_channel, data_assim_only = False
                                     break
                         else:
                             # Channel number field isn't a number... not good. Go boom!
-                            die("ERROR: Data format seems corrupt (first element is non-int)...")
+                            edie("ERROR: Data format seems corrupt (first element is non-int)...")
                     else:
                         #print " * Parse comment"
                         
@@ -296,6 +296,115 @@ def get_data(files_to_read, data_vars, selected_channel, data_assim_only = False
     else:
         #print "Returning single channel data dict..."
         return data_dict
+
+def get_data_columns(files_to_read):
+    """Returns a dict of the data columns in a file.
+
+    TODO
+
+    Args:
+        files_to_read: A list of file dicts, returned by enumerate().
+
+    Returns:
+        TODO
+
+    Raises:
+        Exception(...) - error exception when either:
+            - an ambiguous variable is found
+            - the column index for a data variable can not be found
+              (and therefore makes the data variable invalid)
+            - the channel number can't be read (and therefore the data
+              is corrupt)
+        Warnings will be printed when inconsistencies with the data
+        are detected. No exception will be raised. However, these
+        warnings are important, as they can affect the data's
+        quality, so make sure to check for and correct any issues
+        mentionned by warnings!
+    """
+    
+    # Iterate through all of the files!
+    for file_to_read in files_to_read:
+        # with structure auto-closes the file...
+        with open(file_to_read["filename"], 'r') as data_file:
+            #print "Reading file: %s" % file_to_read["filename"]
+            
+            # Count the lines we've read so that we can do specific
+            # things for certain lines.
+            data_line_counter = 0
+            
+            # Save the number of total channels.
+            total_channels = 0
+            
+            # Keep track of the number of channels found.
+            # (Unused for efficiency, since we break after we find the
+            # desired channel.)
+            counted_channels = 0
+            
+            # Column reader instance - set to None so we can set it up
+            # when we've read in enough column header data.
+            column_reader = None
+            
+            # And the column header data variable itself!
+            column_reader_data = ""
+            
+            for data_line in data_file:
+                data_line_counter += 1
+                data_elements = data_line.strip().split()
+                #print data_elements
+                if data_line_counter == 2:
+                    # Perform validation on the file's metadata
+                    if len(data_elements) == 3:
+                        if (data_elements[0] != file_to_read["instrument_sat"]):
+                            warn("Instrument and satellite data inside file does not match file name tag!")
+                        date_tag = file_to_read["filename"].split(".")[2]
+                        # 19910228_18z
+                        data_file_date_tag = data_elements[1][:-2] + "_" + data_elements[1][-2:] + "z"
+                        
+                        if date_tag != data_file_date_tag:
+                            warn("Timestamp inside file does not match file name timestamp!")
+                        
+                        # Channel validation will happen later
+                        # ... or not, to be efficient. May remove.
+                        total_channels = int(data_elements[2])
+                    else:
+                        warn("Number of elements inside the metainfo of the file is invalid. Can't verify contents of metainfo!")
+                elif len(data_elements) > 2:
+                    # Parse non-comments - basically actual file data.
+                    if not data_line.strip().startswith("!"):
+                        #print " * Parse data"
+                        # Get the column reader going, if not already.
+                        if not column_reader:
+                            #print " * Column reader trigger"
+                            column_reader = ColumnReadPipes(column_reader_data)
+                        
+                        columns_found = column_reader.getColumnDict()
+                        return columns_found
+                    else:
+                        #print " * Parse comment"
+                        
+                        # Read in the column header... but only if we've read the
+                        # first two lines, aka the metadata. Those are NOT part of
+                        # the column header!
+                        if data_line_counter > 2:
+                            column_reader_data += data_line
+
+def post_data_columns(data_columns):
+    data_columns_list = []
+    for col in data_columns:
+        if col == "freq/wavenum":
+            if "frequency" not in data_columns_list:
+                data_columns_list.append("frequency")
+            continue
+        if len(data_columns[col]['subcolumns']) > 0:
+            for subcol in data_columns[col]['subcolumns']:
+                if (col + "|" + subcol) not in data_columns_list:
+                    data_columns_list.append(col + "|" + subcol)
+        else:
+            if col not in data_columns_list:
+                data_columns_list.append(col)
+    if "timestamp" not in data_columns_list:
+        data_columns_list.append("timestamp")
+    return data_columns_list
 
 if __name__ == "__main__":
     # Use test data
