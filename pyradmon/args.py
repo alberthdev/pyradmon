@@ -548,24 +548,26 @@ def parse_to_config(parse):
     
     if isset_obj("logging_output", parse):
         logging_output = parse.logging_output
-        logging_output = logging_output.split(",")
-        logging_output = [x.strip() for x in logging_output]
         
-        final_logging_output = []
-        
-        for log_o in logging_output:
-            if log_o == 'file':
-                file_enabled = True
-            elif log_o == 'stdout':
-                final_logging_output.append(sys.stdout)
-            elif log_o == 'stderr':
-                final_logging_output.append(sys.stderr)
-            else:
-                print "ERROR: Invalid logging output! Valid output: stdout, stderr, file"
-                return (None, None, None)
-        logging_output = final_logging_output
+        if logging_output != "":
+            logging_output = logging_output.split(",")
+            logging_output = [x.strip() for x in logging_output]
+            
+            final_logging_output = []
+            
+            for log_o in logging_output:
+                if log_o == 'file':
+                    file_enabled = True
+                elif log_o == 'stdout':
+                    final_logging_output.append(sys.stdout)
+                elif log_o == 'stderr':
+                    final_logging_output.append(sys.stderr)
+                else:
+                    print "ERROR: Invalid logging output! Valid output: stdout, stderr, file"
+                    return (None, None, None)
+            logging_output = final_logging_output
     else:
-        logging_output = None
+        logging_output = [ sys.stdout ]
     
     if logging_output and file_enabled and isset_obj("logging_file", parse):
         logging_file = parse.logging_file
