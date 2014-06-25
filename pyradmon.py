@@ -14,15 +14,18 @@
 # implied. See the License for the specific language governing
 # permissions and limitations under the License.
 # 
-# Module __init__
+# Main Program
 # 
-import enumerate
-import data
-import plot
-import test
-import columnread
-import config
-import wrapper
-import enumerate
-import args
-import debug
+
+import os
+import pyradmon.wrapper
+import pyradmon.debug
+
+try:
+    pyradmon.wrapper.main()
+except Exception, e:
+    debug_env_var = os.environ.get('PYRADMON_DEBUG')
+    if debug_env_var:
+        print "PYRADMON_DEBUG defined, calling for help!\n"
+        pyradmon.debug.kaboom()
+        
