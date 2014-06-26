@@ -164,6 +164,25 @@ def enumerate(**opts):
         
         #print dir_struct, found_correct_range
         
+        # OPTIMIZATION - remove any subfolders that doesn't match our timeframe!
+        if len(dir_struct) == 0:
+            for fyear_t in subfolder:
+                f_year = int(fyear_t[1:])
+                if not ((f_year >= start_year) and (f_year <= end_year)):
+                    subfolder.remove(fyear_t)
+        
+        if len(dir_struct) == 1:
+            for fmonth_t in subfolder:
+                f_month = int(fmonth_t[1:])
+                if not ((f_month >= start_month) and (f_month <= end_month)):
+                    subfolder.remove(fmonth_t)
+        
+        if len(dir_struct) == 2:
+            for fday_t in subfolder:
+                f_day = int(fday_t[1:])
+                if not ((f_day >= start_day) and (f_day <= end_day)):
+                    subfolder.remove(fday_t)
+        
         # OPTIMIZATION - skip any data that doesn't match our timeframe!
         # Sanity check
         if len(dir_struct) != 4:
