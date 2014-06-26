@@ -177,7 +177,7 @@ def enumerate(**opts):
             if (old_year != int(dir_struct[0][1:])) or (old_month != int(dir_struct[1][1:])):
                 old_year  = int(dir_struct[0][1:])
                 old_month = int(dir_struct[1][1:])
-                info("Enumerating data for year %i, month %i..." % (int(dir_struct[0][1:], int(dir_struct[1][1:]))
+                info("Enumerating data for year %i, month %i..." % (int(dir_struct[0][1:], int(dir_struct[1][1:]))))
         
         # Set up the recursive dict with the structure extracted,
         # aka dir_struct. Sort of like a "mkdir -p" - if it exists,
