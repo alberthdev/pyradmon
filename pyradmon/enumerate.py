@@ -160,7 +160,8 @@ def enumerate(**opts):
         # OPTIMIZATION - skip any data that doesn't match our timeframe!
         # Sanity check
         if len(dir_struct) != 4:
-            warn("Incomplete data set found - Y/M/D/H structure not complete! (dir_struct: %s)" % str(dir_struct))
+            #warn("Incomplete data set found - Y/M/D/H structure not complete! (dir_struct: %s)" % str(dir_struct))
+            continue
         else:
             f_date = datetime.datetime(int(dir_struct[0][1:]), int(dir_struct[1][1:]), int(dir_struct[2][1:]), int(dir_struct[3][1:]))
             
