@@ -151,6 +151,9 @@ def enumerate(**opts):
     cur_date = datetime.datetime(int(start_year), int(start_month), int(start_day), int(start_hour))
     end_date = datetime.datetime(int(end_year), int(end_month), int(end_day), int(end_hour))
     
+    old_month = 0
+    old_year = 0
+    
     # Iterate into directory recursively...
     for root, subfolder, files in os.walk(data_dir):
         # Split path into an array, minus the first few elements to
@@ -170,6 +173,11 @@ def enumerate(**opts):
             ## data, set the flag. When we get out of bounds, break.
             if not ((f_date >= cur_date) and (f_date <= end_date)):
                 continue
+            
+            if (old_year != int(dir_struct[0][1:])) or (old_month != int(dir_struct[1][1:])):
+                old_year  = int(dir_struct[0][1:])
+                old_month = int(dir_struct[1][1:])
+                info("Enumerating data for year %i, month %i..." % (int(dir_struct[0][1:], int(dir_struct[1][1:]))
         
         # Set up the recursive dict with the structure extracted,
         # aka dir_struct. Sort of like a "mkdir -p" - if it exists,
