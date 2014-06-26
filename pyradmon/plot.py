@@ -19,6 +19,7 @@
 # 
 
 import matplotlib
+matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
 import numpy as np
@@ -67,7 +68,7 @@ def subst_data(plot_dict, data_dict):
     #print "subst_data complete"
     return plot_dict_new
 
-def plot(plot_dict, data_dict, metadata_dict):
+def plot(plot_dict, data_dict, metadata_dict, use_old_plot = False, old_plot = None):
     # Make a working copy for our use.
     plot_dict_copy = copy.deepcopy(plot_dict)
     plot_dict = plot_dict_copy
@@ -222,6 +223,7 @@ def plot(plot_dict, data_dict, metadata_dict):
                             
                             #plot_kwargs["marker"] = '.'
                             
+                            #if use_old_plot and old_plot:
                             plt.plot(np.array(subplot["data"]["x"][0]), np.array(y_dat), **plot_kwargs)
                             y_id += 1
             
@@ -289,7 +291,7 @@ def plot(plot_dict, data_dict, metadata_dict):
         #plt.savefig(plot_output, facecolor=fig.get_facecolor(), edgecolor='none')
         
         # Free it all!
-        plt.clf()
+        #plt.clf()
         plt.close()
 
 if __name__ == "__main__":
