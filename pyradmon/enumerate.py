@@ -162,6 +162,8 @@ def enumerate(**opts):
         # make it look like: ['Y1991', 'M01', 'D28', 'H06']
         dir_struct = root.split('/')
         
+        print dir_struct
+        
         # Do checks - this fixes issues with absolute paths.
         if (dir_struct[-1][0] == "H") and (len(dir_struct[-1][1:]) == 2) and (dir_struct[-1][1:].isdigit()):
             dir_struct = root.split('/')[-4:]
@@ -174,26 +176,36 @@ def enumerate(**opts):
         else:
             dir_struct = []
         
-        #print dir_struct, found_correct_range
+        print dir_struct, found_correct_range
         
         # OPTIMIZATION - remove any subfolders that doesn't match our timeframe!
         if len(dir_struct) == 0:
-            for fyear_t in subfolder:
+            i = 0
+            while i < len(subfolder):
+                fyear_t = subfolder[i]
                 f_year = int(fyear_t[1:])
                 if not ((f_year >= start_year) and (f_year <= end_year)):
                     subfolder.remove(fyear_t)
+                    i -= 1
+                i += 1
         
         if len(dir_struct) == 1:
-            for fmonth_t in subfolder:
+            i = 0
+            while i < len(subfolder):
+                fmonth_t = subfolder[i]
                 f_month = int(fmonth_t[1:])
                 if not ((f_month >= start_month) and (f_month <= end_month)):
                     subfolder.remove(fmonth_t)
+                    i -= 1
+                i += 1
         
         if len(dir_struct) == 2:
-            for fday_t in subfolder:
+            while i < len(subfolder):
+                fday_t = subfolder[i]
                 f_day = int(fday_t[1:])
                 if not ((f_day >= start_day) and (f_day <= end_day)):
                     subfolder.remove(fday_t)
+                i += 1
         
         # OPTIMIZATION - skip any data that doesn't match our timeframe!
         # Sanity check
