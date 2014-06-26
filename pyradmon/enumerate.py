@@ -162,7 +162,7 @@ def enumerate(**opts):
         # make it look like: ['Y1991', 'M01', 'D28', 'H06']
         dir_struct = root.split('/')
         
-        print dir_struct
+        #print dir_struct
         
         # Do checks - this fixes issues with absolute paths.
         if (dir_struct[-1][0] == "H") and (len(dir_struct[-1][1:]) == 2) and (dir_struct[-1][1:].isdigit()):
@@ -176,7 +176,7 @@ def enumerate(**opts):
         else:
             dir_struct = []
         
-        print dir_struct, found_correct_range
+        #print dir_struct, found_correct_range
         
         # OPTIMIZATION - remove any subfolders that doesn't match our timeframe!
         if len(dir_struct) == 0:
@@ -189,7 +189,8 @@ def enumerate(**opts):
                     i -= 1
                 i += 1
         
-        if len(dir_struct) == 1:
+        # Only optimize if we're on end year/month
+        if len(dir_struct) == 1 and (end_year == int(subfolder[0][1:])):
             i = 0
             while i < len(subfolder):
                 fmonth_t = subfolder[i]
@@ -199,7 +200,7 @@ def enumerate(**opts):
                     i -= 1
                 i += 1
         
-        if len(dir_struct) == 2:
+        if len(dir_struct) == 2 and (end_year == int(subfolder[0][1:])) and (end_month == int(subfolder[1][1:])):
             while i < len(subfolder):
                 fday_t = subfolder[i]
                 f_day = int(fday_t[1:])
@@ -227,7 +228,7 @@ def enumerate(**opts):
                 old_year  = int(dir_struct[0][1:])
                 old_month = int(dir_struct[1][1:])
                 info("Enumerating data for year %i, month %i..." % (int(dir_struct[0][1:]), int(dir_struct[1][1:])))
-        
+        print dir_struct
         # Set up the recursive dict with the structure extracted,
         # aka dir_struct. Sort of like a "mkdir -p" - if it exists,
         # no worries. If it doesn't exist, it'll create it
