@@ -181,38 +181,40 @@ def enumerate(**opts):
             # Assume PASS is False (/guilty) until proven True (/innocent)
             PASS = False
             # Sanity check: validate timestamp on file matches folder timestamp
-            if datfile.startswith(experiment_id) and datfile.endswith(".txt"):
-                # Split the filename by periods
-                fn_split = datfile.split(".")
-                # Sanity check: validate that file starts with "diag_"
-                if fn_split[1].startswith("diag_"):
-                    # Split the fields in the file name!
-                    fn_split_split = fn_split[1].split("_")
-                    # Sanity check: validate number of fields in filename
-                    if len(fn_split_split) >= 3:
-                        # Sanity check: validate if file type is ges,
-                        # anl, or both...
-                        # TODO: Make a list of valid types, and
-                        # validate for existence of those types in 
-                        # larger amounts
-                        fn_ss_pipe_split = fn_split_split[-1].split("|")
-                        if ( (fn_split_split[-1] == 'ges') or (fn_split_split[-1] == 'anl') ) \
-                           or ( (len(fn_ss_pipe_split) == 2) and ("ges" in fn_ss_pipe_split) \
-                                and ("anl" in fn_ss_pipe_split) ):
-                            # Sanity check: validate timestamp on file matches folder timestamp
-                            if fn_split[2] == (dir_struct[0][1:] + dir_struct[1][1:] + dir_struct[2][1:] + "_" + dir_struct[3][1:] + "z"):
-                                # All good!
-                                PASS = True
+            ## TMP FIX - will need to add a config option for enumerating .bin OR .txt
+            if datfile.endswith(".txt"):
+                if datfile.startswith(experiment_id):
+                    # Split the filename by periods
+                    fn_split = datfile.split(".")
+                    # Sanity check: validate that file starts with "diag_"
+                    if fn_split[1].startswith("diag_"):
+                        # Split the fields in the file name!
+                        fn_split_split = fn_split[1].split("_")
+                        # Sanity check: validate number of fields in filename
+                        if len(fn_split_split) >= 3:
+                            # Sanity check: validate if file type is ges,
+                            # anl, or both...
+                            # TODO: Make a list of valid types, and
+                            # validate for existence of those types in 
+                            # larger amounts
+                            fn_ss_pipe_split = fn_split_split[-1].split("|")
+                            if ( (fn_split_split[-1] == 'ges') or (fn_split_split[-1] == 'anl') ) \
+                               or ( (len(fn_ss_pipe_split) == 2) and ("ges" in fn_ss_pipe_split) \
+                                    and ("anl" in fn_ss_pipe_split) ):
+                                # Sanity check: validate timestamp on file matches folder timestamp
+                                if fn_split[2] == (dir_struct[0][1:] + dir_struct[1][1:] + dir_struct[2][1:] + "_" + dir_struct[3][1:] + "z"):
+                                    # All good!
+                                    PASS = True
+                                else:
+                                    warn("File validation failed - timestamp on file does not match folder!")
                             else:
-                                warn("File validation failed - timestamp on file does not match folder!")
+                                warn("File validation failed - type of file is not 'ges' or 'anl'!")
                         else:
-                            warn("File validation failed - type of file is not 'ges' or 'anl'!")
+                            warn("File validation failed - too few fields in middle underscore (_) section!")
                     else:
-                        warn("File validation failed - too few fields in middle underscore (_) section!")
+                        warn("File validation failed - middle section does not start with diag_!")
                 else:
-                    warn("File validation failed - middle section does not start with diag_!")
-            else:
-                warn("File validation failed - file does not start with EXPERIMENT_ID %s!" % experiment_id)
+                    warn("File validation failed - file does not start with EXPERIMENT_ID %s!" % experiment_id)
             
             # If file validation failed and ALLOW_WARN_PASS is set...
             #   OR
