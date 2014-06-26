@@ -20,6 +20,7 @@
 import os
 import pyradmon.wrapper
 import pyradmon.debug
+import traceback
 
 try:
     pyradmon.wrapper.main()
@@ -28,4 +29,7 @@ except Exception, e:
     if debug_env_var:
         print "PYRADMON_DEBUG defined, calling for help!\n"
         pyradmon.debug.kaboom()
-        
+    else:
+        # Normal exit
+        print traceback.format_exc()
+        raise e
