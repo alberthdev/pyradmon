@@ -154,11 +154,15 @@ def enumerate(**opts):
     old_month = 0
     old_year = 0
     
+    found_correct_range = False
+    
     # Iterate into directory recursively...
     for root, subfolder, files in os.walk(data_dir):
         # Split path into an array, minus the first few elements to
         # make it look like: ['Y1991', 'M01', 'D28', 'H06']
         dir_struct = root.split('/')[3:]
+        
+        #print dir_struct, found_correct_range
         
         # OPTIMIZATION - skip any data that doesn't match our timeframe!
         # Sanity check
@@ -167,17 +171,19 @@ def enumerate(**opts):
             continue
         else:
             f_date = datetime.datetime(int(dir_struct[0][1:]), int(dir_struct[1][1:]), int(dir_struct[2][1:]), int(dir_struct[3][1:]))
-            
             # If we are out of bounds, skip.
-            ## TODO: maybe optimize with a flag so that when we find valid
-            ## data, set the flag. When we get out of bounds, break.
             if not ((f_date >= cur_date) and (f_date <= end_date)):
+                if found_correct_range:
+                    break
+                # Otherwise...
                 continue
+            else:
+                found_correct_range = True
             
             if (old_year != int(dir_struct[0][1:])) or (old_month != int(dir_struct[1][1:])):
                 old_year  = int(dir_struct[0][1:])
                 old_month = int(dir_struct[1][1:])
-                info("Enumerating data for year %i, month %i..." % (int(dir_struct[0][1:], int(dir_struct[1][1:]))))
+                info("Enumerating data for year %i, month %i..." % (int(dir_struct[0][1:]), int(dir_struct[1][1:])))
         
         # Set up the recursive dict with the structure extracted,
         # aka dir_struct. Sort of like a "mkdir -p" - if it exists,
