@@ -147,11 +147,28 @@ def enumerate(**opts):
     if not os.path.isdir(data_dir):
         edie("ERROR: The directory specified does not exist!")
     
+    # Make reference datetimes
+    cur_date = datetime.datetime(int(start_year), int(start_month), int(start_day), int(start_hour))
+    end_date = datetime.datetime(int(end_year), int(end_month), int(end_day), int(end_hour))
+    
     # Iterate into directory recursively...
     for root, subfolder, files in os.walk(data_dir):
         # Split path into an array, minus the first few elements to
         # make it look like: ['Y1991', 'M01', 'D28', 'H06']
         dir_struct = root.split('/')[3:]
+        
+        # OPTIMIZATION - skip any data that doesn't match our timeframe!
+        # Sanity check
+        if len(dir_struct) != 4:
+            warn("Incomplete data set found - Y/M/D/H structure not complete! (dir_struct: %s)" % str(dir_struct))
+        else:
+            f_date = datetime.datetime(int(dir_struct[0][1:]), int(dir_struct[1][1:]), int(dir_struct[2][1:]), int(dir_struct[3][1:]))
+            
+            # If we are out of bounds, skip.
+            ## TODO: maybe optimize with a flag so that when we find valid
+            ## data, set the flag. When we get out of bounds, break.
+            if not ((f_date >= cur_date) and (f_date <= end_date)):
+                continue
         
         # Set up the recursive dict with the structure extracted,
         # aka dir_struct. Sort of like a "mkdir -p" - if it exists,
@@ -258,10 +275,6 @@ def enumerate(**opts):
     criteria_total_files = 0
     
     average_interval = 0
-    
-    # Make reference datetimes
-    cur_date = datetime.datetime(int(start_year), int(start_month), int(start_day), int(start_hour))
-    end_date = datetime.datetime(int(end_year), int(end_month), int(end_day), int(end_hour))
     
     if time_delta:
         info("Using custom delta for file enumeration.")
