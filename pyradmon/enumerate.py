@@ -162,7 +162,7 @@ def enumerate(**opts):
         # make it look like: ['Y1991', 'M01', 'D28', 'H06']
         dir_struct = root.split('/')
         
-        #print dir_struct
+        debug(str(dir_struct))
         
         # Do checks - this fixes issues with absolute paths.
         if (dir_struct[-1][0] == "H") and (len(dir_struct[-1][1:]) == 2) and (dir_struct[-1][1:].isdigit()):
@@ -175,8 +175,6 @@ def enumerate(**opts):
             dir_struct = root.split('/')[-1:]
         else:
             dir_struct = []
-        
-        #print dir_struct, found_correct_range
         
         # OPTIMIZATION - remove any subfolders that doesn't match our timeframe!
         if len(dir_struct) == 0:
@@ -228,7 +226,9 @@ def enumerate(**opts):
                 old_year  = int(dir_struct[0][1:])
                 old_month = int(dir_struct[1][1:])
                 info("Enumerating data for year %i, month %i..." % (int(dir_struct[0][1:]), int(dir_struct[1][1:])))
-        print dir_struct
+        
+        debug(str(dir_struct) + " " + str(found_correct_range))
+        
         # Set up the recursive dict with the structure extracted,
         # aka dir_struct. Sort of like a "mkdir -p" - if it exists,
         # no worries. If it doesn't exist, it'll create it
@@ -292,34 +292,34 @@ def enumerate(**opts):
                 else:
                     warn("File validation failed - file does not start with EXPERIMENT_ID %s!" % experiment_id)
             
-            # If file validation failed and ALLOW_WARN_PASS is set...
-            #   OR
-            # If file validation passes...
-            if ((not PASS) and allow_warn_pass) or PASS:
-                # ...build the final file dictionary.
-                
-                # Make sure that the dir dict value is a list.
-                # If not, change it into one. (Usually, the recursive
-                # code above makes it into a dict by default...)
-                if type(getr(data_dict, dir_struct)) != list:
-                    setr(data_dict, dir_struct, [])
-                
-                # Grab current array
-                arr = getr(data_dict, dir_struct)
-                
-                # Build new dict
-                dat_dict = {}
-                dat_dict["instrument_sat"] = "_".join(fn_split_split[1:3])
-                dat_dict["type"] = fn_split_split[-1]
-                dat_dict["filename"] = datfile
-                
-                # Append to current array...
-                arr.append(dat_dict)
-                
-                # ...and save it back to the dict!
-                setr(data_dict, dir_struct, arr)
-            else:
-                edie("ERROR: File validation failed - see above for details.")
+                # If file validation failed and ALLOW_WARN_PASS is set...
+                #   OR
+                # If file validation passes...
+                if ((not PASS) and allow_warn_pass) or PASS:
+                    # ...build the final file dictionary.
+                    
+                    # Make sure that the dir dict value is a list.
+                    # If not, change it into one. (Usually, the recursive
+                    # code above makes it into a dict by default...)
+                    if type(getr(data_dict, dir_struct)) != list:
+                        setr(data_dict, dir_struct, [])
+                    
+                    # Grab current array
+                    arr = getr(data_dict, dir_struct)
+                    
+                    # Build new dict
+                    dat_dict = {}
+                    dat_dict["instrument_sat"] = "_".join(fn_split_split[1:3])
+                    dat_dict["type"] = fn_split_split[-1]
+                    dat_dict["filename"] = datfile
+                    
+                    # Append to current array...
+                    arr.append(dat_dict)
+                    
+                    # ...and save it back to the dict!
+                    setr(data_dict, dir_struct, arr)
+                else:
+                    edie("ERROR: File validation failed - see above for details.")
     
     # Now loop and generate a list of files to read!
     files_to_read = []
