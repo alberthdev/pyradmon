@@ -75,6 +75,7 @@ def main():
             info(" ** Enumerating ALL data files...")
             (en, stats) = enumerate_all(**enum_opts_dict)
         else:
+            info(" ** Enumerating data files...")
             (en, stats) = enumerate(**enum_opts_dict)
         
     #pprinter(en)
