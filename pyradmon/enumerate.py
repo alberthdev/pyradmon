@@ -160,7 +160,19 @@ def enumerate(**opts):
     for root, subfolder, files in os.walk(data_dir):
         # Split path into an array, minus the first few elements to
         # make it look like: ['Y1991', 'M01', 'D28', 'H06']
-        dir_struct = root.split('/')[3:]
+        dir_struct = root.split('/')
+        
+        # Do checks - this fixes issues with absolute paths.
+        if (dir_struct[-1][0] == "H") and (len(dir_struct[-1][1:]) == 2) and (dir_struct[-1][1:].isdigit()):
+            dir_struct = root.split('/')[-4:]
+        elif (dir_struct[-1][0] == "D") and (len(dir_struct[-1][1:]) == 2) and (dir_struct[-1][1:].isdigit()):
+            dir_struct = root.split('/')[-3:]
+        elif (dir_struct[-1][0] == "M") and (len(dir_struct[-1][1:]) == 2) and (dir_struct[-1][1:].isdigit()):
+            dir_struct = root.split('/')[-2:]
+        elif (dir_struct[-1][0] == "Y") and (len(dir_struct[-1][1:]) == 4) and (dir_struct[-1][1:].isdigit()):
+            dir_struct = root.split('/')[-1:]
+        else:
+            dir_struct = []
         
         #print dir_struct, found_correct_range
         
