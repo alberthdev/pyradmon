@@ -83,7 +83,7 @@ def get_data(files_to_read, data_vars, selected_channel, data_assim_only = False
         quality, so make sure to check for and correct any issues
         mentionned by warnings!
     """
-    
+    debug("PHASE 1")
     # data_vars validation
     for data_var in data_vars:
         # Make sure the variable is not a special field, since a
@@ -102,7 +102,7 @@ def get_data(files_to_read, data_vars, selected_channel, data_assim_only = False
         edie("ERROR: Duplicate variables found - %s!" % \
                     (data_vars_dups_l[0] + " is a duplicate" if len(data_vars_dups_l) == 1 else \
                         " and ".join(data_vars_dups_l) + " are duplicates" if len(data_vars_dups_l) == 2 else (", ".join(data_vars_dups_l[:-1]) + ", and " + data_vars_dups_l[-1] + " are duplicates")))
-    
+    debug("PHASE 2")
     # Initialize an empty data dictionary!
     data_dict = {}
     
@@ -125,10 +125,11 @@ def get_data(files_to_read, data_vars, selected_channel, data_assim_only = False
                 data_dict[data_var] = SPECIAL_FIELDS[data_var]
             else:
                 data_dict[data_var] = []
-    
+    debug("PHASE 3")
     # Iterate through all of the files!
     for file_to_read in files_to_read:
         # with structure auto-closes the file...
+        debug("PHASE 4: %s" % file_to_read)
         with open(file_to_read["filename"], 'r') as data_file:
             #print "Reading file: %s" % file_to_read["filename"]
             
