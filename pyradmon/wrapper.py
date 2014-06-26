@@ -78,6 +78,10 @@ def main():
             info(" ** Enumerating data files...")
             (en, stats) = enumerate(**enum_opts_dict)
         
+        if stats["criteria_total_files"] == 0:
+            critical("No data found for specified criteria!")
+            sys.exit(1)
+        
     #pprinter(en)
     if parse.verb == "plot" or parse.verb == "dump":
         chans = enum_opts_dict["data_channels"]
