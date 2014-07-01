@@ -132,6 +132,9 @@ def get_data(files_to_read, data_vars, selected_channel, all_channels = False, d
                 else:
                     data_dict[data_var] = []
     debug("PHASE 3")
+    
+    ignore_channels = []
+    
     # Iterate through all of the files!
     for file_to_read in files_to_read:
         # with structure auto-closes the file...
@@ -209,13 +212,28 @@ def get_data(files_to_read, data_vars, selected_channel, all_channels = False, d
                             if all_channels or ((type(selected_channel) == int) and (data_channel == selected_channel)) or \
                                 ((type(selected_channel) == list) and (data_channel in selected_channel)):
                                 #print " * Channel found trigger"
+                                # iuse enforcement
+                                if data_assim_only:
+                                    data_column = column_reader.getColumnIndex("iuse", False)
+                                    
+                                    if check_int(data_elements[data_column]):
+                                        if int(data_elements[data_column]) < 0:
+                                            debug("SKIP: %s (channel: %i) (file: %s)" % (data_var, data_channel, file_to_read["filename"]))
+                                            data_dict["iuse"] = int(data_elements[data_column])
+                                            if not data_channel in ignore_channels:
+                                                ignore_channels.append(data_channel)
+                                            continue
+                                    else:
+                                        warn("iuse is not a digit! Skipping. (iuse = %s)" % data_elements[data_column])
+                                        continue
+                                debug("NOSKIP: %s (channel: %i) (file: %s)" % (data_var, data_channel, file_to_read["filename"]))
                                 
                                 # Timestamp data variable handling
                                 if ("timestamp" in data_vars):
                                     timestamp = datetime.datetime(int(date_tag[:4]), int(date_tag[4:6]), int(date_tag[6:8]), int(date_tag[-3:-1]))
                                     if not timestamp in data_dict["timestamp"]:
                                         data_dict["timestamp"].append(timestamp)
-                                
+                                    debug("TIMESTAMP! %s (channel: %i) (file: %s)" % (data_var, data_channel, file_to_read["filename"]))
                                 for data_var in data_vars:
                                     # Ignore special fields
                                     if data_var in SPECIAL_FIELDS:
@@ -254,17 +272,6 @@ def get_data(files_to_read, data_vars, selected_channel, all_channels = False, d
                                         # Save the frequency for the first (and final) time
                                         data_dict["frequency"] = data_elements[data_column]
                                 
-                                # iuse enforcement
-                                if data_assim_only:
-                                    data_column = column_reader.getColumnIndex("iuse", False)
-                                    
-                                    if check_int(data_elements[data_column]):
-                                        if int(data_elements[data_column]) < 0:
-                                            continue
-                                    else:
-                                        warn("iuse is not a digit! Skipping. (iuse = %s)" % data_elements[data_column])
-                                        continue
-                                    
                                 # iuse (assimilated) data variable handling
                                 if "iuse" in data_vars:
                                     data_column = column_reader.getColumnIndex("iuse", False)
@@ -304,6 +311,12 @@ def get_data(files_to_read, data_vars, selected_channel, all_channels = False, d
     #raw_input()
     if (all_channels) or ((type(selected_channel) == list) and (len(selected_channel) > 1)):
         #print "Returning multi-channel data dict..."
+        
+        # Remove channels that failed the iuse test!
+        if data_assim_only and len(ignore_channels) > 0:
+            for chan in ignore_channels:
+                del channel_data_dict[chan]
+        
         return channel_data_dict
     else:
         #print "Returning single channel data dict..."
