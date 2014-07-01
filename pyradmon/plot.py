@@ -279,6 +279,7 @@ def plot(plot_dict, data_dict, metadata_dict, use_old_plot = False, old_plot = N
         if isset("output", plot):
             plot_output = plot["output"]
             plot_output = plot_output.replace("%CHANNEL%", str(metadata_dict["channel"]))
+            plot_output = plot_output.replace("%INSTRUMENT_SAT%", metadata_dict["instrument_sat"])
         else:
             warn("Output path not specified, will save to 'magical_plot_please_specify_output_path_next_time.png'")
             plot_output = "magical_plot_please_specify_output_path_next_time.png"
