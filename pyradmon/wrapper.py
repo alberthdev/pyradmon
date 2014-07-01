@@ -95,6 +95,11 @@ def main():
                         (", ".join(chans[:-1]) + ", and " + chans[-1])))
             all_channels = False
         
+        if "data_assim_only" in pyradmon_config and pyradmon_config["data_assim_only"]:
+            data_assim_only = True
+        else:
+            data_assim_only = False
+        
         if parse.verb == "dump":
             tmp_columns = get_data_columns(en)
             columns = post_data_columns(tmp_columns)
@@ -118,9 +123,9 @@ def main():
                         new_columns.append("ges|" + column)
             
             data_var_list = columns
-            dat = get_data(en, data_var_list, gen_channel_list(chans), all_channels)
+            dat = get_data(en, data_var_list, gen_channel_list(chans), all_channels, data_assim_only)
         else:
-            dat = get_data(en, data_var_list, gen_channel_list(chans), all_channels)
+            dat = get_data(en, data_var_list, gen_channel_list(chans), all_channels, data_assim_only)
     
     if parse.verb == "list":
         #pprinter(stats)
@@ -202,15 +207,16 @@ def main():
                 table.padding_width = 1 # One space between column edges and contents (default)
                 
                 # Quick validation!
-                data_length = 0
+                data_length = -1
                 for key in dat[chan].keys():
-                    if data_length == 0:
-                        data_length = len(dat[chan][key])
+                    if data_length == -1:
+                        data_length = len(dat[chan][key]) if dat[chan][key] else 0
                     else:
-                        if (type(dat[chan][key]) == list) and (len(dat[chan][key]) != data_length):
-                            critical("ERROR: Data length is not consistant across all keys! (Multi-channel mode - current %i vs first %i)" % (len(dat[chan][key]), data_length))
-                            #print dat[chan][key]
-                            sys.exit(1)
+                        if not (("iuse" in dat[chan]) and (type(dat[chan]["iuse"]) == int) and (dat[chan]["iuse"] < 0)):
+                            if (type(dat[chan][key]) == list) and (len(dat[chan][key]) != data_length):
+                                critical("ERROR: Data length is not consistant across all keys! (Multi-channel mode - current %i vs first %i)" % (len(dat[chan][key]), data_length))
+                                #print dat[chan][key]
+                                sys.exit(1)
                 
                 # OK, we're good!
                 for i in xrange(0, data_length):
