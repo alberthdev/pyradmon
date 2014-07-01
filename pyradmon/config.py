@@ -167,6 +167,9 @@ def postprocess_config(pyradmon_config):
     if 'data_columns' in pyradmon_config:
         enum_opts_dict['data_columns'] = [ x.strip() for x in pyradmon_config['data_columns'].split(",") ]
     
+    if 'data_all_channels' in pyradmon_config:
+        enum_opts_dict['all_channels'] = True
+    
     if 'data_channels' in pyradmon_config:
         if type(pyradmon_config['data_channels']) == str:
             enum_opts_dict['data_channels'] = [ x.strip() for x in pyradmon_config['data_channels'].split(",") ]

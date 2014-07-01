@@ -128,6 +128,12 @@ def add_dump_args(parser, inherit = False):
             'dest'      : 'dump_columns',
             'help'      : 'Specify the columns to dump/use, separated by commas.',
         }
+    opts['--dump-all-channels'] = \
+        {
+            'action'    : 'store_true',
+            'dest'      : 'dump_all_channels',
+            'help'      : 'Specify to dump all channels. Negates the option below specifying channels to use.',
+        }
     opts['--dump-channels'] = \
         {
             'action'    : 'store',
@@ -1091,7 +1097,7 @@ def parse_to_config(parse):
                 # Done!!!!!1111
     
     ## Dump args
-    if parse.verb == "dump" or parse.verb == "plot" or parse.verb == "config":
+    if parse.verb == "dump" or parse.verb == "plot" or parse.verb == "config":        
         # --dump-columns
         if isset_obj("dump_columns", parse):
             for data_column in (parse.dump_columns).split(","):
@@ -1102,8 +1108,14 @@ def parse_to_config(parse):
             
             pyradmon_config["data_columns"] = parse.dump_columns
         
+        # --dump-all-channels
+        if isset_obj("dump_all_channels", parse) and parse.dump_all_channels:
+            pyradmon_config["data_all_channels"] = parse.dump_all_channels
+        
         # --dump-channels
         if isset_obj("dump_channels", parse):
+            if isset_obj("dump_all_channels", parse) and parse.dump_all_channels:
+                die("ERROR: You can not specify --dump-all-channels and --dump-channels at the same time!")
             for data_channel in (parse.dump_channels).split(","):
                 data_channel = data_channel.strip()
                 

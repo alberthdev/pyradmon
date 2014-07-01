@@ -86,9 +86,15 @@ def main():
     if parse.verb == "plot" or parse.verb == "dump":
         chans = enum_opts_dict["data_channels"]
         
-        info(" ** Fetching data for channel %s..." % (chans[0] if len(chans) == 1 else \
-                    " and ".join(chans) if len(chans) == 2 else \
-                    (", ".join(chans[:-1]) + ", and " + chans[-1])))
+        if "data_all_channels" in pyradmon_config and pyradmon_config["data_all_channels"]:
+            info(" ** Fetching data for ALL channels...")
+            all_channels = True
+        else:
+            info(" ** Fetching data for channel %s..." % (chans[0] if len(chans) == 1 else \
+                        " and ".join(chans) if len(chans) == 2 else \
+                        (", ".join(chans[:-1]) + ", and " + chans[-1])))
+            all_channels = False
+        
         if parse.verb == "dump":
             tmp_columns = get_data_columns(en)
             columns = post_data_columns(tmp_columns)
@@ -112,9 +118,9 @@ def main():
                         new_columns.append("ges|" + column)
             
             data_var_list = columns
-            dat = get_data(en, data_var_list, gen_channel_list(chans))
+            dat = get_data(en, data_var_list, gen_channel_list(chans), all_channels)
         else:
-            dat = get_data(en, data_var_list, gen_channel_list(chans))
+            dat = get_data(en, data_var_list, gen_channel_list(chans), all_channels)
     
     if parse.verb == "list":
         #pprinter(stats)
