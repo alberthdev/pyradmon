@@ -42,7 +42,7 @@ def check_int(s):
     	return s[1:].isdigit()
     return s.isdigit()
 
-def get_data(files_to_read, data_vars, selected_channel, data_assim_only = False):
+def get_data(files_to_read, data_vars, selected_channel, all_channels = False, data_assim_only = False):
     """Returns a dict with data that matches the given specifications.
 
     Given a list of files to read (dict based), a list of data
@@ -63,6 +63,10 @@ def get_data(files_to_read, data_vars, selected_channel, data_assim_only = False
             data.
         selected_channel: An integer (or array of integers) specifying
             the data channel(s) to use for extracting the data.
+        all_channels: A boolean specifying whether to use all of the
+            data or not. This overrides the selected_channel option.
+        data_assim_only: A boolean specifying whether to only use
+            assimilated data or not. (Determined by iuse > 0!)
 
     Returns:
         A list with the list of file dicts that matches the given
@@ -111,6 +115,7 @@ def get_data(files_to_read, data_vars, selected_channel, data_assim_only = False
     
     # Initialize the dictionary's keys and values based on the data
     # variables specified.
+    # NOTE: all_channels will be handled below!
     if (type(selected_channel) == list) and (len(selected_channel) > 1):
         for channel in selected_channel:
             channel_data_dict[channel] = {}
@@ -120,11 +125,12 @@ def get_data(files_to_read, data_vars, selected_channel, data_assim_only = False
                 else:
                     channel_data_dict[channel][data_var] = []
     else:
-        for data_var in data_vars:
-            if data_var in SPECIAL_FIELDS:
-                data_dict[data_var] = SPECIAL_FIELDS[data_var]
-            else:
-                data_dict[data_var] = []
+        if not all_channels:
+            for data_var in data_vars:
+                if data_var in SPECIAL_FIELDS:
+                    data_dict[data_var] = SPECIAL_FIELDS[data_var]
+                else:
+                    data_dict[data_var] = []
     debug("PHASE 3")
     # Iterate through all of the files!
     for file_to_read in files_to_read:
@@ -189,13 +195,18 @@ def get_data(files_to_read, data_vars, selected_channel, data_assim_only = False
                         if check_int(data_elements[0]):
                             data_channel = int(data_elements[0])
                             
-                            if (type(selected_channel) == list) and (len(selected_channel) > 1):
+                            if all_channels or ((type(selected_channel) == list) and (len(selected_channel) > 1)):
                                 if not data_channel in channel_data_dict:
                                     channel_data_dict[data_channel] = {}
+                                    for data_var in data_vars:
+                                        if data_var in SPECIAL_FIELDS:
+                                            channel_data_dict[data_channel][data_var] = SPECIAL_FIELDS[data_var]
+                                        else:
+                                            channel_data_dict[data_channel][data_var] = []
                                 data_dict = channel_data_dict[data_channel]
                             
                             # Match the channel with the desired one.
-                            if ((type(selected_channel) == int) and (data_channel == selected_channel)) or \
+                            if all_channels or ((type(selected_channel) == int) and (data_channel == selected_channel)) or \
                                 ((type(selected_channel) == list) and (data_channel in selected_channel)):
                                 #print " * Channel found trigger"
                                 
@@ -272,7 +283,7 @@ def get_data(files_to_read, data_vars, selected_channel, data_assim_only = False
                                             warn("iuse is not a digit! Setting to unknown. (iuse = %s)" % data_elements[data_column])
                                             data_dict["iuse"] = -1
                                 
-                                if (type(selected_channel) == list) and (len(selected_channel) > 1):
+                                if (all_channels) or (type(selected_channel) == list) and (len(selected_channel) > 1):
                                     if not data_channel in channel_data_dict:
                                         channel_data_dict[data_channel] = {}
                                     channel_data_dict[data_channel].update(data_dict)
@@ -291,7 +302,7 @@ def get_data(files_to_read, data_vars, selected_channel, data_assim_only = False
                         if data_line_counter > 2:
                             column_reader_data += data_line
     #raw_input()
-    if (type(selected_channel) == list) and (len(selected_channel) > 1):
+    if (all_channels) or ((type(selected_channel) == list) and (len(selected_channel) > 1)):
         #print "Returning multi-channel data dict..."
         return channel_data_dict
     else:
