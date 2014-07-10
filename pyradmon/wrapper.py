@@ -89,15 +89,16 @@ def main():
             all_channels = True
             chans = ""
         else:
-            info(" ** Fetching data for channel %s..." % (chans[0] if len(chans) == 1 else \
-                        " and ".join(chans) if len(chans) == 2 else \
-                        (", ".join(chans[:-1]) + ", and " + chans[-1])))
-            if "data_channels" not in chans:
+            if "data_channels" not in enum_opts_dict:
                 critical("ERROR: Data channels were not specified!")
                 critical("If you wish to use all channels, enable the all channels option.")
                 sys.exit(1)
             chans = enum_opts_dict["data_channels"]
             all_channels = False
+            
+            info(" ** Fetching data for channel %s..." % (chans[0] if len(chans) == 1 else \
+                        " and ".join(chans) if len(chans) == 2 else \
+                        (", ".join(chans[:-1]) + ", and " + chans[-1])))
         
         if "data_assim_only" in pyradmon_config and pyradmon_config["data_assim_only"]:
             data_assim_only = True
