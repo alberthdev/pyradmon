@@ -83,16 +83,16 @@ def main():
             sys.exit(1)
         
     #pprinter(en)
-    if parse.verb == "plot" or parse.verb == "dump":
-        chans = enum_opts_dict["data_channels"]
-        
+    if parse.verb == "plot" or parse.verb == "dump":        
         if "data_all_channels" in pyradmon_config and pyradmon_config["data_all_channels"]:
             info(" ** Fetching data for ALL channels...")
             all_channels = True
+            chans = ""
         else:
             info(" ** Fetching data for channel %s..." % (chans[0] if len(chans) == 1 else \
                         " and ".join(chans) if len(chans) == 2 else \
                         (", ".join(chans[:-1]) + ", and " + chans[-1])))
+            chans = enum_opts_dict["data_channels"]
             all_channels = False
         
         if "data_assim_only" in pyradmon_config and pyradmon_config["data_assim_only"]:
@@ -126,6 +126,10 @@ def main():
             dat = get_data(en, data_var_list, gen_channel_list(chans), all_channels, data_assim_only)
         else:
             dat = get_data(en, data_var_list, gen_channel_list(chans), all_channels, data_assim_only)
+        
+        # If we're reading all channels, set the channel list.
+        if all_channels:
+            chans = [str(k) for k in dat.keys()]
     
     if parse.verb == "list":
         #pprinter(stats)
