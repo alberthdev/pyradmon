@@ -99,8 +99,8 @@ def plot(plot_dict, data_dict, metadata_dict, use_old_plot = False, old_plot = N
             plot_title = plot_title.replace("%CHANNEL%", str(metadata_dict["channel"]))
             plot_title = plot_title.replace("%FREQUENCY%", str(data_dict["frequency"]))
             plot_title = plot_title.replace("%ASSIMILATION_STATUS%", "    .......................")
-            plot_title = plot_title.replace("%START_DATE%", str(metadata_dict['start_year']) + str(metadata_dict['start_month']) + str(metadata_dict['start_day']))
-            plot_title = plot_title.replace("%END_DATE%", str(metadata_dict['end_year']) + str(metadata_dict['end_month']) + str(metadata_dict['end_day']))
+            plot_title = plot_title.replace("%START_DATE%", str(metadata_dict['start_year']).zfill(4) + str(metadata_dict['start_month']).zfill(2) + str(metadata_dict['start_day']).zfill(2))
+            plot_title = plot_title.replace("%END_DATE%", str(metadata_dict['end_year']).zfill(4) + str(metadata_dict['end_month']).zfill(2) + str(metadata_dict['end_day']).zfill(2))
             
             if isset("iuse", data_dict):
                 if data_dict["iuse"] == -1:
@@ -280,6 +280,10 @@ def plot(plot_dict, data_dict, metadata_dict, use_old_plot = False, old_plot = N
             plot_output = plot["output"]
             plot_output = plot_output.replace("%CHANNEL%", str(metadata_dict["channel"]))
             plot_output = plot_output.replace("%INSTRUMENT_SAT%", metadata_dict["instrument_sat"])
+            plot_output = plot_output.replace("%EXPERIMENT_ID%", metadata_dict["experiment_id"])
+            plot_output = plot_output.replace("%START_DATE%", str(metadata_dict['start_year']).zfill(4) + str(metadata_dict['start_month']).zfill(2) + str(metadata_dict['start_day']).zfill(2))
+            plot_output = plot_output.replace("%END_DATE%", str(metadata_dict['end_year']).zfill(4) + str(metadata_dict['end_month']).zfill(2) + str(metadata_dict['end_day']).zfill(2))
+            
         else:
             warn("Output path not specified, will save to 'magical_plot_please_specify_output_path_next_time.png'")
             plot_output = "magical_plot_please_specify_output_path_next_time.png"
