@@ -201,6 +201,13 @@ def add_plot_args(parser, inherit = False):
             'dest'      : 'plot_define_settings',
             'help'      : 'Define the settings for the plot. Uses the key-value pair system, specified by "plot1:target_size=595x700,dpi=50;...".',
         }
+    opts['--plot-define-custom-vars'] = \
+        {
+            'action'    : 'append',
+            'metavar'   : 'CUSTOM_VARS',
+            'dest'      : 'plot_define_custom_vars',
+            'help'      : 'Define the custom variables for use in the output file and title. Uses the key-value pair system, specified by "myvar:123,myvar2:abc,...".',
+        }
     
     add_args(parser, inherit, opts)
 
