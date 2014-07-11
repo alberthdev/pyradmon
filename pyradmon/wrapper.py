@@ -71,6 +71,11 @@ def main():
             (enum_opts_dict, data_var_list) = config.postprocess(pyradmon_config, plot_dict)
             #pprinter(enum_opts_dict)
         
+        if "custom_vars" in enum_opts_dict:
+            custom_vars = enum_opts_dict["custom_vars"]
+        else:
+            custom_vars = None
+        
         if "data_all" in pyradmon_config and pyradmon_config["data_all"]:
             info(" ** Enumerating ALL data files...")
             (en, stats) = enumerate_all(**enum_opts_dict)
@@ -83,7 +88,7 @@ def main():
             sys.exit(1)
         
     #pprinter(en)
-    if parse.verb == "plot" or parse.verb == "dump":        
+    if parse.verb == "plot" or parse.verb == "dump":
         if "data_all_channels" in pyradmon_config and pyradmon_config["data_all_channels"]:
             info(" ** Fetching data for ALL channels...")
             all_channels = True
@@ -284,7 +289,7 @@ def main():
                 # Multichanel mode
                 try:
                     plot_dict_subs = subst_data(plot_dict, dat[channel])
-                    plot(plot_dict_subs, dat[channel], enum_opts_dict)
+                    plot(plot_dict_subs, dat[channel], enum_opts_dict, custom_vars)
                     del plot_dict_subs
                 except:
                     critical("An error occurred! Error follows:")
@@ -296,7 +301,7 @@ def main():
             else:
                 try:
                     plot_dict_subs = subst_data(plot_dict, dat)
-                    plot(plot_dict_subs, dat, enum_opts_dict)
+                    plot(plot_dict_subs, dat, enum_opts_dict, custom_vars)
                     del plot_dict_subs
                 except:
                     critical("An error occurred! Error follows:")

@@ -176,6 +176,9 @@ def postprocess_config(pyradmon_config):
         else:
             enum_opts_dict['data_channels'] = str(pyradmon_config['data_channels'])
     
+    if 'custom_vars' in pyradmon_config:
+        enum_opts_dict['custom_vars'] = pyradmon_config['custom_vars']
+    
     #############################################
     ## Data assim only flag for data.get_data()
     #############################################
@@ -315,6 +318,10 @@ def validate_config(pyradmon_config, skip_dir_check = False):
             pass
         else:
             edie("ERROR: Invalid data channel '%s' specified in data_channels! Must be a number or a numeric range (#-#)." % data_channel)
+    
+    if 'custom_vars' in pyradmon_config:
+        if not type(pyradmon_config['custom_vars']) == dict:
+            edie("ERROR: Invalid custom_vars entry! Must be a dictionary with valid key/value pairs.")
     
     if 'data_assim_only' in pyradmon_config:
         if type(pyradmon_config['data_assim_only']) != bool:

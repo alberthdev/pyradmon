@@ -499,7 +499,25 @@ def make_argparser():
             
             Example (using above info):
               "plot1:target_size=595x700,dpi=50"
-        
+          --plot-define-custom-vars
+            Key-value pairs of custom variables to be used in the plot
+            title and output file name. Variables are case insensitive.
+            
+            The suggested variable definition and usage standard is
+            using lowercase for variable definition, and uppercase for
+            variable usage in the title and/or output file name.
+            
+            Example:
+              "expid:exp_2;author:theauthor"
+              
+              Applying custom variables to plot title and output file name:
+                --plot-define-title  "plot1:Experiment %EXPID% - By %AUTHOR%"
+                  Result:
+                    Experiment exp_2 - By theauthor
+                --plot-define-output "plot1:plot_%EXPID%-%AUTHOR%.png"
+                  Result:
+                    plot_exp_2-theauthor.png
+            
         NOTE: These options are advanced - although you could (potentially)
               plot using these options, it would probably be very painful!
               All of these options can be defined via config file, which is
@@ -1102,6 +1120,38 @@ def parse_to_config(parse):
                         plot_dict[settings_def_plot]["settings"][kvpair[0]] = kvpair[1]
                 
                 # Done!!!!!1111
+        if isset_obj("plot_define_custom_vars", parse):
+            # "customvar1:value1;customvar2:value2"
+            custom_var_defs = ";".join(parse.plot_define_custom_vars).split(";")
+            # Cleanup
+            custom_var_defs = [x.strip() for x in custom_var_defs]
+            for output_def in output_defs:
+                # Chunk: customvar1:value1
+                custom_var_def_split = custom_var_def.split(":")
+                custom_var_def_split = [x.strip() for x in custom_var_def_split]
+                
+                # Sanity check!
+                
+                # Sanity check 1: do we have 2 elements?
+                if len(custom_var_def_split) != 2:
+                    warn("Invalid custom variable definition detected - invalid key-value pair '%s'!" % output_def)
+                    warn("(Key-value pair should be key:value - make sure there are no extra colons!)")
+                    warn("This custom variable definition will be skipped.")
+                    continue
+                
+                # OK, now seperate it out!
+                # Chunk: customvar1
+                custom_var_def_var = custom_var_def_split[0]
+                # Chunk: value1
+                custom_var_def_val = custom_var_def_split[1]
+                
+                # OK, we got everything. This is super easy, so we're free to
+                # leap from here!
+                if "custom_vars" not in pyradmon_config:
+                    pyradmon_config["custom_vars"] = {}
+                pyradmon_config["custom_vars"][custom_var_def_var] = custom_var_def_val
+                
+                # Done!
     
     ## Dump args
     if parse.verb == "dump" or parse.verb == "plot" or parse.verb == "config":        

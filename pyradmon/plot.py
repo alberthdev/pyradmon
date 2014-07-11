@@ -28,6 +28,8 @@ from core import *
 
 import datetime
 
+import re
+
 from fractions import Fraction
 
 import copy
@@ -68,7 +70,34 @@ def subst_data(plot_dict, data_dict):
     #print "subst_data complete"
     return plot_dict_new
 
-def plot(plot_dict, data_dict, metadata_dict, use_old_plot = False, old_plot = None):
+def title_output_replace(input_title_output, metadata_dict, data_dict, is_title = False, custom_vars = None):
+    input_title_output = input_title_output.replace("%EXPERIMENT_ID%", metadata_dict["experiment_id"])
+    
+    if is_title:
+        input_title_output = input_title_output.replace("%INSTRUMENT_SAT%", metadata_dict["instrument_sat"].upper())
+    else:
+        input_title_output = input_title_output.replace("%INSTRUMENT_SAT%", metadata_dict["instrument_sat"])
+    
+    input_title_output = input_title_output.replace("%CHANNEL%", str(metadata_dict["channel"]))
+    
+    if data_dict and "frequency" in data_dict:
+        input_title_output = input_title_output.replace("%FREQUENCY%", str(data_dict["frequency"]))
+    
+    if is_title:
+        input_title_output = input_title_output.replace("%ASSIMILATION_STATUS%", "    .......................")
+    
+    input_title_output = input_title_output.replace("%START_DATE%", str(metadata_dict['start_year']).zfill(4) + str(metadata_dict['start_month']).zfill(2) + str(metadata_dict['start_day']).zfill(2))
+    input_title_output = input_title_output.replace("%END_DATE%", str(metadata_dict['end_year']).zfill(4) + str(metadata_dict['end_month']).zfill(2) + str(metadata_dict['end_day']).zfill(2))
+    
+    # Custom vars
+    if custom_vars:
+        for custom_var in custom_vars:
+            replace_re = re.compile(re.escape('%'+custom_var+'%'), re.IGNORECASE)
+            input_title_output = replace_re.sub(custom_vars[custom_var], input_title_output)
+    
+    return input_title_output
+
+def plot(plot_dict, data_dict, metadata_dict, custom_vars = None, use_old_plot = False, old_plot = None):
     # Make a working copy for our use.
     plot_dict_copy = copy.deepcopy(plot_dict)
     plot_dict = plot_dict_copy
@@ -94,13 +123,7 @@ def plot(plot_dict, data_dict, metadata_dict, use_old_plot = False, old_plot = N
         if isset("title", plot):
             #print "Replacing title..."
             plot_title = plot["title"]
-            plot_title = plot_title.replace("%EXPERIMENT_ID%", metadata_dict["experiment_id"])
-            plot_title = plot_title.replace("%INSTRUMENT_SAT%", metadata_dict["instrument_sat"].upper())
-            plot_title = plot_title.replace("%CHANNEL%", str(metadata_dict["channel"]))
-            plot_title = plot_title.replace("%FREQUENCY%", str(data_dict["frequency"]))
-            plot_title = plot_title.replace("%ASSIMILATION_STATUS%", "    .......................")
-            plot_title = plot_title.replace("%START_DATE%", str(metadata_dict['start_year']).zfill(4) + str(metadata_dict['start_month']).zfill(2) + str(metadata_dict['start_day']).zfill(2))
-            plot_title = plot_title.replace("%END_DATE%", str(metadata_dict['end_year']).zfill(4) + str(metadata_dict['end_month']).zfill(2) + str(metadata_dict['end_day']).zfill(2))
+            plot_title = title_output_replace(plot_title, metadata_dict, data_dict, True, custom_vars)
             
             if isset("iuse", data_dict):
                 if data_dict["iuse"] == -1:
@@ -249,8 +272,6 @@ def plot(plot_dict, data_dict, metadata_dict, use_old_plot = False, old_plot = N
                         import ipdb
                         ipdb.set_trace()'''
                 
-                
-                
                 plt.setp(legend.get_title(),fontsize='large')
                 
                 #lt = l.get_texts()
@@ -278,12 +299,7 @@ def plot(plot_dict, data_dict, metadata_dict, use_old_plot = False, old_plot = N
         
         if isset("output", plot):
             plot_output = plot["output"]
-            plot_output = plot_output.replace("%CHANNEL%", str(metadata_dict["channel"]))
-            plot_output = plot_output.replace("%INSTRUMENT_SAT%", metadata_dict["instrument_sat"])
-            plot_output = plot_output.replace("%EXPERIMENT_ID%", metadata_dict["experiment_id"])
-            plot_output = plot_output.replace("%START_DATE%", str(metadata_dict['start_year']).zfill(4) + str(metadata_dict['start_month']).zfill(2) + str(metadata_dict['start_day']).zfill(2))
-            plot_output = plot_output.replace("%END_DATE%", str(metadata_dict['end_year']).zfill(4) + str(metadata_dict['end_month']).zfill(2) + str(metadata_dict['end_day']).zfill(2))
-            
+            plot_output = title_output_replace(plot_output, metadata_dict, data_dict, False, custom_vars)
         else:
             warn("Output path not specified, will save to 'magical_plot_please_specify_output_path_next_time.png'")
             plot_output = "magical_plot_please_specify_output_path_next_time.png"
