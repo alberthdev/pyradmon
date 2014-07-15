@@ -76,6 +76,11 @@ def main():
         else:
             custom_vars = None
         
+        if "make_dirs" in enum_opts_dict:
+            make_dirs = True
+        else:
+            make_dirs = False
+        
         if "data_all" in pyradmon_config and pyradmon_config["data_all"]:
             info(" ** Enumerating ALL data files...")
             (en, stats) = enumerate_all(**enum_opts_dict)
@@ -289,7 +294,7 @@ def main():
                 # Multichanel mode
                 try:
                     plot_dict_subs = subst_data(plot_dict, dat[channel])
-                    plot(plot_dict_subs, dat[channel], enum_opts_dict, custom_vars)
+                    plot(plot_dict_subs, dat[channel], enum_opts_dict, custom_vars, make_dirs)
                     del plot_dict_subs
                 except:
                     critical("An error occurred! Error follows:")
@@ -301,7 +306,7 @@ def main():
             else:
                 try:
                     plot_dict_subs = subst_data(plot_dict, dat)
-                    plot(plot_dict_subs, dat, enum_opts_dict, custom_vars)
+                    plot(plot_dict_subs, dat, enum_opts_dict, custom_vars, make_dirs)
                     del plot_dict_subs
                 except:
                     critical("An error occurred! Error follows:")

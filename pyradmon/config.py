@@ -178,6 +178,9 @@ def postprocess_config(pyradmon_config):
     
     if 'custom_vars' in pyradmon_config:
         enum_opts_dict['custom_vars'] = pyradmon_config['custom_vars']
+        
+    if 'make_dirs' in pyradmon_config:
+        enum_opts_dict['make_dirs'] = True
     
     #############################################
     ## Data assim only flag for data.get_data()

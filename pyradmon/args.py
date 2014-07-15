@@ -208,6 +208,12 @@ def add_plot_args(parser, inherit = False):
             'dest'      : 'plot_define_custom_vars',
             'help'      : 'Define the custom variables for use in the output file and title. Uses the key-value pair system, specified by "myvar:123,myvar2:abc,...".',
         }
+    opts['--plot-make-dirs'] = \
+        {
+            'action'    : 'store_true',
+            'dest'      : 'plot_make_dirs',
+            'help'      : 'Make directories if the specified output path does not exist.',
+        }
     
     add_args(parser, inherit, opts)
 
@@ -517,6 +523,9 @@ def make_argparser():
                 --plot-define-output "plot1:plot_%EXPID%-%AUTHOR%.png"
                   Result:
                     plot_exp_2-theauthor.png
+          --plot-make-dirs
+            If specified, automatically make non-existent directories,
+            as needed. No additional arguments or options needed.
             
         NOTE: These options are advanced - although you could (potentially)
               plot using these options, it would probably be very painful!
@@ -1152,6 +1161,10 @@ def parse_to_config(parse):
                 pyradmon_config["custom_vars"][custom_var_def_var] = custom_var_def_val
                 
                 # Done!
+        if isset_obj("plot_make_dirs", parse) and parse.plot_make_dirs:
+            pyradmon_config["make_dirs"] = parse.plot_make_dirs
+            
+            # Done!
     
     ## Dump args
     if parse.verb == "dump" or parse.verb == "plot" or parse.verb == "config":        

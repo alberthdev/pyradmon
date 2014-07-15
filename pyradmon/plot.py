@@ -97,7 +97,7 @@ def title_output_replace(input_title_output, metadata_dict, data_dict, is_title 
     
     return input_title_output
 
-def plot(plot_dict, data_dict, metadata_dict, custom_vars = None, use_old_plot = False, old_plot = None):
+def plot(plot_dict, data_dict, metadata_dict, custom_vars = None, make_dirs = False, use_old_plot = False, old_plot = None):
     # Make a working copy for our use.
     plot_dict_copy = copy.deepcopy(plot_dict)
     plot_dict = plot_dict_copy
@@ -300,6 +300,15 @@ def plot(plot_dict, data_dict, metadata_dict, custom_vars = None, use_old_plot =
         if isset("output", plot):
             plot_output = plot["output"]
             plot_output = title_output_replace(plot_output, metadata_dict, data_dict, False, custom_vars)
+            if not os.path.exists(os.path.dirname(plot_output)):
+                if make_dirs:
+                    info("Output path %s not found, creating directory." % os.path.dirname(plot_output))
+                    mkdir_p(os.path.dirname(plot_output))
+                else:
+                    critical("Output path %s not found! If you want PyRadmon to create" % os.path.dirname(plot_output))
+                    critical("the directory for you, add --plot-make-dirs or add and set the")
+                    critical("make_dirs in the config section of the config file to true.")
+                    die("Output path %s not found!" % os.path.dirname(plot_output))
         else:
             warn("Output path not specified, will save to 'magical_plot_please_specify_output_path_next_time.png'")
             plot_output = "magical_plot_please_specify_output_path_next_time.png"
