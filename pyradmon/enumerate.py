@@ -56,7 +56,8 @@ def enumerate(**opts):
     
     Arguments are keywords arguments; some, none, or all of them may
     be specified. For arguments not specified, the default capital
-    letter version of the variable will be used instead.
+    letter version of the variable will be used instead. See the
+    source file (enumerate.py) for capital variable defaults.
 
     Args:
         base_directory=: The base directory where the data files are
@@ -76,6 +77,8 @@ def enumerate(**opts):
             analyzed or guessed data.
         time_delta=: datetime.timedelta object to increment the date
             with. Default is one hour.
+        allow_warn_pass=: boolean to determine whether to ignore
+            warnings or halt if a warning is found.
         
         For all variables except time_delta, the default value is the
         capitalized global variable version specified in this file.
@@ -134,7 +137,7 @@ def enumerate(**opts):
     if len(data_type.split('|')) > 1:
         data_type = data_type.split('|')
     
-    allow_warn_pass = opts["data_type"] if "allow_warn_pass" in opts \
+    allow_warn_pass = opts["allow_warn_pass"] if "allow_warn_pass" in opts \
         else ALLOW_WARN_PASS
     
     # Build the final data directory!
@@ -353,7 +356,7 @@ def enumerate(**opts):
                     # ...and save it back to the dict!
                     setr(data_dict, dir_struct, arr)
                 else:
-                    edie("ERROR: File validation failed - see above for details.")
+                    edie("ERROR: File validation failed for for %s. See above for details." % datfile)
     
     # Now loop and generate a list of files to read!
     files_to_read = []
