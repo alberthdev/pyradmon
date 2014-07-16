@@ -26,6 +26,8 @@ from dictr import *
 from core import *
 
 import datetime
+
+import re
                 
 # Variables to determine what to look for!
 # These are the default variables - the actual variables can be
@@ -156,6 +158,11 @@ def enumerate(**opts):
     
     found_correct_range = False
     
+    year_re = re.compile(r'^Y\d{4}$')
+    month_re = re.compile(r'^M\d{2}$')
+    day_re = re.compile(r'^D\d{2}$')
+    hour_re = re.compile(r'^H\d{2}$')
+    
     # Iterate into directory recursively...
     for root, subfolder, files in os.walk(data_dir):
         # Split path into an array, minus the first few elements to
@@ -175,35 +182,50 @@ def enumerate(**opts):
             dir_struct = root.split('/')[-1:]
         else:
             dir_struct = []
+        #print "tick"
+        
+        i = 0
+        while i < len(subfolder):
+            fdate_t = subfolder[i]
+            #print "!! ",fdate_t
+            if (not year_re.match(fdate_t)) and (not month_re.match(fdate_t)) and (not day_re.match(fdate_t)) and (not hour_re.match(fdate_t)):
+                warn("Invalid directory format for date part %s, skipping." % fdate_t)
+                subfolder.remove(fdate_t)
+                continue
+            i += 1
         
         # OPTIMIZATION - remove any subfolders that doesn't match our timeframe!
         if len(dir_struct) == 0:
             i = 0
             while i < len(subfolder):
                 fyear_t = subfolder[i]
+                
                 f_year = int(fyear_t[1:])
                 if not ((f_year >= start_year) and (f_year <= end_year)):
                     subfolder.remove(fyear_t)
-                    i -= 1
+                    continue
                 i += 1
-        
+        #print subfolder
         # Only optimize if we're on end year/month
         if len(dir_struct) == 1 and (end_year == int(subfolder[0][1:])):
             i = 0
             while i < len(subfolder):
                 fmonth_t = subfolder[i]
+                
                 f_month = int(fmonth_t[1:])
                 if not ((f_month >= start_month) and (f_month <= end_month)):
                     subfolder.remove(fmonth_t)
-                    i -= 1
+                    continue
                 i += 1
         
         if len(dir_struct) == 2 and (end_year == int(subfolder[0][1:])) and (end_month == int(subfolder[1][1:])):
             while i < len(subfolder):
                 fday_t = subfolder[i]
+                
                 f_day = int(fday_t[1:])
                 if not ((f_day >= start_day) and (f_day <= end_day)):
                     subfolder.remove(fday_t)
+                    continue
                 i += 1
         
         # OPTIMIZATION - skip any data that doesn't match our timeframe!
@@ -212,6 +234,11 @@ def enumerate(**opts):
             #warn("Incomplete data set found - Y/M/D/H structure not complete! (dir_struct: %s)" % str(dir_struct))
             continue
         else:
+            if not hour_re.match(dir_struct[3]):
+                warn("Invalid directory format for hour %s, skipping." % dir_struct[3])
+                subfolder.remove(dir_struct[3])
+                continue
+            
             f_date = datetime.datetime(int(dir_struct[0][1:]), int(dir_struct[1][1:]), int(dir_struct[2][1:]), int(dir_struct[3][1:]))
             # If we are out of bounds, skip.
             if not ((f_date >= cur_date) and (f_date <= end_date)):
@@ -291,7 +318,14 @@ def enumerate(**opts):
                         warn("File validation failed - middle section does not start with diag_!")
                 else:
                     warn("File validation failed - file does not start with EXPERIMENT_ID %s!" % experiment_id)
-            
+                
+                # Remove file that failed validation
+                if ((not PASS) and allow_warn_pass):
+                    warn("File validation failed for %s." % datfile)
+                    warn("This file will be removed from the list of files to process.")
+                    files.remove(datfile)
+                    continue
+                
                 # If file validation failed and ALLOW_WARN_PASS is set...
                 #   OR
                 # If file validation passes...
