@@ -250,9 +250,13 @@ def plot(plot_dict, data_dict, metadata_dict, custom_vars = None, make_dirs = Fa
                             if isset("iuse", data_dict):
                                 if data_dict["iuse"] == -1:
                                     if (sum(y_dat) / len(y_dat)) < -9999:
-                                        info("Detected iuse=-1 and strange data, so plotting NaN instead.")
-                                        plt.plot(np.array(subplot["data"]["x"][0]), np.array([float('nan')] * len(subplot["data"]["x"][0])), **plot_kwargs)
+                                        info("Detected iuse=-1 and strange data, so not plotting anything.")
+                                        #plt.plot(np.array(subplot["data"]["x"][0]), np.array([0] * len(subplot["data"]["x"][0])), **plot_kwargs)
+                                        #info("X: %s | Y: %s | Title: %s" % (str(np.array(subplot["data"]["x"][0])[0]), str(np.array(y_dat[0])), subplot["title"]))
+                                        axe.xaxis_date()
+                                        y_id += 1
                                         continue
+                                    # MAYBE: Try to filter the data and calculate a reasonable range for y-axis
                             
                             plt.plot(np.array(subplot["data"]["x"][0]), np.array(y_dat), **plot_kwargs)
                             y_id += 1
@@ -322,7 +326,6 @@ def plot(plot_dict, data_dict, metadata_dict, custom_vars = None, make_dirs = Fa
             plot_output = "magical_plot_please_specify_output_path_next_time.png"
         
         #print "Saving to: %s (size: %ix%i at %s res, dpi %i)" % (plot_output, plot_target_size[0], plot_target_size[1], str(((plot_target_size[0] + 0.0) / plot_dpi, (plot_target_size[1] + 0.0) / plot_dpi)), plot_dpi)
-        
         plt.savefig(plot_output, facecolor=fig.get_facecolor(), edgecolor='none', figsize=((plot_target_size[0] + 0.0) / plot_dpi, (plot_target_size[1] + 0.0) / plot_dpi), dpi = plot_dpi)
         
         #plt.savefig(plot_output, facecolor=fig.get_facecolor(), edgecolor='none', figsize=(size_frac_parts[0], size_frac_parts[1]), dpi = factor)
