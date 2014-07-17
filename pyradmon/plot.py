@@ -250,8 +250,8 @@ def plot(plot_dict, data_dict, metadata_dict, custom_vars = None, make_dirs = Fa
                             if isset("iuse", data_dict):
                                 if data_dict["iuse"] == -1:
                                     if (sum(y_dat) / len(y_dat)) < -9999:
-                                        info("Detected iuse=-1 and strange data, so not plotting.")
-                                        plt.plot(np.array(subplot["data"]["x"][0]), np.array(float('nan') * len(subplot["data"]["x"][0])), **plot_kwargs)
+                                        info("Detected iuse=-1 and strange data, so plotting NaN instead.")
+                                        plt.plot(np.array(subplot["data"]["x"][0]), np.array([float('nan')] * len(subplot["data"]["x"][0])), **plot_kwargs)
                                         continue
                             
                             plt.plot(np.array(subplot["data"]["x"][0]), np.array(y_dat), **plot_kwargs)
