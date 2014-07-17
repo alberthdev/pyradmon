@@ -247,6 +247,12 @@ def plot(plot_dict, data_dict, metadata_dict, custom_vars = None, make_dirs = Fa
                             #plot_kwargs["marker"] = '.'
                             
                             #if use_old_plot and old_plot:
+                            if isset("iuse", data_dict):
+                                if data_dict["iuse"] == -1:
+                                    if (sum(y_dat) / len(y_dat)) < -9999:
+                                        info("Detected iuse=-1 and strange data, so not plotting.")
+                                        continue
+                            
                             plt.plot(np.array(subplot["data"]["x"][0]), np.array(y_dat), **plot_kwargs)
                             y_id += 1
             
