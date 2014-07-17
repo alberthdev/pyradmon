@@ -278,7 +278,8 @@ def plot(plot_dict, data_dict, metadata_dict, custom_vars = None, make_dirs = Fa
                         import ipdb
                         ipdb.set_trace()'''
                 
-                plt.setp(legend.get_title(),fontsize='large')
+                if legend:
+                    plt.setp(legend.get_title(),fontsize='large')
                 
                 #lt = l.get_texts()
                 #for llt in lt:
