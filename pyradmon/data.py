@@ -34,8 +34,12 @@ VALID_PREFIX = [ "ges", "anl" ]
 SPECIAL_FIELDS = {
                     "timestamp": [],
                     "frequency": "",
-                    "iuse": None,
+                    "iuse": {},
                  }
+
+# Additional iuse logic
+for prefix in VALID_PREFIX:
+    SPECIAL_FIELDS["iuse"][prefix] = []
 
 def check_int(s):
     if s[0] in ('-', '+'):
@@ -133,6 +137,8 @@ def get_data(files_to_read, data_vars, selected_channel, all_channels = False, d
                     data_dict[data_var] = []
     debug("PHASE 3")
     
+    #debug(data_dict)
+    
     ignore_channels = []
     
     # Iterate through all of the files!
@@ -219,7 +225,7 @@ def get_data(files_to_read, data_vars, selected_channel, all_channels = False, d
                                     if check_int(data_elements[data_column]):
                                         if int(data_elements[data_column]) < 0:
                                             debug("SKIP: %s (channel: %i) (file: %s)" % (data_var, data_channel, file_to_read["filename"]))
-                                            data_dict["iuse"] = int(data_elements[data_column])
+                                            data_dict["iuse"][file_to_read["type"]].append(int(data_elements[data_column]))
                                             if not data_channel in ignore_channels:
                                                 ignore_channels.append(data_channel)
                                             continue
@@ -276,19 +282,20 @@ def get_data(files_to_read, data_vars, selected_channel, all_channels = False, d
                                 if "iuse" in data_vars:
                                     data_column = column_reader.getColumnIndex("iuse", False)
                                     
+                                    debug("DATA_VAR: "+data_var+" | DATA_VAR_TYPE: "+data_var_type)
                                     # Check to see if we've already found the frequency
-                                    if (data_dict["iuse"] != None):
+                                    if (len(data_dict["iuse"][file_to_read["type"]]) != 0):
                                         # If we found it, does it match the new one? If not, show a warning!
-                                        if (int(data_elements[data_column]) != data_dict["iuse"]):
-                                            warn("iuse within same channel differs from before!")
-                                            warn("(Old iuse: %i, new iuse: %s, file: %s)" % (int(data_dict["iuse"]), data_elements[data_column], file_to_read["filename"]))
+                                        if (int(data_elements[data_column]) != data_dict["iuse"][file_to_read["type"]][0]):
+                                            debug("iuse within same channel differs from before!")
+                                            debug("(Old iuse: %i, new iuse: %s, file: %s)" % (int(data_dict["iuse"][file_to_read["type"]][0]), data_elements[data_column], file_to_read["filename"]))
+                                    
+                                    # Save the iuse!
+                                    if check_int(data_elements[data_column]):
+                                        data_dict["iuse"][file_to_read["type"]].append(int(data_elements[data_column]))
                                     else:
-                                        # Save the frequency for the first (and final) time
-                                        if check_int(data_elements[data_column]):
-                                            data_dict["iuse"] = int(data_elements[data_column])
-                                        else:
-                                            warn("iuse is not a digit! Setting to unknown. (iuse = %s)" % data_elements[data_column])
-                                            data_dict["iuse"] = -1
+                                        warn("iuse is not a digit! Setting to unknown. (iuse = %s)" % data_elements[data_column])
+                                        data_dict["iuse"][file_to_read["type"]].append(-1)
                                 
                                 if (all_channels) or (type(selected_channel) == list) and (len(selected_channel) > 1):
                                     if not data_channel in channel_data_dict:
@@ -308,6 +315,11 @@ def get_data(files_to_read, data_vars, selected_channel, all_channels = False, d
                         # the column header!
                         if data_line_counter > 2:
                             column_reader_data += data_line
+    # Post-process iuse data
+    for prefix in VALID_PREFIX:
+        if prefix in data_dict["iuse"]:
+            data_dict[prefix+"|iuse"] = data_dict["iuse"][prefix]
+    
     #raw_input()
     if (all_channels) or ((type(selected_channel) == list) and (len(selected_channel) > 1)):
         #print "Returning multi-channel data dict..."

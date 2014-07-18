@@ -23,8 +23,10 @@ matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
 import numpy as np
+import math
 
 from core import *
+from data import VALID_PREFIX
 
 import datetime
 
@@ -216,6 +218,10 @@ def plot(plot_dict, data_dict, metadata_dict, custom_vars = None, make_dirs = Fa
                         y_id = 0
                         #print subplot["data"]["y"]
                         for y_dat in subplot["data"]["y"]:
+                            if len(y_dat) != len(subplot["data"]["x"][0]):
+                                warn("WARNING: Data length for X differs from data length for Y!")
+                                warn("(Data length for X: %i; Data length for Y: %i)" % (len(subplot["data"]["x"][0]), len(y_dat)))
+                            
                             # todo: implement warnings
                             if isset("colors", subplot["data"]):
                                 if type(subplot["data"]["colors"]) == str:
@@ -223,6 +229,36 @@ def plot(plot_dict, data_dict, metadata_dict, custom_vars = None, make_dirs = Fa
                                 if y_id < len(subplot["data"]["colors"]):
                                     l_color = subplot["data"]["colors"][y_id]
                                     plot_kwargs["color"] = l_color
+                            
+                            # DATA
+                            if isset("iuse", data_dict):
+                                for prefix in VALID_PREFIX:
+                                    if any(iuse < 0 for iuse in data_dict["iuse"][prefix]):
+                                        debug("Detected -1 in iuse field!")
+                                        
+                                        bad_vals = [ y for y in y_dat if (y <= -9999) ]
+                                        
+                                        #debug(y_dat)
+                                        
+                                        debug(" * Detected %i/%i bad values in y data... (min %i, max %i)" % (len(bad_vals), len(y_dat), min(y_dat), max(y_dat)))
+                                        
+                                        if len(bad_vals) == len(y_dat):
+                                            debug(" * Detected iuse=-1 and strange data for all values, so not plotting anything.")
+                                            axe.xaxis_date()
+                                            y_id += 1
+                                            continue
+                                        
+                                        # Otherwise, just filter the data!
+                                        debug(" * Detected iuse=-1, so replacing bad values with NaN...")
+                                        replaced_y = [ np.nan if y <= -9999 else y for y in y_dat ]
+                                        y_dat = replaced_y
+                                        debug(" * Result: %i values in replaced y!" % len(y_dat))
+                                        break
+                                    else:
+                                        debug("No -1 iuse detected, continuing on!")
+                            else:
+                                debug("No iuse found in data_dict, continuing on!")
+                            
                             if isset("labels", subplot["data"]):
                                 if type(subplot["data"]["labels"]) == str:
                                     subplot["data"]["labels"] = [ subplot["data"]["labels"] ]
@@ -235,7 +271,8 @@ def plot(plot_dict, data_dict, metadata_dict, custom_vars = None, make_dirs = Fa
                                     if len(y_dat) == 0:
                                         AVG = 0
                                     else:
-                                        AVG = round(sum(y_dat) / len(y_dat), 3)
+                                        y_dat_no_nan = [value for value in y_dat if not math.isnan(value)]
+                                        AVG = round(sum(y_dat_no_nan) / len(y_dat_no_nan), 3)
                                     
                                     l_label = l_label.replace("%AVERAGE%", str(AVG))
                                     plot_kwargs["label"] = l_label
@@ -247,16 +284,6 @@ def plot(plot_dict, data_dict, metadata_dict, custom_vars = None, make_dirs = Fa
                             #plot_kwargs["marker"] = '.'
                             
                             #if use_old_plot and old_plot:
-                            if isset("iuse", data_dict):
-                                if data_dict["iuse"] == -1:
-                                    if (sum(y_dat) / len(y_dat)) < -9999:
-                                        info("Detected iuse=-1 and strange data, so not plotting anything.")
-                                        #plt.plot(np.array(subplot["data"]["x"][0]), np.array([0] * len(subplot["data"]["x"][0])), **plot_kwargs)
-                                        #info("X: %s | Y: %s | Title: %s" % (str(np.array(subplot["data"]["x"][0])[0]), str(np.array(y_dat[0])), subplot["title"]))
-                                        axe.xaxis_date()
-                                        y_id += 1
-                                        continue
-                                    # MAYBE: Try to filter the data and calculate a reasonable range for y-axis
                             
                             plt.plot(np.array(subplot["data"]["x"][0]), np.array(y_dat), **plot_kwargs)
                             y_id += 1
