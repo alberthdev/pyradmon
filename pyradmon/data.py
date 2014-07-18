@@ -23,6 +23,7 @@ from columnread import *
 import datetime
 from decimal import Decimal
 from core import *
+import copy
 
 # Test data variables
 ############# TODO : write code to remove dups
@@ -125,14 +126,14 @@ def get_data(files_to_read, data_vars, selected_channel, all_channels = False, d
             channel_data_dict[channel] = {}
             for data_var in data_vars:
                 if data_var in SPECIAL_FIELDS:
-                    channel_data_dict[channel][data_var] = SPECIAL_FIELDS[data_var]
+                    channel_data_dict[channel][data_var] = copy.deepcopy(SPECIAL_FIELDS[data_var])
                 else:
                     channel_data_dict[channel][data_var] = []
     else:
         if not all_channels:
             for data_var in data_vars:
                 if data_var in SPECIAL_FIELDS:
-                    data_dict[data_var] = SPECIAL_FIELDS[data_var]
+                    data_dict[data_var] = copy.deepcopy(SPECIAL_FIELDS[data_var])
                 else:
                     data_dict[data_var] = []
     debug("PHASE 3")
@@ -213,6 +214,7 @@ def get_data(files_to_read, data_vars, selected_channel, all_channels = False, d
                                         else:
                                             channel_data_dict[data_channel][data_var] = []
                                 data_dict = channel_data_dict[data_channel]
+                                debug("Multi-channel mode - RESET triggered. (At channel: %i)" % data_channel)
                             
                             # Match the channel with the desired one.
                             if all_channels or ((type(selected_channel) == int) and (data_channel == selected_channel)) or \
