@@ -216,6 +216,8 @@ def plot(plot_dict, data_dict, metadata_dict, custom_vars = None, make_dirs = Fa
                         
                         plot_kwargs = {}
                         y_id = 0
+                        plotted_graphs = 0
+                        debug("y_id and plotted_graphs RESET to zero")
                         #print subplot["data"]["y"]
                         for y_dat in subplot["data"]["y"]:
                             if len(y_dat) != len(subplot["data"]["x"][0]):
@@ -247,6 +249,7 @@ def plot(plot_dict, data_dict, metadata_dict, custom_vars = None, make_dirs = Fa
                                             debug(" * Detected iuse=-1 and strange data for all values, so not plotting anything.")
                                             axe.xaxis_date()
                                             y_id += 1
+                                            debug("y_id incremented from strange data condition trigger")
                                             skip_graph = True
                                             break
                                         
@@ -260,10 +263,6 @@ def plot(plot_dict, data_dict, metadata_dict, custom_vars = None, make_dirs = Fa
                                 debug("No iuse found in data_dict, continuing on!")
                                 debug("Note that to cull any invalid values, iuse must be part of the data")
                                 debug("to be read.")
-                            
-                            if skip_graph:
-                                skip_graph = False
-                                continue
                             
                             if isset("labels", subplot["data"]):
                                 if type(subplot["data"]["labels"]) == str:
@@ -285,6 +284,12 @@ def plot(plot_dict, data_dict, metadata_dict, custom_vars = None, make_dirs = Fa
                                     # todo: implemenet %stddev%
                             else:
                                 l_label = ""
+                            
+                            if skip_graph:
+                                skip_graph = False
+                                debug("skip_graph set, so skipping graph!")
+                                continue
+                            
                             #print "Hello"
                             
                             #plot_kwargs["marker"] = '.'
@@ -293,6 +298,17 @@ def plot(plot_dict, data_dict, metadata_dict, custom_vars = None, make_dirs = Fa
                             
                             plt.plot(np.array(subplot["data"]["x"][0]), np.array(y_dat), **plot_kwargs)
                             y_id += 1
+                            plotted_graphs += 1
+                            debug("Finished graphing, y_id now at %i, plotted_graphs now at %i" % (y_id, plotted_graphs))
+            
+            # Indicate if subplot is empty or not!
+            debug("y_id = %i" % y_id)
+            debug("plotted_graphs = %i" % plotted_graphs)
+            if plotted_graphs == 0:
+                debug("No data was plotted, so adding placeholder text.")
+                plt.text(0.5, 0.5, 'Eeek! No data here! O_O', horizontalalignment='center',
+                        verticalalignment='center', fontsize=24,
+                        transform=axe.transAxes)
             
             if isset("legend", subplot):
                 #print "Legend area detected..."
@@ -318,6 +334,18 @@ def plot(plot_dict, data_dict, metadata_dict, custom_vars = None, make_dirs = Fa
                 
                 if legend:
                     plt.setp(legend.get_title(),fontsize='large')
+                
+                if plotted_graphs == 0:
+                    rects = []
+                    labels = []
+                    for c in subplot["data"]["colors"]:
+                        #rects.append(plt.Rectangle((0, 0), 1, 1, fc=c, ec=c))
+                        debug("COLOR: "+c)
+                        rects.append(matplotlib.patches.Patch(fc=c, ec=c))
+                    for l in subplot["data"]["labels"]:
+                        labels.append(l.replace("%AVERAGE%", "N/A"))
+                    ext_leg = plt.legend(rects, labels, loc='center left', bbox_to_anchor=(-0.3, 0.5), borderaxespad=0., handlelength=0, **legend_kwargs)
+                    
                 
                 #lt = l.get_texts()
                 #for llt in lt:
