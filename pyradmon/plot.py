@@ -232,6 +232,7 @@ def plot(plot_dict, data_dict, metadata_dict, custom_vars = None, make_dirs = Fa
                             
                             # DATA
                             if isset("iuse", data_dict):
+                                skip_graph = False
                                 for prefix in VALID_PREFIX:
                                     if any(iuse < 0 for iuse in data_dict["iuse"][prefix]):
                                         debug("Detected -1 in iuse field!")
@@ -246,7 +247,8 @@ def plot(plot_dict, data_dict, metadata_dict, custom_vars = None, make_dirs = Fa
                                             debug(" * Detected iuse=-1 and strange data for all values, so not plotting anything.")
                                             axe.xaxis_date()
                                             y_id += 1
-                                            continue
+                                            skip_graph = True
+                                            break
                                         
                                         # Otherwise, just filter the data!
                                         debug(" * Detected iuse=-1, so replacing bad values with NaN...")
@@ -258,6 +260,10 @@ def plot(plot_dict, data_dict, metadata_dict, custom_vars = None, make_dirs = Fa
                                 debug("No iuse found in data_dict, continuing on!")
                                 debug("Note that to cull any invalid values, iuse must be part of the data")
                                 debug("to be read.")
+                            
+                            if skip_graph:
+                                skip_graph = False
+                                continue
                             
                             if isset("labels", subplot["data"]):
                                 if type(subplot["data"]["labels"]) == str:
