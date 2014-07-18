@@ -254,10 +254,10 @@ def plot(plot_dict, data_dict, metadata_dict, custom_vars = None, make_dirs = Fa
                                         y_dat = replaced_y
                                         debug(" * Result: %i values in replaced y!" % len(y_dat))
                                         break
-                                    else:
-                                        debug("No -1 iuse detected, continuing on!")
                             else:
                                 debug("No iuse found in data_dict, continuing on!")
+                                debug("Note that to cull any invalid values, iuse must be part of the data")
+                                debug("to be read.")
                             
                             if isset("labels", subplot["data"]):
                                 if type(subplot["data"]["labels"]) == str:
