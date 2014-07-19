@@ -128,7 +128,14 @@ def plot(plot_dict, data_dict, metadata_dict, custom_vars = None, make_dirs = Fa
             plot_title = title_output_replace(plot_title, metadata_dict, data_dict, True, custom_vars)
             
             if isset("iuse", data_dict):
-                if data_dict["iuse"] == -1:
+                tmp_iuse_arr = []
+                for prefix in VALID_PREFIX:
+                    tmp_iuse_arr = tmp_iuse_arr + data_dict["iuse"][prefix]
+                mode_val, mode_amt = mode(tmp_iuse_arr)
+                if len(mode_val) > 1:
+                    warn("Detected even mode split - assimilation detection may not be accurate.")
+                
+                if mode_val[0] == -1:
                     #print "Detected iuse: Not Assimilated (iuse = %i)" % data_dict["iuse"]
                     fig.text(0.67, 0.948, "Not Assimilated", ha="center", va="bottom", size="x-large",color="red")
                 else:

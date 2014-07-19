@@ -149,3 +149,26 @@ def mkdir_p(path):
         if exc.errno == errno.EEXIST and os.path.isdir(path):
             pass
         else: raise
+
+# Math func
+def mode(list):
+    d = {}
+    for elm in list:
+        try:
+            d[elm] += 1
+        except(KeyError):
+            d[elm] = 1
+    
+    keys = d.keys()
+    max = d[keys[0]]
+    
+    for key in keys[1:]:
+        if d[key] > max:
+            max = d[key]
+    
+    max_k = []
+    for key in keys:
+        if d[key] == max:
+            max_k.append(key),
+    return max_k,max
+
