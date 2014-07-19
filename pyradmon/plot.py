@@ -104,6 +104,11 @@ def plot(plot_dict, data_dict, metadata_dict, custom_vars = None, make_dirs = Fa
     plot_dict_copy = copy.deepcopy(plot_dict)
     plot_dict = plot_dict_copy
     
+    if not isset("iuse", data_dict):
+        warn("No iuse found in data_dict!")
+        warn("Note that to cull any invalid values or display assimilation")
+        warn("status, iuse must be part of the data to be read.")
+    
     for plot_id in plot_dict:
         total_plots = len(plot_dict[plot_id]["plots"])
         
@@ -244,32 +249,28 @@ def plot(plot_dict, data_dict, metadata_dict, custom_vars = None, make_dirs = Fa
                                 skip_graph = False
                                 for prefix in VALID_PREFIX:
                                     if any(iuse < 0 for iuse in data_dict["iuse"][prefix]):
-                                        debug("Detected -1 in iuse field!")
+                                        #debug("Detected -1 in iuse field!")
                                         
                                         bad_vals = [ y for y in y_dat if (y <= -9999) ]
                                         
                                         #debug(y_dat)
                                         
-                                        debug(" * Detected %i/%i bad values in y data... (min %i, max %i)" % (len(bad_vals), len(y_dat), min(y_dat), max(y_dat)))
+                                        #debug(" * Detected %i/%i bad values in y data... (min %i, max %i)" % (len(bad_vals), len(y_dat), min(y_dat), max(y_dat)))
                                         
                                         if len(bad_vals) == len(y_dat):
-                                            debug(" * Detected iuse=-1 and strange data for all values, so not plotting anything.")
+                                            #debug(" * Detected iuse=-1 and strange data for all values, so not plotting anything.")
                                             axe.xaxis_date()
                                             y_id += 1
-                                            debug("y_id incremented from strange data condition trigger")
+                                            #debug("y_id incremented from strange data condition trigger")
                                             skip_graph = True
                                             break
                                         
                                         # Otherwise, just filter the data!
-                                        debug(" * Detected iuse=-1, so replacing bad values with NaN...")
+                                        #debug(" * Detected iuse=-1, so replacing bad values with NaN...")
                                         replaced_y = [ np.nan if y <= -9999 else y for y in y_dat ]
                                         y_dat = replaced_y
-                                        debug(" * Result: %i values in replaced y!" % len(y_dat))
+                                        #debug(" * Result: %i values in replaced y!" % len(y_dat))
                                         break
-                            else:
-                                debug("No iuse found in data_dict, continuing on!")
-                                debug("Note that to cull any invalid values, iuse must be part of the data")
-                                debug("to be read.")
                             
                             if isset("labels", subplot["data"]):
                                 if type(subplot["data"]["labels"]) == str:
@@ -294,7 +295,7 @@ def plot(plot_dict, data_dict, metadata_dict, custom_vars = None, make_dirs = Fa
                             
                             if skip_graph:
                                 skip_graph = False
-                                debug("skip_graph set, so skipping graph!")
+                                #debug("skip_graph set, so skipping graph!")
                                 continue
                             
                             #print "Hello"
@@ -306,13 +307,13 @@ def plot(plot_dict, data_dict, metadata_dict, custom_vars = None, make_dirs = Fa
                             plt.plot(np.array(subplot["data"]["x"][0]), np.array(y_dat), **plot_kwargs)
                             y_id += 1
                             plotted_graphs += 1
-                            debug("Finished graphing, y_id now at %i, plotted_graphs now at %i" % (y_id, plotted_graphs))
+                            #debug("Finished graphing, y_id now at %i, plotted_graphs now at %i" % (y_id, plotted_graphs))
             
             # Indicate if subplot is empty or not!
-            debug("y_id = %i" % y_id)
-            debug("plotted_graphs = %i" % plotted_graphs)
+            #debug("y_id = %i" % y_id)
+            #debug("plotted_graphs = %i" % plotted_graphs)
             if plotted_graphs == 0:
-                debug("No data was plotted, so adding placeholder text.")
+                #debug("No data was plotted, so adding placeholder text.")
                 plt.text(0.5, 0.5, 'Eeek! No data here! O_O', horizontalalignment='center',
                         verticalalignment='center', fontsize=24,
                         transform=axe.transAxes)
@@ -347,7 +348,7 @@ def plot(plot_dict, data_dict, metadata_dict, custom_vars = None, make_dirs = Fa
                     labels = []
                     for c in subplot["data"]["colors"]:
                         #rects.append(plt.Rectangle((0, 0), 1, 1, fc=c, ec=c))
-                        debug("COLOR: "+c)
+                        #debug("COLOR: "+c)
                         rects.append(matplotlib.patches.Patch(fc=c, ec=c))
                     for l in subplot["data"]["labels"]:
                         labels.append(l.replace("%AVERAGE%", "N/A"))
