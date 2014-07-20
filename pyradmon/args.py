@@ -1287,7 +1287,7 @@ def parse_to_config(parse):
     
     if isset_obj("config_unset", parse):
         # "config.var1;plot1|subplot1"
-        config_unset_def = ";".join(parse.plot_define_subplots).split(";")
+        config_unset_def = ";".join(parse.config_unset).split(";")
         
     
     #import pprint
