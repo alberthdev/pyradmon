@@ -262,7 +262,7 @@ def make_argparser():
                       %(prog)s --config-file=config.yaml config
                     Make plots and log output:
                       %(prog)s --config-file=config.yaml --logging-output="stdout,file" \\
-                               --logging-file="mylog.txt"
+                               --logging-file="mylog.txt" plot
                   """),
                 version = 'PyRadmon v' + __version__) # Old: %(prog)s evals to pyradmon.py
 
@@ -275,6 +275,13 @@ def make_argparser():
             'dest'      : 'config_file',
             'metavar'   : 'FILE',
             'help'      : 'Load a configuration file for PyRadmon to use. Synonymous to --config-load, but for all verbs and options.',
+        }
+    main_opts['--config-unset'] = \
+        {
+            'action'    : 'append',
+            'dest'      : 'config_unset',
+            'metavar'   : 'VARS',
+            'help'      : 'Unset (or remove) variables after all configuration settings (config file and command line) have been loaded. Format for VARS is "VARIABLE1;VARIABLE2;...". For core PyRadmon configuration, the variable syntax is "config.key". For plot configuration, the variable syntax follows the plot argument hierarchy format at any level, e.g. "plot|subplot|attr|subattr", "plot|subplot", or even "plot". (See plot help for more details regarding the plot hierarchy format.) ',
         }
     main_opts['--logging-output'] = \
         {
@@ -1277,6 +1284,11 @@ def parse_to_config(parse):
                 #  w: weeks      M: months     y: years
                 if not ( (dtd[-1] in unit_valid) and (dtd[:-1].isdigit()) ):
                     die("ERROR: Invalid delta time '%s' specified in --data-delta-time! Must be a # followed by a valid unit letter. ([s]ecs, [m]inutes, [h]ours, [d]ays, [w]eeks, [M]onths, [y]ears)" % pyradmon_config["data_delta_time"])
+    
+    if isset_obj("config_unset", parse):
+        # "config.var1;plot1|subplot1"
+        config_unset_def = ";".join(parse.plot_define_subplots).split(";")
+        
     
     #import pprint
     #pprint.pprint(plot_dict)
