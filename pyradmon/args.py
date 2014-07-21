@@ -281,7 +281,7 @@ def make_argparser():
             'action'    : 'append',
             'dest'      : 'config_unset',
             'metavar'   : 'VARS',
-            'help'      : 'Unset (or remove) variables after all configuration settings (config file and command line) have been loaded. Format for VARS is "VARIABLE1;VARIABLE2;...". For core PyRadmon configuration, the variable syntax is "config.key". For plot configuration, the variable syntax follows the plot argument hierarchy format at any level, e.g. "plot|subplot|attr|subattr", "plot|subplot", or even "plot". (See plot help for more details regarding the plot hierarchy format.) ',
+            'help'      : 'Unset (or remove) variables after all configuration settings (config file and command line) have been loaded. Format for VARS is "VARIABLE1;VARIABLE2;...". For core PyRadmon configuration, the variable syntax is "config.key". For plot configuration, the variable syntax follows the plot argument hierarchy format at any level, e.g. "plot|subplot|attr|subattr", "plot|subplot", or even "plot". (See plot help for more details regarding the plot hierarchy format.) Note that removing certain variables can cause PyRadmon to not run.',
         }
     main_opts['--logging-output'] = \
         {
@@ -1289,6 +1289,53 @@ def parse_to_config(parse):
         # "config.var1;plot1|subplot1"
         config_unset_def = ";".join(parse.config_unset).split(";")
         
+        for config_def in config_unset_def:
+            if config_def.startswith("config."):
+                pyr_config_var = config_def.split("config.")[1:]
+                info("Unsetting pyradmon_config variable %s." % pyr_config_var)
+                if len(pyr_config_var) > 1:
+                    warn("WARNING: Detected strange unset entry, but continuing anyway.")
+                    pyr_config_var = "config.".join(pyr_config_var)
+                else:
+                    pyr_config_var = str(pyr_config_var[0])
+                pyradmon_config.pop(pyr_config_var, None)
+            else:
+                plot_config_var = config_def.split("|")
+                info("Unsetting plot_dict variable %s." % "|".join(plot_config_var))
+                if not plot_config_var[0] in plot_dict:
+                    warn("Invalid unset definition detected - the plot specified, '%s', does not exist!" % title_def_plot)
+                    warn("Ensure spelling is correct. If it is a new plot, make sure it is defined.")
+                    warn("This unset definition will be skipped.")
+                    continue
+                
+                # OK, plot exists. How about subplot?
+                # We have to do some strange magic here...
+                # ...but only if we need to.
+                
+                if len(plot_config_var) >= 2:
+                    plot_config_subplot_found = False
+                    title_def_subplot_dat = None
+                    for subplot_dict in plot_dict[plot_config_var[0]]['plots']:
+                        if plot_config_var[1] in subplot_dict:
+                            subplot_dat = subplot_dict[plot_config_var[1]]
+                            plot_config_subplot_found = True
+                            break
+                    
+                    if not plot_config_subplot_found:
+                        warn("Invalid unset definition detected - the subplot specified, '%s', does not exist!" % title_def_subplot)
+                        warn("Ensure spelling is correct. If it is a new subplot, make sure it is defined and")
+                        warn("in the right subplot. This unset definition will be skipped.")
+                        continue
+                    
+                    # Check
+                    if len(plot_config_var) == 2:
+                        plot_dict[plot_config_var[0]]['plots'].remove(subplot_dict)
+                    else:
+                        # Now recursively delete!
+                        delete_keys_from_dict(subplot_dat, plot_config_var[2:])
+                else:
+                    plot_dict.pop(plot_config_var[0], None)
+                
     
     #import pprint
     #pprint.pprint(plot_dict)

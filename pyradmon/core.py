@@ -150,6 +150,24 @@ def mkdir_p(path):
             pass
         else: raise
 
+# Recurisve unset
+def delete_keys_from_dict(dict_del, lst_keys):
+    if type(lst_keys) == list:
+        for lst in lst_keys:
+            if type(lst) == list:
+                if len(lst) > 1:
+                    d_ptr = dict_del
+                    for k in lst[:-1]:
+                        d_ptr = d_ptr[k]
+                    d_ptr.pop(lst[-1], None)
+                else:
+                    dict_del.pop(lst[0], None)
+            else:
+                dict_del.pop(lst, None)
+    else:
+        dict_del.pop(lst_keys, None)
+    return dict_del
+
 # Math func
 def mode(list):
     d = {}
