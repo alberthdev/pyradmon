@@ -1292,12 +1292,15 @@ def parse_to_config(parse):
         for config_def in config_unset_def:
             if config_def.startswith("config."):
                 pyr_config_var = config_def.split("config.")[1:]
-                info("Unsetting pyradmon_config variable %s." % pyr_config_var)
+                
                 if len(pyr_config_var) > 1:
                     warn("WARNING: Detected strange unset entry, but continuing anyway.")
                     pyr_config_var = "config.".join(pyr_config_var)
                 else:
                     pyr_config_var = str(pyr_config_var[0])
+                    
+                info("Unsetting pyradmon_config variable %s." % pyr_config_var)
+                
                 pyradmon_config.pop(pyr_config_var, None)
             else:
                 plot_config_var = config_def.split("|")
