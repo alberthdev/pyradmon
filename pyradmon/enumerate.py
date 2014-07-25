@@ -28,11 +28,11 @@ from core import *
 import datetime
 
 import re
-                
+
 # Variables to determine what to look for!
 # These are the default variables - the actual variables can be
 # changed with the call to enumerate().
-BASE_DIRECTORY    = "MERRA2/"
+DATA_PATH_FORMAT  = "MERRA2/%EXPERIMENT_ID%/obs/Y%YEAR4%/M%MONTH2%/D%DAY2%/H%HOUR2%/%EXPERIMENT_ID%.diag_%INSTRUMENT_SAT%_%DATA_TYPE%.%YEAR4%%MONTH2%%DAY2%_%HOUR2%z.txt"
 EXPERIMENT_ID     = "d5124_m2_jan91"
 START_YEAR        = "1991"
 START_MONTH       = "01"
@@ -47,6 +47,47 @@ DATA_TYPE         = "anl|ges"
 
 # Ignore warnings?
 ALLOW_WARN_PASS    = True
+
+def make_subst_variable(year, month, day, hour, experiment_id, instrument_sat, data_type):
+    syear  = str(year).zfill(2)
+    smonth = str(month).zfill(2)
+    sday   = str(day).zfill(2)
+    shour  = str(hour).zfill(2)
+    
+    # Quick sanity check
+    if (len(syear) != 4) or (len(smonth) != 2) or (len(sday) != 2) or (len(shour) != 2):
+        print "ERROR: Date is invalid!"
+        sys.exit(1)
+    
+    subst_var = {}
+    
+    subst_var["YEAR"]  = syear
+    subst_var["YEAR4"] = syear
+    subst_var["YEAR2"] = syear[2:]
+    
+    subst_var["MONTH"]  = smonth
+    subst_var["MONTH2"] = smonth
+    
+    subst_var["day"]  = sday
+    subst_var["day2"] = sday
+    
+    subst_var["HOUR"]  = shour
+    subst_var["HOUR2"] = shour
+    
+    subst_var["EXPERIMENT_ID"] = experiment_id
+    
+    subst_var["INSTRUMENT_SAT"] = instrument_sat
+    
+    subst_var["DATA_TYPE"] = data_type
+    
+    return subst_var
+
+def path_substitute(path_format, variables):
+    final_path = path_format
+    for variable in variables:
+        var_re = re.compile(re.escape('%' + variable + '%'), re.IGNORECASE)
+        final_path = var_re.sub(variables[variable], final_path)
+    return final_path
 
 def enumerate(**opts):
     """Returns a list of files that matches the given search range.
@@ -95,8 +136,8 @@ def enumerate(**opts):
             - file validation failed and ALLOW_WARN_PASS is False
     """
     # Depending on the inputs, assign variables to input or defaults!
-    base_directory = opts["base_directory"] if "base_directory" in opts \
-        else BASE_DIRECTORY
+    data_path_format = opts["data_path_format"] if "data_path_format" in opts \
+        else DATA_PATH_FORMAT
     
     experiment_id = opts["experiment_id"] if "experiment_id" in opts \
         else EXPERIMENT_ID
@@ -140,18 +181,6 @@ def enumerate(**opts):
     allow_warn_pass = opts["allow_warn_pass"] if "allow_warn_pass" in opts \
         else ALLOW_WARN_PASS
     
-    # Build the final data directory!
-    data_dir = os.path.join(base_directory, experiment_id, "obs")
-    
-    # Initialize a data dictionary...
-    data_dict = {}
-    
-    # Search for available data
-    
-    # Sanity check: does directory exist?
-    if not os.path.isdir(data_dir):
-        edie("ERROR: The directory specified does not exist!")
-    
     # Make reference datetimes
     cur_date = datetime.datetime(int(start_year), int(start_month), int(start_day), int(start_hour))
     end_date = datetime.datetime(int(end_year), int(end_month), int(end_day), int(end_hour))
@@ -165,198 +194,6 @@ def enumerate(**opts):
     month_re = re.compile(r'^M\d{2}$')
     day_re = re.compile(r'^D\d{2}$')
     hour_re = re.compile(r'^H\d{2}$')
-    
-    # Iterate into directory recursively...
-    for root, subfolder, files in os.walk(data_dir):
-        # Split path into an array, minus the first few elements to
-        # make it look like: ['Y1991', 'M01', 'D28', 'H06']
-        dir_struct = root.split('/')
-        
-        debug(str(dir_struct))
-        
-        # Do checks - this fixes issues with absolute paths.
-        if (dir_struct[-1][0] == "H") and (len(dir_struct[-1][1:]) == 2) and (dir_struct[-1][1:].isdigit()):
-            dir_struct = root.split('/')[-4:]
-        elif (dir_struct[-1][0] == "D") and (len(dir_struct[-1][1:]) == 2) and (dir_struct[-1][1:].isdigit()):
-            dir_struct = root.split('/')[-3:]
-        elif (dir_struct[-1][0] == "M") and (len(dir_struct[-1][1:]) == 2) and (dir_struct[-1][1:].isdigit()):
-            dir_struct = root.split('/')[-2:]
-        elif (dir_struct[-1][0] == "Y") and (len(dir_struct[-1][1:]) == 4) and (dir_struct[-1][1:].isdigit()):
-            dir_struct = root.split('/')[-1:]
-        else:
-            dir_struct = []
-        #print "tick"
-        
-        i = 0
-        while i < len(subfolder):
-            fdate_t = subfolder[i]
-            #print "!! ",fdate_t
-            if (not year_re.match(fdate_t)) and (not month_re.match(fdate_t)) and (not day_re.match(fdate_t)) and (not hour_re.match(fdate_t)):
-                warn("Invalid directory format for date part %s, skipping." % fdate_t)
-                subfolder.remove(fdate_t)
-                continue
-            i += 1
-        
-        # OPTIMIZATION - remove any subfolders that doesn't match our timeframe!
-        if len(dir_struct) == 0:
-            i = 0
-            while i < len(subfolder):
-                fyear_t = subfolder[i]
-                
-                f_year = int(fyear_t[1:])
-                if not ((f_year >= start_year) and (f_year <= end_year)):
-                    subfolder.remove(fyear_t)
-                    continue
-                i += 1
-        #print subfolder
-        # Only optimize if we're on end year/month
-        if len(dir_struct) == 1 and (end_year == int(subfolder[0][1:])):
-            i = 0
-            while i < len(subfolder):
-                fmonth_t = subfolder[i]
-                
-                f_month = int(fmonth_t[1:])
-                if not ((f_month >= start_month) and (f_month <= end_month)):
-                    subfolder.remove(fmonth_t)
-                    continue
-                i += 1
-        
-        if len(dir_struct) == 2 and (end_year == int(subfolder[0][1:])) and (end_month == int(subfolder[1][1:])):
-            while i < len(subfolder):
-                fday_t = subfolder[i]
-                
-                f_day = int(fday_t[1:])
-                if not ((f_day >= start_day) and (f_day <= end_day)):
-                    subfolder.remove(fday_t)
-                    continue
-                i += 1
-        
-        # OPTIMIZATION - skip any data that doesn't match our timeframe!
-        # Sanity check
-        if len(dir_struct) != 4:
-            #warn("Incomplete data set found - Y/M/D/H structure not complete! (dir_struct: %s)" % str(dir_struct))
-            continue
-        else:
-            if not hour_re.match(dir_struct[3]):
-                warn("Invalid directory format for hour %s, skipping." % dir_struct[3])
-                subfolder.remove(dir_struct[3])
-                continue
-            
-            f_date = datetime.datetime(int(dir_struct[0][1:]), int(dir_struct[1][1:]), int(dir_struct[2][1:]), int(dir_struct[3][1:]))
-            # If we are out of bounds, skip.
-            if not ((f_date >= cur_date) and (f_date <= end_date)):
-                if found_correct_range:
-                    break
-                # Otherwise...
-                continue
-            else:
-                found_correct_range = True
-            
-            if (old_year != int(dir_struct[0][1:])) or (old_month != int(dir_struct[1][1:])):
-                old_year  = int(dir_struct[0][1:])
-                old_month = int(dir_struct[1][1:])
-                info("Enumerating data for year %i, month %i..." % (int(dir_struct[0][1:]), int(dir_struct[1][1:])))
-        
-        debug(str(dir_struct) + " " + str(found_correct_range))
-        
-        # Set up the recursive dict with the structure extracted,
-        # aka dir_struct. Sort of like a "mkdir -p" - if it exists,
-        # no worries. If it doesn't exist, it'll create it
-        # automatically. It's like that, but in dict form.
-        if not findKeys(data_dict, dir_struct):
-            ele_list = []
-            cur_dict = data_dict
-            
-            # Check from the left, top-most element to the right,
-            # bottom-lower element.
-            
-            for ele in dir_struct:
-                # Add element to the list
-                ele_list.append(ele)
-                # If it doesn't exist, create it!
-                if not findKeys(cur_dict, ele_list):
-                    cur_dict[ele_list[-1]] = {}
-                # Recurse inwards
-                cur_dict = cur_dict[ele_list[-1]]
-                # Delete first element since we've cut a level from
-                # the previous line
-                ele_list = ele_list[1:]
-        
-        # Sanity check INSANITY
-        for datfile in files:
-            # Assume PASS is False (/guilty) until proven True (/innocent)
-            PASS = False
-            # Sanity check: validate timestamp on file matches folder timestamp
-            ## TMP FIX - will need to add a config option for enumerating .bin OR .txt
-            if datfile.endswith(".txt"):
-                if datfile.startswith(experiment_id):
-                    # Split the filename by periods
-                    fn_split = datfile.split(".")
-                    # Sanity check: validate that file starts with "diag_"
-                    if fn_split[1].startswith("diag_"):
-                        # Split the fields in the file name!
-                        fn_split_split = fn_split[1].split("_")
-                        # Sanity check: validate number of fields in filename
-                        if len(fn_split_split) >= 3:
-                            # Sanity check: validate if file type is ges,
-                            # anl, or both...
-                            # TODO: Make a list of valid types, and
-                            # validate for existence of those types in 
-                            # larger amounts
-                            fn_ss_pipe_split = fn_split_split[-1].split("|")
-                            if ( (fn_split_split[-1] == 'ges') or (fn_split_split[-1] == 'anl') ) \
-                               or ( (len(fn_ss_pipe_split) == 2) and ("ges" in fn_ss_pipe_split) \
-                                    and ("anl" in fn_ss_pipe_split) ):
-                                # Sanity check: validate timestamp on file matches folder timestamp
-                                if fn_split[2] == (dir_struct[0][1:] + dir_struct[1][1:] + dir_struct[2][1:] + "_" + dir_struct[3][1:] + "z"):
-                                    # All good!
-                                    PASS = True
-                                else:
-                                    warn("File validation failed - timestamp on file does not match folder!")
-                            else:
-                                warn("File validation failed - type of file is not 'ges' or 'anl'!")
-                        else:
-                            warn("File validation failed - too few fields in middle underscore (_) section!")
-                    else:
-                        warn("File validation failed - middle section does not start with diag_!")
-                else:
-                    warn("File validation failed - file does not start with EXPERIMENT_ID %s!" % experiment_id)
-                
-                # Remove file that failed validation
-                if ((not PASS) and allow_warn_pass):
-                    warn("File validation failed for %s." % datfile)
-                    warn("This file will be removed from the list of files to process.")
-                    files.remove(datfile)
-                    continue
-                
-                # If file validation failed and ALLOW_WARN_PASS is set...
-                #   OR
-                # If file validation passes...
-                if ((not PASS) and allow_warn_pass) or PASS:
-                    # ...build the final file dictionary.
-                    
-                    # Make sure that the dir dict value is a list.
-                    # If not, change it into one. (Usually, the recursive
-                    # code above makes it into a dict by default...)
-                    if type(getr(data_dict, dir_struct)) != list:
-                        setr(data_dict, dir_struct, [])
-                    
-                    # Grab current array
-                    arr = getr(data_dict, dir_struct)
-                    
-                    # Build new dict
-                    dat_dict = {}
-                    dat_dict["instrument_sat"] = "_".join(fn_split_split[1:3])
-                    dat_dict["type"] = fn_split_split[-1]
-                    dat_dict["filename"] = datfile
-                    
-                    # Append to current array...
-                    arr.append(dat_dict)
-                    
-                    # ...and save it back to the dict!
-                    setr(data_dict, dir_struct, arr)
-                else:
-                    edie("ERROR: File validation failed for for %s. See above for details." % datfile)
     
     # Now loop and generate a list of files to read!
     files_to_read = []
@@ -378,64 +215,45 @@ def enumerate(**opts):
     while 1:
         if (cur_date <= end_date):
             # Rebuild formatted parts
-            syear = "Y" + str(cur_date.year).zfill(2)
-            smonth = "M" + str(cur_date.month).zfill(2)
-            sday = "D" + str(cur_date.day).zfill(2)
-            shour = "H" + str(cur_date.hour).zfill(2)
-            try:
-                # Try to access it
-                tmp_notmp = data_dict[syear][smonth][sday][shour]
-                
-                # Success! Calculate the interval average!
-                average_interval = ((average_interval * interval_measurements) + interval_count) / (interval_measurements + 1)
-                
-                # Reset interval count and increment measurement count.
-                interval_count = 0
-                interval_measurements += 1
-                
-                for datdict in data_dict[syear][smonth][sday][shour]:
-                    # Check if the variable is a string or a list. If 
-                    # it's a string, match it. If it's a list, check to
-                    # see if the search term is in the list.
-                    # TODO: Perhaps write a function to handle this
-                    # mess?!?
-                    if ( ((type(instrument_sat) == str) and (datdict["instrument_sat"] == instrument_sat)) \
-                       or ((type(instrument_sat) == list) and (datdict["instrument_sat"] in instrument_sat)) ) \
-                      and \
-                      ( ((type(data_type) == str) and (datdict["type"] == data_type)) \
-                       or ((type(data_type) == list) and (datdict["type"] in data_type)) ):
-                        # Get date timestamp
-                        date_tag = datdict["filename"].split(".")[2]
-                        # Check if timestamps match!
-                        # 19910228_18z
-                        if not ((int(date_tag[:4]) == cur_date.year) and \
-                            (int(date_tag[4:6]) == cur_date.month) and \
-                            (int(date_tag[6:8]) == cur_date.day) and \
-                            (int(date_tag[-3:-1]) == cur_date.hour)):
-                            warn("Timestamp on file does not match folder it is stored in!")
-                        
-                        # Add new entry
-                        file_path = os.path.join(data_dir, syear, smonth, sday, shour, datdict["filename"])
-                        newdatdict = { "instrument_sat" : datdict["instrument_sat"], "type" : datdict["type"], "filename" : file_path }
-                        
-                        # BUGFIX: If using minutes or less, this will cause duplicate entries.
-                        # Check to make sure we're not adding dups!
-                        
-                        if not newdatdict in files_to_read:
-                            files_to_read.append(newdatdict)
-                        
-                        if not datdict["instrument_sat"] in available_instrument_sat:
-                            available_instrument_sat.append(datdict["instrument_sat"])
-                        
-                        if not datdict["type"] in available_data_type:
-                            available_data_type.append(datdict["type"])
-                            
-                        criteria_total_files += 1
-                    total_files += 1
-            except KeyError:
-                interval_count += 1
-                pass
+            syear  = str(cur_date.year).zfill(2)
+            smonth = str(cur_date.month).zfill(2)
+            sday   = str(cur_date.day).zfill(2)
+            shour  = str(cur_date.hour).zfill(2)
             
+            for indv_data_type in data_type:
+                subs_var = make_subst_variable(syear, smonth, sday, shour, experiment_id, instrument_sat, indv_data_type)
+                
+                file_path = path_substitute(data_path_format, subs_var)
+                
+                if check_file(file_path):
+                    # Success! Calculate the interval average!
+                    average_interval = ((average_interval * interval_measurements) + interval_count) / (interval_measurements + 1)
+                    
+                    # Reset interval count and increment measurement count.
+                    interval_count = 0
+                    interval_measurements += 1
+                    
+                    # Add new entry
+                    newdatdict = { "instrument_sat" : instrument_sat, "type" : indv_data_type, "filename" : file_path }
+                    
+                    # BUGFIX: If using minutes or less, this will cause duplicate entries.
+                    # Check to make sure we're not adding dups!
+                    
+                    if not newdatdict in files_to_read:
+                        files_to_read.append(newdatdict)
+                    
+                    if not instrument_sat in available_instrument_sat:
+                        available_instrument_sat.append(instrument_sat)
+                    
+                    if not indv_data_type in available_data_type:
+                        available_data_type.append(indv_data_type)
+                        
+                    criteria_total_files += 1
+                    total_files += 1
+                else:
+                    interval_count += 1
+                    pass
+                
             # Increment time
             if time_delta:
                 cur_date = cur_date + time_delta

@@ -190,3 +190,20 @@ def mode(list):
             max_k.append(key),
     return max_k,max
 
+def check_file(file_path):
+    if not os.path.isfile(file_path):
+        return False
+    
+    # Try opening the file, just to make sure!
+    try:
+        fh = open(file_path, "r")
+        fh.close()
+    except IOError:
+        return False
+    except:
+        print "ERROR: Strange magic occurred when trying to check to see if a file"
+        print "exists! File: %s" % file_path
+        import traceback
+        traceback.format_exc()
+    
+    return True
