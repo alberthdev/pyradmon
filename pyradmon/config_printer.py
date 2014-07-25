@@ -24,9 +24,9 @@ import textwrap
 
 
 # Some constants
-PYRADMON_CONFIG_DICT = {
-                            "base_directory"     : "Base data directory",
+PYRADMON_CONFIG_DICT = {    
                             "experiment_id"      : "Experiment ID",
+                            "data_path_format"   : "Data path format",
                             "data_start_date"    : "Start date (YYYY-MM-DD HHz)",
                             "data_end_date"      : "End date (YYYY-MM-DD HHz)",
                             "data_instrument_sat": "Instrument/Satellite ID",
@@ -335,6 +335,8 @@ def display(pyradmon_config, plot_dict, pause = True, table_debug = False):
     if pyradmon_config:
         pyradmon_disp = []
         
+        right_str = ""
+        
         for key in PYRADMON_CONFIG_DICT:
             left_str = PYRADMON_CONFIG_DICT[key] + ":"
             if isset(key, pyradmon_config):
@@ -347,7 +349,7 @@ def display(pyradmon_config, plot_dict, pause = True, table_debug = False):
                 else:
                     right_str = str(pyradmon_config[key]) + " [warn: unknown type]"
             else:
-                right_str += "[Undefined]"
+                right_str = "[Undefined]"
             pyradmon_disp.append([left_str, right_str])
         col_width_1 = max(len(row[0]) for row in pyradmon_disp) + 2
         col_width_2 = max(len(row[1]) for row in pyradmon_disp) + 2
