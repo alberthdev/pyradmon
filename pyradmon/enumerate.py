@@ -289,6 +289,7 @@ def enumerate(**opts):
     # Done!
     return (files_to_read, stats_dict)
 
+# DEPRECATED, WILL BE REMOVED IN A FUTURE RELEASE/COMMIT
 def enumerate_all(**opts):
     """Returns a tuple with a list of files that matches the given
     criteria and a stats dictionary of the data found.
