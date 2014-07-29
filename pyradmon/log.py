@@ -41,7 +41,7 @@ def init(loglevel=logging.DEBUG, logstream=None, logpath=None):
     formatter = logging.Formatter(
         '[%(asctime)s] [%(levelname)s] %(message)s',
         '%m/%d/%Y %I:%M:%S %p'
-        )	
+        )
     
     if (not logpath) and (not logstream):
         # Disable logging entirely
@@ -64,6 +64,12 @@ def init(loglevel=logging.DEBUG, logstream=None, logpath=None):
                 sh.setLevel(loglevel)
                 sh.setFormatter(formatter)
                 logger.addHandler(sh)
+    else:
+        if type(logstream) == file:
+            sh = logging.StreamHandler(logstream)
+            sh.setLevel(loglevel)
+            sh.setFormatter(formatter)
+            logger.addHandler(sh)
     
     has_init = True
     
