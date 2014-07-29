@@ -19,7 +19,7 @@
 # 
 
 import matplotlib
-matplotlib.use('Agg')
+matplotlib.use('Agg', warn=False)
 import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
 import numpy as np
