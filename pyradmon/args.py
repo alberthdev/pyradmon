@@ -65,12 +65,12 @@ def add_list_args(parser, inherit = False):
             'dest'      : 'data_single_date',
             'help'      : 'Use single date. Format should be "YYYY-MM-DD HHz". Negates the options below specifying dates and times.',
         }
-    opts['--data-base-directory'] = \
+    opts['--data-path-format'] = \
         {
             'action'    : 'store',
-            'metavar'   : 'DIR',
-            'dest'      : 'data_base_directory',
-            'help'      : 'Specify the base directory for data.',
+            'metavar'   : 'PATH_FORMAT',
+            'dest'      : 'data_path_format',
+            'help'      : 'Specify the path format for data.',
         }
     opts['--data-experiment-id'] = \
         {
@@ -1220,8 +1220,8 @@ def parse_to_config(parse):
             pyradmon_config["data_end_date"] = parse.data_single_date
         
         # --data-base-directory 
-        if isset_obj("data_base_directory", parse):
-            pyradmon_config["data_base_directory"] = parse.data_base_directory
+        if isset_obj("data_path_format", parse):
+            pyradmon_config["data_path_format"] = parse.data_path_format
         
         # --data-experiment-id
         if isset_obj("data_experiment_id", parse):
