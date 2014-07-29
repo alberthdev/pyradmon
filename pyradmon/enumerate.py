@@ -175,8 +175,14 @@ def enumerate(**opts):
     time_delta = opts["time_delta"] if "time_delta" in opts \
         else None
     
-    if len(data_type.split('|')) > 1:
-        data_type = data_type.split('|')
+    if data_type:
+        if len(data_type.split('|')) > 1:
+            data_type = data_type.split('|')
+        else:
+            data_type = [ data_type ]
+    else:
+        data_type = [ "" ]
+    
     
     allow_warn_pass = opts["allow_warn_pass"] if "allow_warn_pass" in opts \
         else ALLOW_WARN_PASS
@@ -234,7 +240,7 @@ def enumerate(**opts):
                     interval_measurements += 1
                     
                     # Add new entry
-                    newdatdict = { "instrument_sat" : instrument_sat, "type" : indv_data_type, "filename" : file_path }
+                    newdatdict = { "instrument_sat" : instrument_sat, "type" : indv_data_type, "filename" : file_path, "date" : cur_date }
                     
                     # BUGFIX: If using minutes or less, this will cause duplicate entries.
                     # Check to make sure we're not adding dups!
