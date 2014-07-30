@@ -1,0 +1,11 @@
+config:
+  data_path_format: "/gpfsm/dnb51/projects/p14/scratch/%EXPERIMENT_ID%/ana/Y%YEAR4%/M%MONTH2%/%EXPERIMENT_ID%.ana.satbang.%YEAR4%%MONTH2%%DAY2%_%HOUR2%z.txt"
+  data_experiment_id   : "e5110_fp"
+  data_instrument_sat  : "amsua_n18"
+  data_channels        : "1-15"
+  
+  data_start_date      : "2014-01-01 00z"
+  
+  data_reference_date  : "2014-02-28 00z"
+  
+  output_file     : "scan_angle_%EXPERIMENT_ID%_%INSTRUMENT_SAT%_ch%CHANNEL%.png"
