@@ -161,17 +161,13 @@ def make_parser():
                       INFO, WARNING, ERROR, and CRITICAL messages.
                       
                       Quick Start Examples:
-                        List data available:
-                          %(prog)s --config-file=config.yaml list
-                        data data:
-                          %(prog)s --config-file=config.yaml data
                         Make plots:
-                          %(prog)s --config-file=config.yaml plot
-                        Print configuration:
-                          %(prog)s --config-file=config.yaml config
+                          %(prog)s --config-file=config.yaml
+                        Change start date, then make plots:
+                          %(prog)s --config-file=config.yaml --data-start-date "2014-05-31 00z"
                         Make plots and log output:
                           %(prog)s --config-file=config.yaml --logging-output="stdout,file" \\
-                                   --logging-file="mylog.txt" plot
+                                   --logging-file="mylog.txt"
                       """),
                     version = 'PyRadmon SA v' + __version__) # Old: %(prog)s evals to pyradmon.py
 
