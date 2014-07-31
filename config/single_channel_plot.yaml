@@ -1,5 +1,5 @@
 config:
-  base_directory: MERRA2/
+  data_path_format: MERRA2/%EXPERIMENT_ID%/obs/Y%YEAR4%/M%MONTH2%/D%DAY2%/H%HOUR2%/%EXPERIMENT_ID%.diag_%INSTRUMENT_SAT%_%DATA_TYPE%.%YEAR4%%MONTH2%%DAY2%_%HOUR2%z.txt
   data_step: anl|ges
   data_start_date: 1991-01-01 00z
   data_end_date: 1991-02-28 18z
