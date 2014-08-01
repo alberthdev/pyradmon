@@ -104,12 +104,22 @@ Read the comments!
         
         # Set some configuration options...
         
-        # Set the number of processes DummyMP can use, max
+        # Set the number of processes
+        # (or CPUs, 1 process = 1 processor/CPU) DummyMP can use, max
         dummymp.set_max_processes(2)
         
         # Set the priority mode, or how much consideration DummyMP
         # should have regarding other processes and their CPU usage
-        # when spawning processes
+        # when spawning processes.
+        # Available modes:
+        #   dummymp.DUMMYMP_GENEROUS
+        #   dummymp.DUMMYMP_NORMAL
+        #   dummymp.DUMMYMP_AGGRESSIVE
+        #   dummymp.DUMMYMP_EXTREME
+        #   dummymp.DUMMYMP_NUCLEAR
+        # For more details, see ./pyradmon.py --help or
+        # the help text for set_priority_mode(mode) in source file
+        # dummymp/interface.py.
         dummymp.set_priority_mode(dummymp.DUMMYMP_NUCLEAR)
         
         # Now actually run the functions - block until done!
