@@ -19,7 +19,7 @@ Features include:
 
 Usage
 ------
-Sound excited? Let's make it work!
+Sounds exciting? Let's make it work!
 
 First, move the dummymp directory out of PyRadmon, as necessary.
 If you are using PyRadmon, you can just use the copy in the PyRadmon 
