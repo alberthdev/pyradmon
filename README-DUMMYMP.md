@@ -17,6 +17,14 @@ Features include:
  * Ability to terminate all processes at once
  * Ability to reset DummyMP state (for a "fresh start")
 
+Requirements
+-------------
+You need the following:
+ * Python 2.6+ (but not 3.x... yet)
+   * Python 2.6+ is a MUST - the important multiprocessing module only
+     exists from Python 2.6 and onward!
+ * psutil 2.x+ - https://github.com/giampaolo/psutil
+
 Usage
 ------
 Sounds exciting? Let's make it work!
