@@ -29,12 +29,16 @@ from config import *
 from enumerate import enumerate, enumerate_all
 from data import get_data, get_data_columns, post_data_columns, SPECIAL_FIELDS
 from plot import plot, subst_data
+import dummymp
 
 try:
     # Should be embedded
     from prettytable import PrettyTable
 except:
     print "ERROR: PrettyTable is needed to run this script!"
+
+def report_status(total_completed, total_running, total_procs):
+    info("[%.2f%%] %i/%i completed (%i running)" % ((total_completed / (total_procs + 0.0)) * 100, total_completed, total_procs, total_running))
 
 def main():
     parser = args.make_argparser()
@@ -284,6 +288,35 @@ def main():
         sys.exit(0)
     
     if parse.verb == "plot":
+        if ("mp_disable" in pyradmon_config) and (pyradmon_config["mp_disable"]):
+            info("Multiprocessing (mp) is disabled, processing in order...")
+        else:
+            if "mp_priority_mode" in pyradmon_config:
+                if pyradmon_config["mp_priority_mode"] == "GENEROUS":
+                    info("Multiprocessing (mp) priority mode set to GENEROUS.")
+                    dummymp.set_priority_mode(dummymp.DUMMYMP_GENEROUS)
+                elif pyradmon_config["mp_priority_mode"] == "NORMAL":
+                    info("Multiprocessing (mp) priority mode set to NORMAL.")
+                    dummymp.set_priority_mode(dummymp.DUMMYMP_NORMAL)
+                elif pyradmon_config["mp_priority_mode"] == "AGGRESSIVE":
+                    info("Multiprocessing (mp) priority mode set to AGGRESSIVE.")
+                    dummymp.set_priority_mode(dummymp.DUMMYMP_AGGRESSIVE)
+                elif pyradmon_config["mp_priority_mode"] == "EXTREME":
+                    info("Multiprocessing (mp) priority mode set to EXTREME.")
+                    dummymp.set_priority_mode(dummymp.DUMMYMP_EXTREME)
+                elif pyradmon_config["mp_priority_mode"] == "NUCLEAR":
+                    info("Multiprocessing (mp) priority mode set to NUCLEAR.")
+                    dummymp.set_priority_mode(dummymp.DUMMYMP_NUCLEAR)
+                else:
+                    die("ERROR: Invalid multiprocesing (mp) priority mode detected - this may be a bug!")
+                
+            if "mp_cpu_limit" in pyradmon_config:
+                info("Multiprocessing (mp) maximum CPU limit set to %i CPUs." % pyradmon_config["mp_cpu_limit"])
+                if pyradmon_config["mp_cpu_limit"] == 1:
+                    info("(We noticed that you limited it to 1 CPU... we recommend")
+                    info("using --mp-disable or 'mp_disable: true' instead.)")
+                dummymp.set_max_processes(pyradmon_config["mp_cpu_limit"])
+        
         for channel in gen_channel_list(chans):
             info(" ** Plotting data for channel %i..." % channel)
             
@@ -294,7 +327,10 @@ def main():
                 # Multichanel mode
                 try:
                     plot_dict_subs = subst_data(plot_dict, dat[channel])
-                    plot(plot_dict_subs, dat[channel], enum_opts_dict, custom_vars, make_dirs)
+                    if ("mp_disable" in pyradmon_config) and (pyradmon_config["mp_disable"]):
+                        plot(plot_dict_subs, dat[channel], enum_opts_dict, custom_vars, make_dirs)
+                    else:
+                        dummymp.run(plot, [ plot_dict_subs, dat[channel], enum_opts_dict, custom_vars, make_dirs ])
                     del plot_dict_subs
                 except:
                     critical("An error occurred! Error follows:")
@@ -306,7 +342,10 @@ def main():
             else:
                 try:
                     plot_dict_subs = subst_data(plot_dict, dat)
-                    plot(plot_dict_subs, dat, enum_opts_dict, custom_vars, make_dirs)
+                    if ("mp_disable" in pyradmon_config) and (pyradmon_config["mp_disable"]):
+                        plot(plot_dict_subs, dat, enum_opts_dict, custom_vars, make_dirs)
+                    else:
+                        dummymp.run(plot, [ plot_dict_subs, dat, enum_opts_dict, custom_vars, make_dirs ])
                     del plot_dict_subs
                 except:
                     critical("An error occurred! Error follows:")
@@ -315,6 +354,19 @@ def main():
                     #pprint.pprint(dat)
                     critical("Exiting.")
                     sys.exit(1)
+        
+        if not (("mp_disable" in pyradmon_config) and (pyradmon_config["mp_disable"])):
+            dummymp.set_end_callback(report_status)
+            ncpus = dummymp.getCPUAvail()
+            
+            if ncpus == 0:
+                info(" ** Detected that the system is overloaded. Plot generation may be slow.")
+                info(" ** To run tasks without waiting for CPU availability, increase priority.")
+            
+            info(" ** Detected %i or more CPUs available..." % ncpus)
+            dummymp.process_until_done()
+        
+        info("Done!")
 
 if __name__ == "__main__":
     main()

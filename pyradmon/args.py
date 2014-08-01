@@ -251,6 +251,38 @@ def make_argparser():
                   exceed that level. For instance, setting INFO will show
                   INFO, WARNING, ERROR, and CRITICAL messages.
                   
+                  Priority modes:
+                    DUMMYMP_GENEROUS   - Generous mode. Very conservative about using any
+                                         CPU, and ensures that no one else is disrupted.
+                                         Note that this is VERY GENEROUS - if all CPUs are
+                                         taken, DummyMP will wait until there are
+                                         available CPUs! (All other modes will run a
+                                         single process, regardless of CPU usage.) This is
+                                         the slowest mode!
+                    DUMMYMP_NORMAL     - Normal mode. Careful not to take up too much
+                                         resources on the CPU, but it will try to get
+                                         things done. This is faster than GENEROUS, but it
+                                         isn't the fastest. This mode is the default and
+                                         is recommended for most conditions.
+                    DUMMYMP_AGGRESSIVE - Aggressive mode. This mode considers other users,
+                                         but it may spawn processes anyway depending on
+                                         how other processes behave. This is faster than
+                                         NORMAL, and is recommended for semi-important
+                                         conditions.
+                    DUMMYMP_EXTREME    - Extreme mode. This mode somewhat considers other
+                                         users, but unless the other processes are using
+                                         a significant portion of the CPU, it will spawn
+                                         spawn processes anyway. This is faster than
+                                         AGGRESSIVE, and is recommended for important
+                                         conditions.
+                    DUMMYMP_NUCLEAR    - Nuclear mode. This mode does NOT consider other
+                                         users, and just runs as many processes as it can
+                                         allow (total number of cores). This is much
+                                         faster than EXTREME, and is recommended for
+                                         really important conditions. Note that this may
+                                         earn you very angry co-workers knocking down your
+                                         door with pitchforks, so use sparingly!
+                  
                   Quick Start Examples:
                     List data available:
                       %(prog)s --config-file=config.yaml list
@@ -303,6 +335,26 @@ def make_argparser():
             'metavar'   : 'LOG_LEVEL',
             'dest'      : 'logging_level',
             'help'      : 'Set the logging level for PyRadmon.',
+        }
+    main_opts['--mp-disable'] = \
+        {
+            'action'    : 'store_true',
+            'dest'      : 'mp_disable',
+            'help'      : 'Disable multiprocessing (mp) optimizations in PyRadmon.',
+        }
+    main_opts['--mp-priority-mode'] = \
+        {
+            'action'    : 'store',
+            'metavar'   : 'PRIORITY_MODE',
+            'dest'      : 'mp_priority_mode',
+            'help'      : 'Set the priority mode for the multiprocessing (mp) optimizations in PyRadmon. Options are GENEROUS, NORMAL, AGGRESSIVE, EXTREME, and NUCLEAR. GENEROUS yields to other CPU hungry processes, while NUCLEAR spawns as many processes as it can regardless of CPU usage.',
+        }
+    main_opts['--mp-cpu-limit'] = \
+        {
+            'action'    : 'store',
+            'metavar'   : 'NUM_CPUS',
+            'dest'      : 'mp_cpu_limit',
+            'help'      : 'Limit the number of CPUs that the multiprocessing (mp) optimizations in PyRadmon can use.',
         }
 
     add_args(parser, False, main_opts)
@@ -640,6 +692,37 @@ def parse_to_config(parse):
             return (None, None, None)
     else:
         logging_level = logging.INFO
+    
+    if isset_obj("mp_disable", parse):
+        pyradmon_config['mp_disable'] = parse.mp_disable
+    
+    if isset_obj("mp_priority_mode", parse):
+        mp_priority_mode = parse.mp_priority_mode
+        mp_priority_mode = mp_priority_mode.strip()
+        if mp_priority_mode == "GENEROUS":
+            pyradmon_config['mp_priority_mode'] = "GENEROUS"
+        elif mp_priority_mode == "NORMAL":
+            pyradmon_config['mp_priority_mode'] = "NORMAL"
+        elif mp_priority_mode == "AGGRESSIVE":
+            pyradmon_config['mp_priority_mode'] = "AGGRESSIVE"
+        elif mp_priority_mode == "EXTREME":
+            pyradmon_config['mp_priority_mode'] = "EXTREME"
+        elif mp_priority_mode == "NUCLEAR":
+            pyradmon_config['mp_priority_mode'] = "NUCLEAR"
+        else:
+            print "ERROR: Invalid multiprocessing (mp) priority mode specified!"
+            print "Valid levels: GENEROUS, NORMAL, AGGRESSIVE, EXTREME, NUCLEAR"
+            return (None, None, None)
+    else:
+        pyradmon_config['mp_priority_mode'] = "NORMAL"
+    
+    if isset_obj("mp_cpu_limit", parse):
+        if (parse.mp_cpu_limit).isdigit():
+            pyradmon_config['mp_cpu_limit'] = int(parse.mp_cpu_limit)
+        else:
+            print "ERROR: Invalid multiprocessing (mp) CPU limit! The CPU limit"
+            print "must specify an integer number of CPUs to limit use to."
+            return (None, None, None)
     
     # We're ready - let's set up logging!
     logger = log.init(logging_level, logging_output, logging_file)
