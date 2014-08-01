@@ -34,6 +34,16 @@ Your program needs to be structured like this:
     
     [process queue loop] OR [process queue block]
 
+Somewhat confused? Basically, in plain English:
+  1. Add the functions you want to run, with their arguments. The syntax
+     is very similar to running an actual function - just slightly
+     different. This does NOT run the function immediately, but instead
+     queues it for execution.
+  2. Run DummyMP's processing function(s). By "processing", we mean the
+     functions to actually execute your functions in a new process, and
+     communicate with your process to faciliate logging, store function
+     value returns, and clean up finished processes.
+
 Here's a simple example. (Taken partly from `__init__.py`.)
 Read the comments!
 
@@ -63,6 +73,19 @@ Read the comments!
         # speed things up.
         dummymp.getCPUAvail()
         
+        # Now queue! This is similar to calling the function.
+        # 
+        # Running the function:
+        #   my_func(my_arg1, my_arg2)
+        # Queuing the function with DummyMP:
+        #   dummymp.run(my_func, [my_arg1, my_arg2])
+        # 
+        # dummymp.run() does not return anything.
+        # 
+        # If you are expecting your function to return something, use
+        # dummymp.get_returns(). This returns a dictionary with your
+        # function's return values - see below for more details.
+        
         dummymp.run(test, [])
         dummymp.run(test, [])
         dummymp.run(test, [])
@@ -78,19 +101,23 @@ Read the comments!
         dummymp.set_priority_mode(dummymp.DUMMYMP_NUCLEAR)
         
         # Now actually run the functions - block until done!
-        process_until_done()
+        dummymp.process_until_done()
         
-        # Get the return values from your function calls
-        print get_returns()
+        # Get the return values from your function calls.
+        # This returns a dict, with keys being the zero-indexed order
+        # in which you called each function.
+        # So dummymp.get_returns()[0] for the first run call,
+        # dummymp.get_returns()[1] for the second run call, etc.
+        print dummymp.get_returns()
         
         # Reset state!
         print "Resetting..."
-        reset()
+        dummymp.reset()
         
         # Queue again...
-        run(test, [])
-        run(test, [])
-        run(test, [])
+        dummymp.run(test, [])
+        dummymp.run(test, [])
+        dummymp.run(test, [])
         
         # You can also use a loop to run and process the functions!
         # When all processes are done, dummymp.process_process() will
@@ -104,20 +131,20 @@ Read the comments!
         
         # Let's reset again!
         print "Resetting once more..."
-        reset()
+        dummymp.reset()
         
         # This time, let's demo stopping a running process!
         
         # Set the number of processes DummyMP can use to 1
-        set_max_processes(1)
+        dummymp.set_max_processes(1)
         
         # Queue again...
-        run(test, [])
-        run(test, [])
-        run(test, [])
+        dummymp.run(test, [])
+        dummymp.run(test, [])
+        dummymp.run(test, [])
         
         # We run this once to start one process.
-        process_process()
+        dummymp.process_process()
         
         # Wait two seconds...
         time.sleep(2)
@@ -128,8 +155,8 @@ Read the comments!
         # lost after a reset. Run killall() instead if you want to
         # preserve any returns! (Functions that haven't finished running
         # will not have any returns.)
-        reset()
+        dummymp.reset()
         
         # This shouldn't do anything.
-        process_until_done()
+        dummymp.process_until_done()
 ```
