@@ -50,6 +50,7 @@ Read the comments!
 ```python
     import logging
     import random
+    import time
     
     import dummymp
     # OR: from pyradmon import dummymp
