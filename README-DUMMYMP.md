@@ -85,6 +85,18 @@ Read the comments!
         # If you are expecting your function to return something, use
         # dummymp.get_returns(). This returns a dictionary with your
         # function's return values - see below for more details.
+        # 
+        # Note: while queuing, it may be a good idea to run
+        # dummymp.process_process() inbetween calls, e.g.
+        #  dummymp.run(test, [])
+        #  dummymp.process_process()
+        #  dummymp.run(test, [])
+        #  dummymp.process_process()
+        # 
+        # This is what is used in PyRadmon. It doesn't save a lot - we
+        # tested and determind that it saves 0.1-1.5 seconds based on
+        # light to moderate workloads - but if your workload increases
+        # significantly, this may help!
         
         dummymp.run(test, [])
         dummymp.run(test, [])

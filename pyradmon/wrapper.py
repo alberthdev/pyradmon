@@ -331,6 +331,7 @@ def main():
                         plot(plot_dict_subs, dat[channel], enum_opts_dict, custom_vars, make_dirs)
                     else:
                         dummymp.run(plot, [ plot_dict_subs, dat[channel], enum_opts_dict, custom_vars, make_dirs ])
+                        dummymp.process_process()
                     del plot_dict_subs
                 except:
                     critical("An error occurred! Error follows:")
@@ -346,6 +347,7 @@ def main():
                         plot(plot_dict_subs, dat, enum_opts_dict, custom_vars, make_dirs)
                     else:
                         dummymp.run(plot, [ plot_dict_subs, dat, enum_opts_dict, custom_vars, make_dirs ])
+                        dummymp.process_process()
                     del plot_dict_subs
                 except:
                     critical("An error occurred! Error follows:")
