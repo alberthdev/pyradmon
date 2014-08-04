@@ -330,7 +330,7 @@ def main():
                     if ("mp_disable" in pyradmon_config) and (pyradmon_config["mp_disable"]):
                         plot(plot_dict_subs, dat[channel], enum_opts_dict, custom_vars, make_dirs)
                     else:
-                        dummymp.run(plot, [ plot_dict_subs, dat[channel], enum_opts_dict, custom_vars, make_dirs ])
+                        dummymp.run(plot, plot_dict_subs, dat[channel], enum_opts_dict, custom_vars, make_dirs)
                         dummymp.process_process()
                     del plot_dict_subs
                 except:
@@ -346,7 +346,7 @@ def main():
                     if ("mp_disable" in pyradmon_config) and (pyradmon_config["mp_disable"]):
                         plot(plot_dict_subs, dat, enum_opts_dict, custom_vars, make_dirs)
                     else:
-                        dummymp.run(plot, [ plot_dict_subs, dat, enum_opts_dict, custom_vars, make_dirs ])
+                        dummymp.run(plot, plot_dict_subs, dat, enum_opts_dict, custom_vars, make_dirs)
                         dummymp.process_process()
                     del plot_dict_subs
                 except:
