@@ -29,7 +29,6 @@ import copy
 
 import config
 import _version
-from process import _runner
 from taskmgr import process_queue
 
 def set_max_processes(max_proc):
@@ -256,8 +255,6 @@ def run(func, *args, **kwargs):
         *args - Arguments to use with the function.
         **kwargs - Keyword arguments to use with the function.
     """
-    q = Queue()
-    
     # We need to perform a deepcopy, since we want the original
     # arguments before running! Without a deepcopy, list, dict, and
     # possibly other arguments could be changed, making the function
@@ -265,25 +262,16 @@ def run(func, *args, **kwargs):
     final_args_tuple = copy.deepcopy(args)
     final_kwargs = copy.deepcopy(kwargs)
     
+    # Convert args tuple to a list
     final_args   = []
     for final_arg in final_args_tuple:
         final_args.append(final_arg)
     
-    # Now add some arguments to the front:
-    # Function to actually run
-    final_args.insert(0, func)
-    # Queue
-    final_args.insert(0, q)
-    # Process ID
-    final_args.insert(0, config.total_procs)
+    # Create our start entry
+    start_entry = [ config.total_procs, func, final_args, final_kwargs ]
     
-    # Set up the process!
-    p = Process(target = _runner, args = final_args, kwargs = final_kwargs)
-    
-    # Append everything!
-    config.dummymp_queues.append(q)
-    config.dummymp_procs.append(p)
-    config.dummymp_start_procs.append(p)
+    # Append our start entry!
+    config.dummymp_start_procs.append(start_entry)
     
     # Increment total process count
     config.total_procs += 1

@@ -22,7 +22,10 @@
 import logging
 import config
 import time
+from multiprocessing import Process, Queue
+
 from detect import *
+from process import _runner
 
 def process_queue():
     """Process inter-process messages.
@@ -129,7 +132,7 @@ def process_process():
     nproc = 0
     # Loop through process execution queue
     while nproc < len(config.dummymp_start_procs):
-        dummymp_proc = config.dummymp_start_procs[nproc]
+        dummymp_proc_entry = config.dummymp_start_procs[nproc]
         
         # Check to make sure we can meet max_processes limit
         # (0 means no limit set)
@@ -150,11 +153,41 @@ def process_process():
                 # Deincrement counter
                 avail_cpus -= 1
                 
+                # Setup Queue
+                # We create the Queue and Process here so that we can
+                # prevent the error from opening too many Queue objects
+                # in multiprocessing.Pipe:
+                #   IOError: handle out of range in select()
+                # Bug: http://bugs.python.org/issue10527
+                q = Queue()
+                
+                # Extract internal PID, function, final_args, and
+                # final_kwargs
+                int_pid = dummymp_proc_entry[0]
+                func = dummymp_proc_entry[1]
+                final_args = dummymp_proc_entry[2]
+                final_kwargs = dummymp_proc_entry[3]
+                
+                # Now add some arguments to the front:
+                # Function to actually run
+                final_args.insert(0, func)
+                # Queue
+                final_args.insert(0, q)
+                # Process ID
+                final_args.insert(0, int_pid)
+                
+                # Create Process object
+                p = Process(target = _runner, args = final_args, kwargs = final_kwargs)
+                
+                # Save it
+                config.dummymp_queues.append(q)
+                config.dummymp_procs.append(p)
+                
                 # Start the process...
-                dummymp_proc.start()
+                p.start()
                 
                 # ...and remove it from the starting queue.
-                config.dummymp_start_procs.remove(dummymp_proc)
+                config.dummymp_start_procs.remove(dummymp_proc_entry)
                 
                 # Increment running counter...
                 config.total_running += 1
