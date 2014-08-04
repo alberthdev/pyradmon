@@ -127,7 +127,7 @@ def process_process():
         nproc += 1
     
     # Fetch available CPUs
-    avail_cpus = getCPUAvail()
+    avail_cpus = getCPUAvail() - config.total_running
     
     # Check if we need to update CPU avail
     if not needUpdateCPUAvail():
