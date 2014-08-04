@@ -42,8 +42,6 @@ def getCPUAvail():
         An integer with the number of CPUs that are available.
     """
     
-    logging.debug("Querying CPUs (%s mode)..." % (config.DUMMYMP_STRING[config.DUMMYMP_MODE]))
-    
     # If the time threshold is met, OR we are in NUCLEAR mode, just
     # return the cached CPU availability.
     if (config.DUMMYMP_MODE == config.DUMMYMP_NUCLEAR) or (datetime.datetime.now() - config.LAST_CPU_CHECK <= config.CPU_CHECK_TIMEDELTA_THRESHOLD):
@@ -58,6 +56,8 @@ def getCPUAvail():
     # Check to make sure we aren't looking at ourselves!
     if config.total_running != 0:
         return config.CPU_AVAIL
+    
+    logging.debug("Querying CPUs (%s mode)..." % (config.DUMMYMP_STRING[config.DUMMYMP_MODE]))
     
     # Get measurements for the specified number of times
     for i in xrange(0, config.DUMMYMP_MCYCLE[config.DUMMYMP_MODE] - 1):
