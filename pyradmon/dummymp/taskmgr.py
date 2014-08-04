@@ -129,81 +129,83 @@ def process_process():
     # Fetch available CPUs
     avail_cpus = getCPUAvail()
     
-    nproc = 0
-    # Loop through process execution queue
-    while nproc < len(config.dummymp_start_procs):
-        dummymp_proc_entry = config.dummymp_start_procs[nproc]
-        
-        # Check to make sure we can meet max_processes limit
-        # (0 means no limit set)
-        if (config.max_processes == 0) or (config.total_running < config.max_processes):
+    # Check if we need to update CPU avail
+    if not needUpdateCPUAvail():
+        nproc = 0
+        # Loop through process execution queue
+        while nproc < len(config.dummymp_start_procs):
+            dummymp_proc_entry = config.dummymp_start_procs[nproc]
             
-            # If there's no available CPUs, check to make sure that a
-            # process isn't already running, and that the mode set is
-            # not GENEROUS.
-            if ((avail_cpus == 0) and (config.total_running == 0) and (config.DUMMYMP_MODE != config.DUMMYMP_GENEROUS)):
-                # Force a single process to run!
-                avail_cpus += 1
-                logging.debug("Not in generous mode, so forcing one task to run.")
+            # Check to make sure we can meet max_processes limit
+            # (0 means no limit set)
+            if (config.max_processes == 0) or (config.total_running < config.max_processes):
+                
+                # If there's no available CPUs, check to make sure that a
+                # process isn't already running, and that the mode set is
+                # not GENEROUS.
+                if ((avail_cpus == 0) and (config.total_running == 0) and (config.DUMMYMP_MODE != config.DUMMYMP_GENEROUS)):
+                    # Force a single process to run!
+                    avail_cpus += 1
+                    logging.debug("Not in generous mode, so forcing one task to run.")
+                
+                # Check if we have any available (or "available") CPUs!
+                if avail_cpus > 0:
+                    logging.debug("%i CPUs available, spawning process!" % avail_cpus)
+                    
+                    # Deincrement counter
+                    avail_cpus -= 1
+                    
+                    # Setup Queue
+                    # We create the Queue and Process here so that we can
+                    # prevent the error from opening too many Queue objects
+                    # in multiprocessing.Pipe:
+                    #   IOError: handle out of range in select()
+                    # Bug: http://bugs.python.org/issue10527
+                    q = Queue()
+                    
+                    # Extract internal PID, function, final_args, and
+                    # final_kwargs
+                    int_pid = dummymp_proc_entry[0]
+                    func = dummymp_proc_entry[1]
+                    final_args = dummymp_proc_entry[2]
+                    final_kwargs = dummymp_proc_entry[3]
+                    
+                    # Now add some arguments to the front:
+                    # Function to actually run
+                    final_args.insert(0, func)
+                    # Queue
+                    final_args.insert(0, q)
+                    # Process ID
+                    final_args.insert(0, int_pid)
+                    
+                    # Create Process object
+                    p = Process(target = _runner, args = final_args, kwargs = final_kwargs)
+                    
+                    # Save it
+                    config.dummymp_queues.append(q)
+                    config.dummymp_procs.append(p)
+                    
+                    # Start the process...
+                    p.start()
+                    
+                    # ...and remove it from the starting queue.
+                    config.dummymp_start_procs.remove(dummymp_proc_entry)
+                    
+                    # Increment running counter...
+                    config.total_running += 1
+                    
+                    # Make any callbacks, if necessary.
+                    if config.PROCESS_START_CALLBACK:
+                        config.PROCESS_START_CALLBACK(config.total_completed, config.total_running, config.total_procs)
+                    
+                    # Deincrement index counter, since we just removed a process
+                    # from the start queue list.
+                    nproc -= 1
+            else:
+                logging.debug("Max processes limit of %i reached, waiting for process to terminate." % config.max_processes)
             
-            # Check if we have any available (or "available") CPUs!
-            if avail_cpus > 0:
-                logging.debug("%i CPUs available, spawning process!" % avail_cpus)
-                
-                # Deincrement counter
-                avail_cpus -= 1
-                
-                # Setup Queue
-                # We create the Queue and Process here so that we can
-                # prevent the error from opening too many Queue objects
-                # in multiprocessing.Pipe:
-                #   IOError: handle out of range in select()
-                # Bug: http://bugs.python.org/issue10527
-                q = Queue()
-                
-                # Extract internal PID, function, final_args, and
-                # final_kwargs
-                int_pid = dummymp_proc_entry[0]
-                func = dummymp_proc_entry[1]
-                final_args = dummymp_proc_entry[2]
-                final_kwargs = dummymp_proc_entry[3]
-                
-                # Now add some arguments to the front:
-                # Function to actually run
-                final_args.insert(0, func)
-                # Queue
-                final_args.insert(0, q)
-                # Process ID
-                final_args.insert(0, int_pid)
-                
-                # Create Process object
-                p = Process(target = _runner, args = final_args, kwargs = final_kwargs)
-                
-                # Save it
-                config.dummymp_queues.append(q)
-                config.dummymp_procs.append(p)
-                
-                # Start the process...
-                p.start()
-                
-                # ...and remove it from the starting queue.
-                config.dummymp_start_procs.remove(dummymp_proc_entry)
-                
-                # Increment running counter...
-                config.total_running += 1
-                
-                # Make any callbacks, if necessary.
-                if config.PROCESS_START_CALLBACK:
-                    config.PROCESS_START_CALLBACK(config.total_completed, config.total_running, config.total_procs)
-                
-                # Deincrement index counter, since we just removed a process
-                # from the start queue list.
-                nproc -= 1
-        else:
-            logging.debug("Max processes limit of %i reached, waiting for process to terminate." % config.max_processes)
-        
-        # Increment
-        nproc += 1
+            # Increment
+            nproc += 1
     
     # Check to see if we are done!
     if len(config.dummymp_procs) == 0:

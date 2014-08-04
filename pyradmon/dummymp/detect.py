@@ -24,6 +24,11 @@ import logging
 import datetime
 import config
 
+def needUpdateCPUAvail():
+    return not ( \
+            (config.DUMMYMP_MODE == config.DUMMYMP_NUCLEAR) \
+            (datetime.datetime.now() - config.LAST_CPU_CHECK <= config.CPU_CHECK_TIMEDELTA_THRESHOLD))
+
 def getCPUAvail():
     """Get number of CPUs available.
     
@@ -49,6 +54,10 @@ def getCPUAvail():
     
     # Initialize array...
     avg = []
+    
+    # Check to make sure we aren't looking at ourselves!
+    if config.total_running != 0:
+        return config.CPU_AVAIL
     
     # Get measurements for the specified number of times
     for i in xrange(0, config.DUMMYMP_MCYCLE[config.DUMMYMP_MODE] - 1):
