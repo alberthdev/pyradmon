@@ -26,7 +26,7 @@ import config
 
 def needUpdateCPUAvail():
     return not ( \
-            (config.DUMMYMP_MODE == config.DUMMYMP_NUCLEAR) \
+            (config.DUMMYMP_MODE == config.DUMMYMP_NUCLEAR) or \
             (datetime.datetime.now() - config.LAST_CPU_CHECK <= config.CPU_CHECK_TIMEDELTA_THRESHOLD))
 
 def getCPUAvail():
