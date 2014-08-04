@@ -243,7 +243,7 @@ def reset():
     killall()
     reload(config)
 
-def run(func, args):
+def run(func, *args, **kwargs):
     """Run a function with multiprocessing.
     
     Run a function with multiprocessing. This actually queues the
@@ -253,7 +253,8 @@ def run(func, args):
     
     Args:
         func - Function to run.
-        args - List of arguments to use with the function.
+        *args - Arguments to use with the function.
+        **kwargs - Keyword arguments to use with the function.
     """
     q = Queue()
     
@@ -261,7 +262,12 @@ def run(func, args):
     # arguments before running! Without a deepcopy, list, dict, and
     # possibly other arguments could be changed, making the function
     # call invalid!
-    final_args = copy.deepcopy(args)
+    final_args_tuple = copy.deepcopy(args)
+    final_kwargs = copy.deepcopy(kwargs)
+    
+    final_args   = []
+    for final_arg in final_args_tuple:
+        final_args.append(final_arg)
     
     # Now add some arguments to the front:
     # Function to actually run
@@ -272,7 +278,7 @@ def run(func, args):
     final_args.insert(0, config.total_procs)
     
     # Set up the process!
-    p = Process(target = _runner, args = final_args)
+    p = Process(target = _runner, args = final_args, kwargs = final_kwargs)
     
     # Append everything!
     config.dummymp_queues.append(q)

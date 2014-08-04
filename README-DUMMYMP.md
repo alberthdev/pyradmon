@@ -87,7 +87,10 @@ Read the comments!
         # Running the function:
         #   my_func(my_arg1, my_arg2)
         # Queuing the function with DummyMP:
-        #   dummymp.run(my_func, [my_arg1, my_arg2])
+        #   dummymp.run(my_func, my_arg1, my_arg2)
+        # If you have keyword arguments:
+        #   dummymp.run(my_func, my_arg1, my_arg2, kw_arg3 = val3,
+        #     kw_arg4 = val4)
         # 
         # dummymp.run() does not return anything.
         # 
@@ -97,9 +100,9 @@ Read the comments!
         # 
         # Note: while queuing, it may be a good idea to run
         # dummymp.process_process() inbetween calls, e.g.
-        #  dummymp.run(test, [])
+        #  dummymp.run(test)
         #  dummymp.process_process()
-        #  dummymp.run(test, [])
+        #  dummymp.run(test)
         #  dummymp.process_process()
         # 
         # This is what is used in PyRadmon. It doesn't save a lot - we
@@ -107,9 +110,9 @@ Read the comments!
         # light to moderate workloads - but if your workload increases
         # significantly, this may help!
         
-        dummymp.run(test, [])
-        dummymp.run(test, [])
-        dummymp.run(test, [])
+        dummymp.run(test)
+        dummymp.run(test)
+        dummymp.run(test)
         
         # Set some configuration options...
         
@@ -146,9 +149,9 @@ Read the comments!
         dummymp.reset()
         
         # Queue again...
-        dummymp.run(test, [])
-        dummymp.run(test, [])
-        dummymp.run(test, [])
+        dummymp.run(test)
+        dummymp.run(test)
+        dummymp.run(test)
         
         # You can also use a loop to run and process the functions!
         # When all processes are done, dummymp.process_process() will
@@ -170,9 +173,9 @@ Read the comments!
         dummymp.set_max_processes(1)
         
         # Queue again...
-        dummymp.run(test, [])
-        dummymp.run(test, [])
-        dummymp.run(test, [])
+        dummymp.run(test)
+        dummymp.run(test)
+        dummymp.run(test)
         
         # We run this once to start one process.
         dummymp.process_process()

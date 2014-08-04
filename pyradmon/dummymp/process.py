@@ -26,7 +26,7 @@ import logging
 from loghandler import *
 import config
 
-def _runner(process_id, dummymp_queue, func, *args):
+def _runner(process_id, dummymp_queue, func, *args, **kwargs):
     """Multiprocess function wrapper for running a function given args.
     
     This function wraps an existing function with its args, and allows
@@ -71,7 +71,6 @@ def _runner(process_id, dummymp_queue, func, *args):
                 reference.)
         
     """
-    
     # Get the default logger
     logger = logging.getLogger()
     
@@ -92,7 +91,7 @@ def _runner(process_id, dummymp_queue, func, *args):
     logger.addHandler(dmp_handler)
     
     # Call the function!
-    ret = func(*args)
+    ret = func(*args, **kwargs)
     
     # Send the return value through the queue!
     dummymp_queue.put([ [config.DUMMYMP_RET_ID, os.getpid(), process_id], ret ])

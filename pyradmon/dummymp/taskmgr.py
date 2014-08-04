@@ -100,6 +100,9 @@ def process_process():
             
             # Remove the queue and process
             pi = config.dummymp_procs.index(dummymp_proc)
+            
+            # Make sure to close the queue!
+            config.dummymp_queues[pi].close()
             config.dummymp_queues.pop(pi)
             config.dummymp_procs.pop(pi)
             

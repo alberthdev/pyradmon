@@ -44,6 +44,31 @@ def test():
     if num > 5:
         return num
 
+# Just a test function, with args.
+def test2(jellybean):
+    logging.info("Hi there! Magical jelly bean number arg is %i - sleeping for %i!" % (jellybean, jellybean))
+    time.sleep(jellybean)
+
+# Just a test function, with kwargs.
+def test3(**kwargs):
+    if "jellybean" in kwargs:
+        jb = kwargs["jellybean"]
+    else:
+        jb = 1
+    
+    logging.info("Hi there! Magical jelly bean number is kwarg %i - sleeping for %i!" % (jb, jb))
+    time.sleep(jb)
+
+# Just a test function, with BOTH args and kwargs!
+def test4(jellybean, **kwargs):
+    if "jellybean2" in kwargs:
+        jb = kwargs["jellybean2"]
+    else:
+        jb = 1
+    
+    logging.info("Hi there! Magical jelly bean number is arg %i - but sleeping for kwarg %i!" % (jellybean, jb))
+    time.sleep(jb)
+
 # If run directly, run some tests using the test function above.
 if __name__ == "__main__":
     import random
@@ -53,9 +78,9 @@ if __name__ == "__main__":
     
     set_max_processes(2)
     
-    run(test, [])
-    run(test, [])
-    run(test, [])
+    run(test)
+    run(test)
+    run(test)
     
     process_until_done()
     
@@ -65,12 +90,18 @@ if __name__ == "__main__":
         print 'ERROR: Could not get all returns!'
         sys.exit(1)
     
+    # Run with arguments
+    run(test2, 5)
+    run(test3, jellybean = 5)
+    run(test4, 1, jellybean2 = 5)
+    process_until_done()
+    
     # Configuration reset test - this should clear max_processes
     print "Resetting..."
     reset()
-    run(test, [])
-    run(test, [])
-    run(test, [])
+    run(test)
+    run(test)
+    run(test)
     
     process_until_done()
     
@@ -78,9 +109,9 @@ if __name__ == "__main__":
     print "Resetting once more..."
     reset()
     set_max_processes(1)
-    run(test, [])
-    run(test, [])
-    run(test, [])
+    run(test)
+    run(test)
+    run(test)
     
     process_process()
     time.sleep(2)
