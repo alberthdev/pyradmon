@@ -201,22 +201,30 @@ def killall():
     Args:
         None
     """
+    # Clear out all of the processes!
     while len(config.dummymp_procs) != 0:
+        # Pick the first one
         dummymp_proc = config.dummymp_procs[0]
         
         try:
+            # Attempt to terminate...
             dummymp_proc.terminate()
         except:
             pass
         
+        # Run process_queue() once to get any queue items
         process_queue()
+        
+        # Remove the queue and process
         pi = config.dummymp_procs.index(dummymp_proc)
         config.dummymp_queues.pop(pi)
         config.dummymp_procs.pop(pi)
         
+        # Add to the completed count and remove from running count...
         config.total_completed += 1
         config.total_running -= 1
         
+        # Make any callbacks, if necessary.
         if config.PROCESS_END_CALLBACK:
             config.PROCESS_END_CALLBACK(config.total_completed, config.total_running, config.total_procs)
             
@@ -244,26 +252,32 @@ def run(func, args):
     execute the function.
     
     Args:
-        None
-    
-    Returns:
-        Nothing
+        func - Function to run.
+        args - List of arguments to use with the function.
     """
     q = Queue()
     
-    #final_args = map(list, args)
+    # We need to perform a deepcopy, since we want the original
+    # arguments before running! Without a deepcopy, list, dict, and
+    # possibly other arguments could be changed, making the function
+    # call invalid!
     final_args = copy.deepcopy(args)
+    
+    # Now add some arguments to the front:
     # Function to actually run
     final_args.insert(0, func)
     # Queue
     final_args.insert(0, q)
     # Process ID
     final_args.insert(0, config.total_procs)
+    
     # Set up the process!
     p = Process(target = _runner, args = final_args)
     
+    # Append everything!
     config.dummymp_queues.append(q)
     config.dummymp_procs.append(p)
     config.dummymp_start_procs.append(p)
     
+    # Increment total process count
     config.total_procs += 1

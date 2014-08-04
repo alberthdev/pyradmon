@@ -37,21 +37,31 @@ def process_queue():
         None, but warnings are emitted to log if an invalid message is
         received.
     """
+    # Get main process logger
     logger = logging.getLogger()
+    
+    # Loop through queues...
     for dummymp_queue in config.dummymp_queues:
+        # Make sure there's something to fetch from the queue!
         if not dummymp_queue.empty():
+            # Make a request to get the queue, with a timeout to ensure
+            # no blocking (or long waiting)
             qout = dummymp_queue.get(timeout = 0.001)
             
+            # Check if it's a list or not
             if type(qout) != list:
                 logger.warning("WARNING: Received invalid message from process! This may be a bug! Message: %s" % str(qout))
                 continue
             
+            # Check the message type IDs!
             # Format: [ [ DUMMYMP_MSG_TYPE_ID, SYSTEM_PID, INTERNAL_ID ], DATA... ]
             if qout[0][0] == config.DUMMYMP_LOG_ID:
-                # Append PID info
+                # Append PID info text
                 qout[1].msg = ("[PID %i] " % qout[0][1]) + qout[1].msg
+                # Emit the modified log record
                 logger.handle(qout[1])
             elif qout[0][0] == config.DUMMYMP_RET_ID:
+                # Store return into return dictionary
                 config.dummymp_rets[qout[0][2]] = qout[1]
             else:
                 logger.warning("WARNING: Received invalid message from process! (Invalid message type ID!) This may be a bug! Message: %s" % str(qout))
@@ -76,55 +86,90 @@ def process_process():
         multiprocessing's join().)
     """
     nproc = 0
+    # Loop through processes via index!
     while nproc < len(config.dummymp_procs):
         dummymp_proc = config.dummymp_procs[nproc]
         
+        # Check if process is complete! (In this case, ensure that
+        # the process is not in a start queue and it isn't alive
+        # anymore!)
         if (not dummymp_proc in config.dummymp_start_procs) and (not dummymp_proc.is_alive()):
+            # Run process_queue() to fetch the remaining queue items
+            # from the process.
             process_queue()
+            
+            # Remove the queue and process
             pi = config.dummymp_procs.index(dummymp_proc)
             config.dummymp_queues.pop(pi)
             config.dummymp_procs.pop(pi)
+            
             logging.debug("Process complete!")
             
+            # Add to the completed count and remove from running count...
             config.total_completed += 1
             config.total_running -= 1
             
+            # Make any callbacks, if necessary.
             if config.PROCESS_END_CALLBACK:
                 config.PROCESS_END_CALLBACK(config.total_completed, config.total_running, config.total_procs)
             
+            # Deincrement index counter, since we just removed a process
+            # from the list.
             nproc -= 1
         
+        # Increment
         nproc += 1
     
+    # Fetch available CPUs
     avail_cpus = getCPUAvail()
-    #print "PROCS:", dummymp_start_procs
     
     nproc = 0
+    # Loop through process execution queue
     while nproc < len(config.dummymp_start_procs):
         dummymp_proc = config.dummymp_start_procs[nproc]
         
+        # Check to make sure we can meet max_processes limit
+        # (0 means no limit set)
         if (config.max_processes == 0) or (config.total_running < config.max_processes):
+            
+            # If there's no available CPUs, check to make sure that a
+            # process isn't already running, and that the mode set is
+            # not GENEROUS.
             if ((avail_cpus == 0) and (config.total_running == 0) and (config.DUMMYMP_MODE != config.DUMMYMP_GENEROUS)):
+                # Force a single process to run!
                 avail_cpus += 1
                 logging.debug("Not in generous mode, so forcing one task to run.")
             
+            # Check if we have any available (or "available") CPUs!
             if avail_cpus > 0:
                 logging.debug("%i CPUs available, spawning process!" % avail_cpus)
+                
+                # Deincrement counter
                 avail_cpus -= 1
+                
+                # Start the process...
                 dummymp_proc.start()
+                
+                # ...and remove it from the starting queue.
                 config.dummymp_start_procs.remove(dummymp_proc)
                 
+                # Increment running counter...
                 config.total_running += 1
                 
+                # Make any callbacks, if necessary.
                 if config.PROCESS_START_CALLBACK:
                     config.PROCESS_START_CALLBACK(config.total_completed, config.total_running, config.total_procs)
                 
+                # Deincrement index counter, since we just removed a process
+                # from the start queue list.
                 nproc -= 1
         else:
             logging.debug("Max processes limit of %i reached, waiting for process to terminate." % config.max_processes)
         
+        # Increment
         nproc += 1
     
+    # Check to see if we are done!
     if len(config.dummymp_procs) == 0:
         logging.debug("All processes complete, returning True.")
         return True
@@ -140,6 +185,8 @@ def process_until_done():
     Args:
         None
     """
+    # Run process_queue() and process_process() until process_process()
+    # returns False (when it completes the process queue)
     while not process_process():
         process_queue()
         time.sleep(0.001)

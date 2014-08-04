@@ -39,32 +39,47 @@ def getCPUAvail():
     
     logging.debug("Querying CPUs (%s mode)..." % (config.DUMMYMP_STRING[config.DUMMYMP_MODE]))
     
+    # If the time threshold is met, OR we are in NUCLEAR mode, just
+    # return the cached CPU availability.
     if (config.DUMMYMP_MODE == config.DUMMYMP_NUCLEAR) or (datetime.datetime.now() - config.LAST_CPU_CHECK <= config.CPU_CHECK_TIMEDELTA_THRESHOLD):
         return config.CPU_AVAIL
     
+    # Get number of CPUs!
     ncpus = psutil.cpu_count()
+    
+    # Initialize array...
     avg = []
     
+    # Get measurements for the specified number of times
     for i in xrange(0, config.DUMMYMP_MCYCLE[config.DUMMYMP_MODE] - 1):
+        # Gather CPU percentages list, given a specified interval
         percent = psutil.cpu_percent(interval=config.DUMMYMP_MINTERVAL[config.DUMMYMP_MODE], percpu=True)
         
+        # If the current avg array is empty...
         if len(avg) == 0:
+            # ...just copy the current percent list over.
             avg = percent
         else:
+            # Otherwise, average them together!
             for n in xrange(0, len(percent)):
                 avg[n] = (avg[n] + percent[n]) / 2
     
     # Threshold
     avail_cpus_arr = []
     for n in xrange(0, len(percent)):
+        # If CPU percentage meets the specified thresold, add a True.
         if avg[n] < config.DUMMYMP_THRESHOLD[config.DUMMYMP_MODE]:
             avail_cpus_arr.append(True)
         else:
             avail_cpus_arr.append(False)
     
+    # Count the number of [True]s!
     available_num_cpus = avail_cpus_arr.count(True)
     logging.debug("%i / %i CPUs available!" % (available_num_cpus, ncpus))
     
+    # Update state
     config.CPU_AVAIL = available_num_cpus
     config.LAST_CPU_CHECK = datetime.datetime.now()
+    
+    # Return number of CPUs available!
     return available_num_cpus

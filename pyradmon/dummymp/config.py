@@ -22,19 +22,9 @@
 import datetime
 import psutil
 
-global dummymp_queues, dummymp_procs, dummymp_start_procs, dummymp_rets
-dummymp_queues = []
-dummymp_procs = []
-dummymp_start_procs = []
-dummymp_rets = {}
-
-global total_procs, total_completed, total_running
-total_procs = 0
-total_completed = 0
-total_running = 0
-
-global max_processes
-max_processes = 0
+#######################################################################
+# Constants
+#######################################################################
 
 # Job running modes
 DUMMYMP_GENEROUS    = -1
@@ -91,6 +81,27 @@ DUMMYMP_STRING = {
 DUMMYMP_LOG_ID = 1
 DUMMYMP_RET_ID = 2
 
+#######################################################################
+# State Variables
+#######################################################################
+
+# Queues, processes, process queue, returns
+global dummymp_queues, dummymp_procs, dummymp_start_procs, dummymp_rets
+dummymp_queues = []
+dummymp_procs = []
+dummymp_start_procs = []
+dummymp_rets = {}
+
+# Counters for processes
+global total_procs, total_completed, total_running
+total_procs = 0
+total_completed = 0
+total_running = 0
+
+# Max processes configuration
+global max_processes
+max_processes = 0
+
 # Current job running mode
 global DUMMYMP_MODE
 DUMMYMP_MODE = DUMMYMP_NORMAL
@@ -100,6 +111,7 @@ global CPU_AVAIL, LAST_CPU_CHECK, CPU_CHECK_TIMEDELTA_THRESHOLD
 CPU_AVAIL = psutil.cpu_count()
 LAST_CPU_CHECK = datetime.datetime(1900, 1, 1)
 
+# If not NUCLEAR, make a threshold. If NUCLEAR, don't.
 if DUMMYMP_MODE != DUMMYMP_NUCLEAR:
     CPU_CHECK_TIMEDELTA_THRESHOLD = datetime.timedelta(seconds=DUMMYMP_MREFRESH[DUMMYMP_MODE])
 else:

@@ -42,7 +42,8 @@ class DummyMPLogHandler(logging.Handler):
     """
     
     def __init__(self, int_pid, queue):
-        """Initializes DummyMPLogHandler with the inputted Queue object."""
+        """Initializes DummyMPLogHandler with the inputted internal PID
+        and Queue object."""
         logging.Handler.__init__(self)
         self.queue = queue
         self.int_pid = int_pid
@@ -54,4 +55,5 @@ class DummyMPLogHandler(logging.Handler):
             # Format: [ [queueMsgID, PID], record ]
             self.queue.put([[config.DUMMYMP_LOG_ID, os.getpid(), self.int_pid], record])
         except:
+            # Something went wrong...
             self.handleError(record)

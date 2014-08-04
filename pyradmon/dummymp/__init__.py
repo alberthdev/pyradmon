@@ -44,8 +44,11 @@ def test():
     if num > 5:
         return num
 
+# If run directly, run some tests using the test function above.
 if __name__ == "__main__":
     import random
+    
+    # Simple running test
     getCPUAvail()
     
     set_max_processes(2)
@@ -62,6 +65,7 @@ if __name__ == "__main__":
         print 'ERROR: Could not get all returns!'
         sys.exit(1)
     
+    # Configuration reset test - this should clear max_processes
     print "Resetting..."
     reset()
     run(test, [])
@@ -70,6 +74,7 @@ if __name__ == "__main__":
     
     process_until_done()
     
+    # Termination test - this should not run all the way through!
     print "Resetting once more..."
     reset()
     set_max_processes(1)
