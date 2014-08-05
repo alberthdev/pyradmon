@@ -73,7 +73,7 @@ def subst_data(plot_dict, data_dict):
     #print "subst_data complete"
     return plot_dict_new
 
-def title_output_replace(input_title_output, metadata_dict, data_dict, is_title = False, custom_vars = None):
+def title_output_replace(input_title_output, metadata_dict, data_dict, rel_channels_dict, is_title = False, custom_vars = None):
     input_title_output = input_title_output.replace("%EXPERIMENT_ID%", metadata_dict["experiment_id"])
     
     if is_title:
@@ -82,6 +82,9 @@ def title_output_replace(input_title_output, metadata_dict, data_dict, is_title 
         input_title_output = input_title_output.replace("%INSTRUMENT_SAT%", metadata_dict["instrument_sat"])
     
     input_title_output = input_title_output.replace("%CHANNEL%", str(metadata_dict["channel"]))
+    
+    rel_channels_inv_map = dict(zip(rel_channels_dict.values(), rel_channels_dict.keys()))
+    input_title_output = input_title_output.replace("%RELCHANNEL%", str(rel_channels_inv_map[metadata_dict["channel"]]))
     
     if data_dict and "frequency" in data_dict:
         input_title_output = input_title_output.replace("%FREQUENCY%", str(data_dict["frequency"]))
@@ -100,7 +103,7 @@ def title_output_replace(input_title_output, metadata_dict, data_dict, is_title 
     
     return input_title_output
 
-def plot(plot_dict, data_dict, metadata_dict, custom_vars = None, make_dirs = False, use_old_plot = False, old_plot = None):
+def plot(plot_dict, data_dict, metadata_dict, rel_channels_dict, custom_vars = None, make_dirs = False, use_old_plot = False, old_plot = None):
     # Make a working copy for our use.
     plot_dict_copy = copy.deepcopy(plot_dict)
     plot_dict = plot_dict_copy
@@ -131,7 +134,7 @@ def plot(plot_dict, data_dict, metadata_dict, custom_vars = None, make_dirs = Fa
         if isset("title", plot):
             #print "Replacing title..."
             plot_title = plot["title"]
-            plot_title = title_output_replace(plot_title, metadata_dict, data_dict, True, custom_vars)
+            plot_title = title_output_replace(plot_title, metadata_dict, data_dict, rel_channels_dict, True, custom_vars)
             
             if isset("iuse", data_dict):
                 tmp_iuse_arr = []
@@ -381,7 +384,7 @@ def plot(plot_dict, data_dict, metadata_dict, custom_vars = None, make_dirs = Fa
         
         if isset("output", plot):
             plot_output = plot["output"]
-            plot_output = title_output_replace(plot_output, metadata_dict, data_dict, False, custom_vars)
+            plot_output = title_output_replace(plot_output, metadata_dict, data_dict, rel_channels_dict, False, custom_vars)
             if not os.path.exists(os.path.dirname(plot_output)):
                 if make_dirs:
                     info("Output path %s not found, creating directory." % os.path.dirname(plot_output))

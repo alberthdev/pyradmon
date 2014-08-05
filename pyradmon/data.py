@@ -47,6 +47,14 @@ def check_int(s):
         return s[1:].isdigit()
     return s.isdigit()
 
+def rel_channels(chans):
+    ordered_chans = list(chans)
+    ordered_chans.sort()
+    rel_chan_dict = {}
+    for i in xrange(1, len(ordered_chans) + 1):
+        rel_chan_dict[i] = ordered_chans[i - 1]
+    return rel_chan_dict
+
 def get_data(files_to_read, data_vars, selected_channel, all_channels = False, data_assim_only = False, suppress_warnings = False):
     """Returns a dict with data that matches the given specifications.
 

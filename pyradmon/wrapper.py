@@ -27,7 +27,7 @@ import config_printer
 from config import *
 
 from enumerate import enumerate
-from data import get_data, get_data_columns, post_data_columns, SPECIAL_FIELDS
+from data import get_data, get_data_columns, post_data_columns, rel_channels, SPECIAL_FIELDS
 from plot import plot, subst_data
 import dummymp
 
@@ -320,6 +320,9 @@ def main():
                     info("using --mp-disable or 'mp_disable: true' instead.)")
                 dummymp.set_max_processes(pyradmon_config["mp_cpu_limit"])
         
+        # Make relative channel mapping!
+        rel_channels_dict = rel_channels(list(gen_channel_list(chans)))
+        
         for channel in gen_channel_list(chans):
             info(" ** Plotting data for channel %i..." % channel)
             
@@ -331,9 +334,9 @@ def main():
                 try:
                     plot_dict_subs = subst_data(plot_dict, dat[channel])
                     if ("mp_disable" in pyradmon_config) and (pyradmon_config["mp_disable"]):
-                        plot(plot_dict_subs, dat[channel], enum_opts_dict, custom_vars, make_dirs)
+                        plot(plot_dict_subs, dat[channel], enum_opts_dict, rel_channels_dict, custom_vars, make_dirs)
                     else:
-                        dummymp.run(plot, copy.deepcopy(plot_dict_subs), dat[channel], copy.deepcopy(enum_opts_dict), custom_vars, make_dirs)
+                        dummymp.run(plot, copy.deepcopy(plot_dict_subs), dat[channel], copy.deepcopy(enum_opts_dict), rel_channels_dict, custom_vars, make_dirs)
                         dummymp.process_process()
                     del plot_dict_subs
                 except:
@@ -347,9 +350,9 @@ def main():
                 try:
                     plot_dict_subs = subst_data(plot_dict, dat)
                     if ("mp_disable" in pyradmon_config) and (pyradmon_config["mp_disable"]):
-                        plot(plot_dict_subs, dat, enum_opts_dict, custom_vars, make_dirs)
+                        plot(plot_dict_subs, dat, enum_opts_dict, rel_channels_dict, custom_vars, make_dirs)
                     else:
-                        dummymp.run(plot, copy.deepcopy(plot_dict_subs), dat, copy.deepcopy(enum_opts_dict), custom_vars, make_dirs)
+                        dummymp.run(plot, copy.deepcopy(plot_dict_subs), dat, copy.deepcopy(enum_opts_dict), rel_channels_dict, custom_vars, make_dirs)
                         dummymp.process_process()
                     del plot_dict_subs
                 except:
