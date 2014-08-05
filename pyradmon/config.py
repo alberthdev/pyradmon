@@ -168,7 +168,7 @@ def postprocess_config(pyradmon_config):
         enum_opts_dict['data_columns'] = [ x.strip() for x in pyradmon_config['data_columns'].split(",") ]
     
     if 'data_all_channels' in pyradmon_config:
-        enum_opts_dict['all_channels'] = True
+        enum_opts_dict['all_channels'] = pyradmon_config['data_all_channels']
     
     if 'data_channels' in pyradmon_config:
         if type(pyradmon_config['data_channels']) == str:
@@ -180,7 +180,7 @@ def postprocess_config(pyradmon_config):
         enum_opts_dict['custom_vars'] = pyradmon_config['custom_vars']
         
     if 'make_dirs' in pyradmon_config:
-        enum_opts_dict['make_dirs'] = True
+        enum_opts_dict['make_dirs'] = pyradmon_config['make_dirs']
     
     if 'data_suppress_warnings' in pyradmon_config:
         enum_opts_dict['data_suppress_warnings'] = pyradmon_config['data_suppress_warnings']
