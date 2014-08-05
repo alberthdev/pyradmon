@@ -44,7 +44,7 @@ for prefix in VALID_PREFIX:
 
 def check_int(s):
     if s[0] in ('-', '+'):
-    	return s[1:].isdigit()
+        return s[1:].isdigit()
     return s.isdigit()
 
 def get_data(files_to_read, data_vars, selected_channel, all_channels = False, data_assim_only = False, suppress_warnings = False):
