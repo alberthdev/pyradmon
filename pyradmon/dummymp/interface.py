@@ -242,6 +242,32 @@ def reset():
     killall()
     reload(config)
 
+def set_args_deepcopy(tf):
+    """Set whether to deepcopy arguments or not.
+    
+    Change whether DummyMP will deepcopy the arguments or not. If it
+    is disabled, it is up to the user to ensure that a copy of the
+    arguments is preserved for further use.
+    
+    Args:
+        tf: Boolean indicating whether to enable argument deepcopy or
+            not.
+    """
+    config.DUMMYMP_ARGS_DEEPCOPY = tf
+
+def set_kwargs_deepcopy(tf):
+    """Set whether to deepcopy keyword arguments or not.
+    
+    Change whether DummyMP will deepcopy the keyword arguments or not.
+    If it is disabled, it is up to the user to ensure that a copy of the
+    keyword arguments is preserved for further use.
+    
+    Args:
+        tf: Boolean indicating whether to enable keyword argument
+            deepcopy or not.
+    """
+    config.DUMMYMP_KWARGS_DEEPCOPY = tf
+
 def run(func, *args, **kwargs):
     """Run a function with multiprocessing.
     
@@ -259,8 +285,15 @@ def run(func, *args, **kwargs):
     # arguments before running! Without a deepcopy, list, dict, and
     # possibly other arguments could be changed, making the function
     # call invalid!
-    final_args_tuple = copy.deepcopy(args)
-    final_kwargs = copy.deepcopy(kwargs)
+    if config.DUMMYMP_ARGS_DEEPCOPY:
+        final_args_tuple = copy.deepcopy(args)
+    else:
+        final_args_tuple = args
+    
+    if config.DUMMYMP_KWARGS_DEEPCOPY:
+        final_kwargs = copy.deepcopy(kwargs)
+    else:
+        final_kwargs = kwargs
     
     # Convert args tuple to a list
     final_args   = []

@@ -291,6 +291,8 @@ def main():
         if ("mp_disable" in pyradmon_config) and (pyradmon_config["mp_disable"]):
             info("Multiprocessing (mp) is disabled, processing in order...")
         else:
+            # Disable deepcopy - we'll handle it ourselves!
+            dummymp.set_args_deepcopy(False)
             if "mp_priority_mode" in pyradmon_config:
                 if pyradmon_config["mp_priority_mode"] == "GENEROUS":
                     info("Multiprocessing (mp) priority mode set to GENEROUS.")
@@ -330,7 +332,7 @@ def main():
                     if ("mp_disable" in pyradmon_config) and (pyradmon_config["mp_disable"]):
                         plot(plot_dict_subs, dat[channel], enum_opts_dict, custom_vars, make_dirs)
                     else:
-                        dummymp.run(plot, plot_dict_subs, dat[channel], enum_opts_dict, custom_vars, make_dirs)
+                        dummymp.run(plot, copy.deepcopy(plot_dict_subs), dat[channel], copy.deepcopy(enum_opts_dict), custom_vars, make_dirs)
                         dummymp.process_process()
                     del plot_dict_subs
                 except:
@@ -346,7 +348,7 @@ def main():
                     if ("mp_disable" in pyradmon_config) and (pyradmon_config["mp_disable"]):
                         plot(plot_dict_subs, dat, enum_opts_dict, custom_vars, make_dirs)
                     else:
-                        dummymp.run(plot, plot_dict_subs, dat, enum_opts_dict, custom_vars, make_dirs)
+                        dummymp.run(plot, copy.deepcopy(plot_dict_subs), dat, copy.deepcopy(enum_opts_dict), custom_vars, make_dirs)
                         dummymp.process_process()
                     del plot_dict_subs
                 except:

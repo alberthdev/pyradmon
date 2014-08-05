@@ -60,6 +60,7 @@ DUMMYMP_MCYCLE = {
                         DUMMYMP_NUCLEAR     : 0,
                  }
 
+# Interval to refresh CPU usage measurement
 DUMMYMP_MREFRESH = {
                         DUMMYMP_GENEROUS    : 5,
                         DUMMYMP_NORMAL      : 10,
@@ -80,6 +81,10 @@ DUMMYMP_STRING = {
 # Queue IDs
 DUMMYMP_LOG_ID = 1
 DUMMYMP_RET_ID = 2
+
+# Deepcopy Flags
+DUMMYMP_ARGS_DEEPCOPY = True
+DUMMYMP_KWARGS_DEEPCOPY = True
 
 #######################################################################
 # State Variables
