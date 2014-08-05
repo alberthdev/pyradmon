@@ -52,12 +52,6 @@ def add_args(parser, inherit, opts):
 
 def add_list_args(parser, inherit = False):
     opts = OrderedDict()
-    opts['--data-all'] = \
-        {
-            'action'    : 'store_true',
-            'dest'      : 'data_all',
-            'help'      : 'Use all data. Negates the options below specifying dates.',
-        }
     opts['--data-single-date'] = \
         {
             'action'    : 'store',
@@ -1301,14 +1295,8 @@ def parse_to_config(parse):
     
     ## List args
     if parse.verb == "list" or parse.verb == "dump" or parse.verb == "plot" or parse.verb == "config":
-        # --data-all (action flag) 
-        if isset_obj("data_all", parse):
-            pyradmon_config["data_all"] = parse.data_all
-        
         # --data-single-date (action flag)
         if isset_obj("data_single_date", parse):
-            if isset_obj("data_all", parse):
-                die("ERROR: You can not specify --data-all and --data-single-date at the same time!")
             pyradmon_config["data_start_date"] = parse.data_single_date
             pyradmon_config["data_end_date"] = parse.data_single_date
         
@@ -1322,8 +1310,6 @@ def parse_to_config(parse):
         
         # --data-start-date
         if isset_obj("data_start_date", parse):
-            if isset_obj("data_all", parse):
-                die("ERROR: You can not specify --data-all and --data-start-date at the same time!")
             if isset_obj("data_single_date", parse):
                 die("ERROR: You can not specify --data-single-date and --data-start-date at the same time!")
             
@@ -1338,8 +1324,6 @@ def parse_to_config(parse):
         
         # --data-end-date
         if isset_obj("data_end_date", parse):
-            if isset_obj("data_all", parse):
-                die("ERROR: You can not specify --data-all and --data-end-date at the same time!")
             if isset_obj("data_single_date", parse):
                 die("ERROR: You can not specify --data-single-date and --data-end-date at the same time!")
             

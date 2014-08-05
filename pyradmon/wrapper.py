@@ -26,7 +26,7 @@ import config
 import config_printer
 from config import *
 
-from enumerate import enumerate, enumerate_all
+from enumerate import enumerate
 from data import get_data, get_data_columns, post_data_columns, SPECIAL_FIELDS
 from plot import plot, subst_data
 import dummymp
@@ -85,12 +85,8 @@ def main():
         else:
             make_dirs = False
         
-        if "data_all" in pyradmon_config and pyradmon_config["data_all"]:
-            info(" ** Enumerating ALL data files...")
-            (en, stats) = enumerate_all(**enum_opts_dict)
-        else:
-            info(" ** Enumerating data files...")
-            (en, stats) = enumerate(**enum_opts_dict)
+        info(" ** Enumerating data files...")
+        (en, stats) = enumerate(**enum_opts_dict)
         
         if stats["criteria_total_files"] == 0:
             critical("No data found for specified criteria!")
