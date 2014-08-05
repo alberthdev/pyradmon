@@ -38,6 +38,7 @@ import copy
 
 import warnings
 warnings.filterwarnings("ignore", category=DeprecationWarning) 
+warnings.filterwarnings("ignore", "No labeled objects found. Use label='...' kwarg on individual plots.", UserWarning)
 
 def subst_data(plot_dict, data_dict):
     #print "subst_data called"
