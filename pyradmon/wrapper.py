@@ -119,6 +119,11 @@ def main():
         else:
             data_assim_only = False
         
+        if "data_suppress_warnings" in pyradmon_config and pyradmon_config["data_suppress_warnings"]:
+            data_suppress_warnings = True
+        else:
+            data_suppress_warnings = False
+        
         if parse.verb == "dump":
             tmp_columns = get_data_columns(en)
             columns = post_data_columns(tmp_columns)
@@ -142,9 +147,9 @@ def main():
                         new_columns.append("ges|" + column)
             
             data_var_list = columns
-            dat = get_data(en, data_var_list, gen_channel_list(chans), all_channels, data_assim_only)
+            dat = get_data(en, data_var_list, gen_channel_list(chans), all_channels, data_assim_only, data_suppress_warnings)
         else:
-            dat = get_data(en, data_var_list, gen_channel_list(chans), all_channels, data_assim_only)
+            dat = get_data(en, data_var_list, gen_channel_list(chans), all_channels, data_assim_only, data_suppress_warnings)
         
         # If we're reading all channels, set the channel list.
         if all_channels:

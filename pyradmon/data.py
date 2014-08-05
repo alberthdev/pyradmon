@@ -47,7 +47,7 @@ def check_int(s):
     	return s[1:].isdigit()
     return s.isdigit()
 
-def get_data(files_to_read, data_vars, selected_channel, all_channels = False, data_assim_only = False):
+def get_data(files_to_read, data_vars, selected_channel, all_channels = False, data_assim_only = False, suppress_warnings = False):
     """Returns a dict with data that matches the given specifications.
 
     Given a list of files to read (dict based), a list of data
@@ -72,6 +72,10 @@ def get_data(files_to_read, data_vars, selected_channel, all_channels = False, d
             data or not. This overrides the selected_channel option.
         data_assim_only: A boolean specifying whether to only use
             assimilated data or not. (Determined by iuse > 0!)
+        suppress_warnings: A boolean specifying whether to suppress
+            warnings or not. This will hide potentially important
+            warnings about data consistency, so only use if you're 100%
+            sure the data is valid!
 
     Returns:
         A list with the list of file dicts that matches the given
@@ -176,19 +180,22 @@ def get_data(files_to_read, data_vars, selected_channel, all_channels = False, d
                     # Perform validation on the file's metadata
                     if len(data_elements) == 3:
                         if (data_elements[0] != file_to_read["instrument_sat"]):
-                            warn("Instrument and satellite data inside file does not match file name tag!")
+                            if not suppress_warnings:
+                                warn("Instrument and satellite data inside file does not match file name tag!")
                         date_tag = file_to_read["filename"].split(".")[2]
                         # 19910228_18z
                         data_file_date_tag = data_elements[1][:-2] + "_" + data_elements[1][-2:] + "z"
                         
                         if date_tag != data_file_date_tag:
-                            warn("Timestamp inside file does not match file name timestamp!")
+                            if not suppress_warnings:
+                                warn("Timestamp inside file does not match file name timestamp!")
                         
                         # Channel validation will happen later
                         # ... or not, to be efficient. May remove.
                         total_channels = int(data_elements[2])
                     else:
-                        warn("Number of elements inside the metainfo of the file is invalid. Can't verify contents of metainfo!")
+                        if not suppress_warnings:
+                            warn("Number of elements inside the metainfo of the file is invalid. Can't verify contents of metainfo!")
                 elif len(data_elements) > 2:
                     # Parse non-comments - basically actual file data.
                     if not data_line.strip().startswith("!"):
@@ -232,7 +239,8 @@ def get_data(files_to_read, data_vars, selected_channel, all_channels = False, d
                                                 ignore_channels.append(data_channel)
                                             continue
                                     else:
-                                        warn("iuse is not a digit! Skipping. (iuse = %s)" % data_elements[data_column])
+                                        if not suppress_warnings:
+                                            warn("iuse is not a digit! Skipping. (iuse = %s)" % data_elements[data_column])
                                         continue
                                 debug("NOSKIP: %s (channel: %i) (file: %s)" % (data_var, data_channel, file_to_read["filename"]))
                                 
@@ -274,8 +282,9 @@ def get_data(files_to_read, data_vars, selected_channel, all_channels = False, d
                                     if (data_dict["frequency"] != ""):
                                         # If we found it, does it match the new one? If not, show a warning!
                                         if (data_elements[data_column] != data_dict["frequency"]):
-                                            warn("Frequency within same channel differs from before!")
-                                            warn("(Old frequency: %s, new frequency: %s, file: %s)" % (data_dict["frequency"], data_elements[data_column], file_to_read["filename"]))
+                                            if not suppress_warnings:
+                                                warn("Frequency within same channel differs from before!")
+                                                warn("(Old frequency: %s, new frequency: %s, file: %s)" % (data_dict["frequency"], data_elements[data_column], file_to_read["filename"]))
                                     else:
                                         # Save the frequency for the first (and final) time
                                         data_dict["frequency"] = data_elements[data_column]

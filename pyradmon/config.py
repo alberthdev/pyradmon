@@ -182,6 +182,9 @@ def postprocess_config(pyradmon_config):
     if 'make_dirs' in pyradmon_config:
         enum_opts_dict['make_dirs'] = True
     
+    if 'data_suppress_warnings' in pyradmon_config:
+        enum_opts_dict['data_suppress_warnings'] = pyradmon_config['data_suppress_warnings']
+    
     #############################################
     ## Data assim only flag for data.get_data()
     #############################################

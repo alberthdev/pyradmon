@@ -147,6 +147,12 @@ def add_dump_args(parser, inherit = False):
             'dest'      : 'dump_assim_only',
             'help'      : 'Specify to use only assimilated data (iuse = 1).',
         }
+    opts['--dump-suppress-warnings'] = \
+        {
+            'action'    : 'store_true',
+            'dest'      : 'dump_suppress_warnings',
+            'help'      : 'Specify whether to suppress data warnings or not. This will hide important warnings about data inconsistencies, so only enable if you are 100% that your data is valid!',
+        }
     
     add_args(parser, inherit, opts)
 
@@ -1288,6 +1294,10 @@ def parse_to_config(parse):
         # --dump-assim-only
         if isset_obj("dump_assim_only", parse):
             pyradmon_config["data_assim_only"] = parse.dump_assim_only
+        
+        # --dump-suppress-warnings
+        if isset_obj("dump_suppress_warnings", parse):
+            pyradmon_config["data_suppress_warnings"] = parse.dump_suppress_warnings
     
     ## List args
     if parse.verb == "list" or parse.verb == "dump" or parse.verb == "plot" or parse.verb == "config":
