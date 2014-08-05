@@ -24,6 +24,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 import pyradmon.enumerate as en
+from pyradmon import dummymp
 from pyradmon.core import *
 from pyradmon.config import gen_channel_list
 
@@ -103,6 +104,10 @@ reference_day      = final_config["reference_day"]
 reference_hour     = final_config["reference_hour"]
 
 output_file        = final_config["output_file"]
+
+mp_disable         = final_config["mp_disable"]
+mp_priority_mode   = final_config["mp_priority_mode"]
+mp_cpu_limit       = final_config["mp_cpu_limit"]
 
 #DATA_PATH_FORMAT  = "/gpfsm/dnb51/projects/p14/scratch/%EXPERIMENT_ID%/ana/Y%YEAR4%/M%MONTH2%/%EXPERIMENT_ID%.ana.satbang.%YEAR4%%MONTH2%%DAY2%_%HOUR2%z.txt"
 #EXPERIMENT_ID     = "e5110_fp"
@@ -262,8 +267,7 @@ info("Plotting data...")
 if all_channels:
     chans = [ str(chan) for chan in chan_list ]
 
-for channel in gen_channel_list(chans):
-    info("Plotting data for channel %i..." % channel)
+def plot_scangle(channel):
     fig = plt.figure(figsize=(595 / 50, 700 / 50), dpi = 50)
     
     #plt.subplots_adjust(hspace = 1.2, left=0.15, top=0.88)
@@ -284,7 +288,7 @@ for channel in gen_channel_list(chans):
     #plt.setp(legend.get_title(),fontsize='large')
     
     subplot_title = "Fixed Angle Correction - %YEAR4%%MONTH2%%DAY2% (Single Day)"
-    subplot_title = substVars(subplot_title)
+    subplot_title = substVars(subplot_title, channel)
     
     axe.set_title(subplot_title, fontsize='large')
     
@@ -412,10 +416,8 @@ for channel in gen_channel_list(chans):
     
     ###############################################################################################################################################
     fig.patch.set_facecolor('white')
-    
     output_file_final = substVars(output_file, channel)
-    
-    if not os.path.exists(os.path.dirname(output_file_final)):
+    if not ((os.path.dirname(output_file_final) == "") or (os.path.exists(os.path.dirname(output_file_final)))):
         info("Output path %s not found, creating directory." % os.path.dirname(output_file_final))
         mkdir_p(os.path.dirname(output_file_final))
     
@@ -425,5 +427,55 @@ for channel in gen_channel_list(chans):
     plt.savefig(output_file_final, facecolor=fig.get_facecolor(), edgecolor='none', figsize=(595 / 50, 700 / 50), dpi = 50)
 
     plt.close()
+
+def report_status(total_completed, total_running, total_procs):
+    info("[%.2f%%] %i/%i completed (%i running)" % ((total_completed / (total_procs + 0.0)) * 100, total_completed, total_procs, total_running))
+
+if mp_disable:
+    info("Multiprocessing (mp) is disabled, processing in order...")
+else:
+    if mp_priority_mode == "GENEROUS":
+        info("Multiprocessing (mp) priority mode set to GENEROUS.")
+        dummymp.set_priority_mode(dummymp.DUMMYMP_GENEROUS)
+    elif mp_priority_mode == "NORMAL":
+        info("Multiprocessing (mp) priority mode set to NORMAL.")
+        dummymp.set_priority_mode(dummymp.DUMMYMP_NORMAL)
+    elif mp_priority_mode == "AGGRESSIVE":
+        info("Multiprocessing (mp) priority mode set to AGGRESSIVE.")
+        dummymp.set_priority_mode(dummymp.DUMMYMP_AGGRESSIVE)
+    elif mp_priority_mode == "EXTREME":
+        info("Multiprocessing (mp) priority mode set to EXTREME.")
+        dummymp.set_priority_mode(dummymp.DUMMYMP_EXTREME)
+    elif mp_priority_mode == "NUCLEAR":
+        info("Multiprocessing (mp) priority mode set to NUCLEAR.")
+        dummymp.set_priority_mode(dummymp.DUMMYMP_NUCLEAR)
+    else:
+        die("ERROR: Invalid multiprocesing (mp) priority mode detected - this may be a bug!")
+    
+    if mp_cpu_limit != 0:
+        info("Multiprocessing (mp) maximum CPU limit set to %i CPUs." % mp_cpu_limit)
+        if mp_cpu_limit == 1:
+            info("(We noticed that you limited it to 1 CPU... we recommend")
+            info("using --mp-disable or 'mp_disable: true' instead.)")
+        dummymp.set_max_processes(mp_cpu_limit)
+
+for channel in gen_channel_list(chans):
+    info("Plotting data for channel %i..." % channel)
+    if mp_disable:
+        plot_scangle(channel)
+    else:
+        dummymp.run(plot_scangle, channel)
+        dummymp.process_process()
+
+if not mp_disable:
+    dummymp.set_end_callback(report_status)
+    ncpus = dummymp.getCPUAvail()
+    
+    if ncpus == 0:
+        info(" ** Detected that the system is overloaded. Plot generation may be slow.")
+        info(" ** To run tasks without waiting for CPU availability, increase priority.")
+    
+    info(" ** Detected %i or more CPUs available..." % ncpus)
+    dummymp.process_until_done()
 
 info("Done!")

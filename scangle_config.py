@@ -151,6 +151,26 @@ def make_parser():
             'dest'      : 'output_file',
             'help'      : 'Specify the output file for the generated plot.',
         }
+    main_opts['--mp-disable'] = \
+        {
+            'action'    : 'store_true',
+            'dest'      : 'mp_disable',
+            'help'      : 'Disable multiprocessing (mp) optimizations in PyRadmon.',
+        }
+    main_opts['--mp-priority-mode'] = \
+        {
+            'action'    : 'store',
+            'metavar'   : 'PRIORITY_MODE',
+            'dest'      : 'mp_priority_mode',
+            'help'      : 'Set the priority mode for the multiprocessing (mp) optimizations in PyRadmon. Options are GENEROUS, NORMAL, AGGRESSIVE, EXTREME, and NUCLEAR. GENEROUS yields to other CPU hungry processes, while NUCLEAR spawns as many processes as it can regardless of CPU usage.',
+        }
+    main_opts['--mp-cpu-limit'] = \
+        {
+            'action'    : 'store',
+            'metavar'   : 'NUM_CPUS',
+            'dest'      : 'mp_cpu_limit',
+            'help'      : 'Limit the number of CPUs that the multiprocessing (mp) optimizations in PyRadmon can use.',
+        }
 
     parser = argparse.ArgumentParser(formatter_class=argparse.RawDescriptionHelpFormatter, \
                     epilog = textwrap.dedent("""\
@@ -254,6 +274,33 @@ def parse_to_config(parse):
     
     # From now on, we'll stick to using the log module to print stuff
     # out.
+    
+    if isset_obj("mp_disable", parse):
+        pyradmon_sa_config['mp_disable'] = parse.mp_disable
+    
+    if isset_obj("mp_priority_mode", parse):
+        mp_priority_mode = parse.mp_priority_mode
+        mp_priority_mode = mp_priority_mode.strip()
+        if mp_priority_mode == "GENEROUS":
+            pyradmon_sa_config['mp_priority_mode'] = "GENEROUS"
+        elif mp_priority_mode == "NORMAL":
+            pyradmon_sa_config['mp_priority_mode'] = "NORMAL"
+        elif mp_priority_mode == "AGGRESSIVE":
+            pyradmon_sa_config['mp_priority_mode'] = "AGGRESSIVE"
+        elif mp_priority_mode == "EXTREME":
+            pyradmon_sa_config['mp_priority_mode'] = "EXTREME"
+        elif mp_priority_mode == "NUCLEAR":
+            pyradmon_sa_config['mp_priority_mode'] = "NUCLEAR"
+        else:
+            die("ERROR: Invalid multiprocessing (mp) priority mode specified! Valid levels: GENEROUS, NORMAL, AGGRESSIVE, EXTREME, NUCLEAR")
+    else:
+        pyradmon_sa_config['mp_priority_mode'] = "NORMAL"
+    
+    if isset_obj("mp_cpu_limit", parse):
+        if (parse.mp_cpu_limit).isdigit():
+            pyradmon_sa_config['mp_cpu_limit'] = int(parse.mp_cpu_limit)
+        else:
+            die("ERROR: Invalid multiprocessing (mp) CPU limit! The CPU limit must specify an integer number of CPUs to limit use to.")
     
     # --output-file
     if isset_obj("output_file", parse):
@@ -360,6 +407,22 @@ def process_config(config):
     final_config["reference_hour"]   = config["data_reference_date"][11:13]
     
     final_config["output_file"]      = config["output_file"]
+    
+    if "mp_disable" in config:
+        final_config["mp_disable"]   = config["mp_disable"]
+    else:
+        final_config["mp_disable"]   = False
+    
+    if "mp_priority_mode" in config:
+        final_config["mp_priority_mode"]   = config["mp_priority_mode"]
+    else:
+        # May be redundant due to preprocessing
+        final_config["mp_priority_mode"]   = "NORMAL"
+    
+    if "mp_cpu_limit" in config:
+        final_config["mp_cpu_limit"]   = config["mp_cpu_limit"]
+    else:
+        final_config["mp_cpu_limit"]   = 0
     
     return final_config
 
