@@ -146,9 +146,17 @@ def get_data(files_to_read, data_vars, selected_channel, all_channels = False, d
     
     ignore_channels = []
     
+    total_files = len(files_to_read)
+    file_counter = 0
+    
     # Iterate through all of the files!
     for file_to_read in files_to_read:
         # with structure auto-closes the file...
+        file_counter += 1
+        
+        if file_counter % 100 == 0:
+            info("Processed %i/%i files... (date tag: %s)" % (file_counter, total_files, file_to_read["filename"].split(".")[2]))
+        
         debug("PHASE 4: %s" % file_to_read)
         with open(file_to_read["filename"], 'r') as data_file:
             #print "Reading file: %s" % file_to_read["filename"]
@@ -326,6 +334,9 @@ def get_data(files_to_read, data_vars, selected_channel, all_channels = False, d
                         # the column header!
                         if data_line_counter > 2:
                             column_reader_data += data_line
+    
+    info("Processed %i/%i files... (date tag: %s)" % (file_counter, total_files, file_to_read["filename"].split(".")[2]))
+    
     # Post-process iuse data
     for prefix in VALID_PREFIX:
         if prefix in data_dict["iuse"]:
