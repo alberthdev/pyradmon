@@ -24,6 +24,7 @@ import datetime
 from decimal import Decimal
 from core import *
 import copy
+import re
 
 # Test data variables
 ############# TODO : write code to remove dups
@@ -55,7 +56,71 @@ def rel_channels(chans):
         rel_chan_dict[i] = ordered_chans[i - 1]
     return rel_chan_dict
 
-def get_data(files_to_read, data_vars, selected_channel, all_channels = False, data_assim_only = False, suppress_warnings = False):
+def template_to_regex(template):
+    template_final = ""
+    
+    matching_groups = []
+    
+    regex_replace_dict = {
+                            "%EXPERIMENT_ID%"   : r'(.*)',
+                            "%INSTRUMENT_SAT%"  : r'(.*)',
+                            "%DATA_TYPE%"       : r'(.*)',
+                            
+                            "%YEAR%"            : r'(\d{4})',
+                            "%YEAR4%"           : r'(\d{4})',
+                            "%YEAR2%"           : r'(\d{2})',
+                            
+                            "%MONTH%"           : r'(\d{2})',
+                            "%MONTH2%"          : r'(\d{2})',
+                            
+                            "%DAY%"             : r'(\d{2})',
+                            "%DAY2%"            : r'(\d{2})',
+                            
+                            "%HOUR%"            : r'(\d{2})',
+                            "%HOUR2%"           : r'(\d{2})',
+                        }
+    
+    matches = re.findall(r'(.*?)(%.*?%)(.*?)', template)
+    for match in matches:
+        template_part = match[1]
+        
+        if template_part in regex_replace_dict.keys():
+            matching_groups.append(template_part)
+            template_part = template_part.replace(template_part, regex_replace_dict[template_part])
+        
+        template_final += re.escape(match[0]) + template_part + re.escape(match[2])
+    
+    return (template_final, matching_groups)
+
+def extract_fields_via_template(template_regex, matching_groups, input_str, suppress_warnings = False):
+    match = re.match(template_regex, input_str)
+    if not match:
+        return None
+    
+    field_data = {}
+    
+    for group in matching_groups:
+        if matching_groups.count(group) > 1:
+            # Consistent group validation
+            tmp_groups = []
+            for i in [n for (n, m_group) in enumerate(matching_groups) if m_group == 'll']:
+                tmp_groups.append(m_group)
+            if not identicalEleListCheck(tmp_groups):
+                if not suppress_warnings:
+                    warn("WARNING: Detected inconsistency with variable %s! (Values detected: %s)" % (group, str(tmp_groups)))
+        
+        if group not in field_data:
+            rel_index = matching_groups.index(group)
+            
+            if rel_index <= (len(match.groups()) - 1):
+                field_data[group] = match.groups()[rel_index]
+            else:
+                if not suppress_warnings:
+                    warn("WARNING: Could not fetch value from match! (Variable: %s)" % group)
+    
+    return field_data
+
+def get_data(files_to_read, data_vars, selected_channel, data_path_format, all_channels = False, data_assim_only = False, suppress_warnings = False):
     """Returns a dict with data that matches the given specifications.
 
     Given a list of files to read (dict based), a list of data
@@ -162,8 +227,16 @@ def get_data(files_to_read, data_vars, selected_channel, all_channels = False, d
         # with structure auto-closes the file...
         file_counter += 1
         
+        (template_regex, matching_groups) = template_to_regex(data_path_format)
+        field_data = extract_fields_via_template(template_regex, matching_groups, file_to_read["filename"], suppress_warnings)
+        
+        if ("%YEAR4%" in field_data) and ("%MONTH2%" in field_data) and ("%DAY2%" in field_data) and ("%HOUR2%" in field_data):
+            date_tag = field_data["%YEAR4%"] + field_data["%MONTH2%"] + field_data["%DAY2%"] + "_" + field_data["%HOUR2%"] + "z"
+        else:
+            die("Not enough date information found to build date tag...")
+        
         if file_counter % 100 == 0:
-            info("Processed %i/%i files... (date tag: %s)" % (file_counter, total_files, file_to_read["filename"].split(".")[2]))
+            info("Processed %i/%i files... (date tag: %s)" % (file_counter, total_files, date_tag))
         
         debug("PHASE 4: %s" % file_to_read)
         with open(file_to_read["filename"], 'r') as data_file:
@@ -198,7 +271,7 @@ def get_data(files_to_read, data_vars, selected_channel, all_channels = False, d
                         if (data_elements[0] != file_to_read["instrument_sat"]):
                             if not suppress_warnings:
                                 warn("Instrument and satellite data inside file does not match file name tag!")
-                        date_tag = file_to_read["filename"].split(".")[2]
+                        
                         # 19910228_18z
                         data_file_date_tag = data_elements[1][:-2] + "_" + data_elements[1][-2:] + "z"
                         
@@ -343,7 +416,7 @@ def get_data(files_to_read, data_vars, selected_channel, all_channels = False, d
                         if data_line_counter > 2:
                             column_reader_data += data_line
     
-    info("Processed %i/%i files... (date tag: %s)" % (file_counter, total_files, file_to_read["filename"].split(".")[2]))
+    info("Processed %i/%i files... (date tag: %s)" % (file_counter, total_files, date_tag))
     
     # Post-process iuse data
     for prefix in VALID_PREFIX:
@@ -391,6 +464,14 @@ def get_data_columns(files_to_read):
     
     # Iterate through all of the files!
     for file_to_read in files_to_read:
+        (template_regex, matching_groups) = template_to_regex(data_path_format)
+        field_data = extract_fields_via_template(template_regex, matching_groups, file_to_read["filename"], suppress_warnings)
+        
+        if ("%YEAR4%" in field_data) and ("%MONTH2%" in field_data) and ("%DAY2%" in field_data) and ("%HOUR2%" in field_data):
+            date_tag = field_data["%YEAR4%"] + field_data["%MONTH2%"] + field_data["%DAY2%"] + "_" + field_data["%HOUR2%"] + "z"
+        else:
+            die("Not enough date information found to build date tag...")
+        
         # with structure auto-closes the file...
         with open(file_to_read["filename"], 'r') as data_file:
             #print "Reading file: %s" % file_to_read["filename"]
@@ -423,7 +504,7 @@ def get_data_columns(files_to_read):
                     if len(data_elements) == 3:
                         if (data_elements[0] != file_to_read["instrument_sat"]):
                             warn("Instrument and satellite data inside file does not match file name tag!")
-                        date_tag = file_to_read["filename"].split(".")[2]
+                        
                         # 19910228_18z
                         data_file_date_tag = data_elements[1][:-2] + "_" + data_elements[1][-2:] + "z"
                         

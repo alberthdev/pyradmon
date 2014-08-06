@@ -81,7 +81,7 @@ experiment_id     = "d5124_m2_jan91"
 #   -> data_assim_only for data.get_data()
 def postprocess_config(pyradmon_config):
     copy_vars    = [
-                       'base_directory',
+                       'data_path_format',
                        'experiment_id',
                    ]
     process_vars = [

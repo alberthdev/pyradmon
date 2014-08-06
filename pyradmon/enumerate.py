@@ -68,8 +68,8 @@ def make_subst_variable(year, month, day, hour, experiment_id, instrument_sat, d
     subst_var["MONTH"]  = smonth
     subst_var["MONTH2"] = smonth
     
-    subst_var["day"]  = sday
-    subst_var["day2"] = sday
+    subst_var["DAY"]  = sday
+    subst_var["DAY2"] = sday
     
     subst_var["HOUR"]  = shour
     subst_var["HOUR2"] = shour

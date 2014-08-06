@@ -207,3 +207,6 @@ def check_file(file_path):
         traceback.format_exc()
     
     return True
+
+def identicalEleListCheck(lst):
+    return not lst or lst.count(lst[0]) == len(lst)

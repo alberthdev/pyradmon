@@ -143,9 +143,9 @@ def main():
                         new_columns.append("ges|" + column)
             
             data_var_list = columns
-            dat = get_data(en, data_var_list, gen_channel_list(chans), all_channels, data_assim_only, data_suppress_warnings)
+            dat = get_data(en, data_var_list, gen_channel_list(chans), enum_opts_dict["data_path_format"], all_channels, data_assim_only, data_suppress_warnings)
         else:
-            dat = get_data(en, data_var_list, gen_channel_list(chans), all_channels, data_assim_only, data_suppress_warnings)
+            dat = get_data(en, data_var_list, gen_channel_list(chans), enum_opts_dict["data_path_format"], all_channels, data_assim_only, data_suppress_warnings)
         
         # If we're reading all channels, set the channel list.
         if all_channels:
