@@ -51,15 +51,6 @@ DUMMYMP_MINTERVAL = {
                         DUMMYMP_NUCLEAR     : 0.1,
                     }
 
-# CPU Usage Measurement Cycles
-DUMMYMP_MCYCLE = {
-                        DUMMYMP_GENEROUS    : 3,
-                        DUMMYMP_NORMAL      : 2,
-                        DUMMYMP_AGGRESSIVE  : 2,
-                        DUMMYMP_EXTREME     : 1,
-                        DUMMYMP_NUCLEAR     : 0,
-                 }
-
 # Interval to refresh CPU usage measurement
 DUMMYMP_MREFRESH = {
                         DUMMYMP_GENEROUS    : 5,
