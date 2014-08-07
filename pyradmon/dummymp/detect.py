@@ -29,6 +29,16 @@ def needUpdateCPUAvail():
             (config.DUMMYMP_MODE == config.DUMMYMP_NUCLEAR) or \
             (datetime.datetime.now() - config.LAST_CPU_CHECK <= config.CPU_CHECK_TIMEDELTA_THRESHOLD))
 
+def checkProcRunning():
+    running = 0
+    for proc in config.dummymp_procs:
+        if proc.is_alive():
+            running += 1
+    return running
+
+def getTotalCPUs():
+    return psutil.cpu_count()
+
 def getCPUAvail():
     """Get number of CPUs available.
     
@@ -42,6 +52,9 @@ def getCPUAvail():
         An integer with the number of CPUs that are available.
     """
     
+    # Initial check
+    cur_running_initial = checkProcRunning()
+    
     # If the time threshold is met, OR we are in NUCLEAR mode, just
     # return the cached CPU availability.
     if (config.DUMMYMP_MODE == config.DUMMYMP_NUCLEAR) or (datetime.datetime.now() - config.LAST_CPU_CHECK <= config.CPU_CHECK_TIMEDELTA_THRESHOLD):
@@ -54,7 +67,7 @@ def getCPUAvail():
     avg = []
     
     # Check to make sure we aren't looking at ourselves!
-    if config.total_running != 0:
+    if config.total_running == config.CPU_AVAIL:
         return config.CPU_AVAIL
     
     logging.debug("Querying CPUs (%s mode)..." % (config.DUMMYMP_STRING[config.DUMMYMP_MODE]))
@@ -85,6 +98,64 @@ def getCPUAvail():
     # Count the number of [True]s!
     available_num_cpus = avail_cpus_arr.count(True)
     logging.debug("%i / %i CPUs available!" % (available_num_cpus, ncpus))
+    
+    # If the number of processes running isn't zero, compute difference
+    # and update CPU availability.
+    cur_running = checkProcRunning()
+    
+    if cur_running != 0:
+        logging.debug("Entering alternative process mode...")
+        
+        # If no CPUs available, return the current number and wait for
+        # process count to go down!
+        if available_num_cpus == 0:
+            return config.CPU_AVAIL
+        
+        # Theoretial empty slots = 
+        #   Previous availability - Currently running procs
+        empty_slots = config.CPU_AVAIL - cur_running
+        
+        logging.debug("Old setting: %i" % config.CPU_AVAIL)
+        logging.debug("Cur running: %i" % cur_running)
+        logging.debug("Cur running initial: %i" % cur_running_initial)
+        
+        logging.debug("Empty slots: %i" % empty_slots)
+        
+        # Correction
+        # if cur_running != cur_running_initial:
+        #     logging.debug("Correction needed!")
+        #     if cur_running < cur_running_initial:
+        #         logging.debug("Correction: +++ %i" % (cur_running_initial - cur_running))
+        #         empty_slots += (cur_running_initial - cur_running)
+        #     else:
+        #         logging.debug("Correction: --- %i" % (cur_running - cur_running_initial))
+        #         empty_slots -= (cur_running - cur_running_initial)
+        #     logging.debug("New empty slots: %i" % empty_slots)
+        
+        # Validate against found result
+        if available_num_cpus == empty_slots:
+            logging.debug("Available CPUs == empty slots")
+            available_num_cpus = config.CPU_AVAIL
+        elif available_num_cpus > empty_slots:
+            logging.debug("Available CPUs > empty slots")
+            # Add difference
+            available_num_cpus = config.CPU_AVAIL + (available_num_cpus - empty_slots)
+            # SANITY CHECK
+            if available_num_cpus > ncpus:
+                logging.warn("Number of available CPUs greater than the total number of CPUs! Capping.")
+                available_num_cpus = ncpus
+            logging.debug("Available CPUs now set to: %i" % available_num_cpus)
+        else:
+            # <
+            logging.debug("Available CPUs < empty slots")
+            available_num_cpus = config.CPU_AVAIL - (empty_slots - available_num_cpus)
+            # SANITY CHECK
+            if available_num_cpus < 0:
+                logging.warn("Number of available CPUs is less than zero! Fixing.")
+                available_num_cpus = 0
+            logging.debug("Available CPUs now set to: %i" % available_num_cpus)
+        
+        logging.debug("Updated CPU availability - %i / %i CPUs available!" % (available_num_cpus, ncpus))
     
     # Update state
     config.CPU_AVAIL = available_num_cpus
