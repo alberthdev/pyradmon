@@ -37,8 +37,15 @@ try:
 except:
     print "ERROR: PrettyTable is needed to run this script!"
 
+global old_avail
+old_avail = 0
+
 def report_status(total_completed, total_running, total_procs):
+    global old_avail
     info("[%.2f%%] %i/%i completed (%i running)" % ((total_completed / (total_procs + 0.0)) * 100, total_completed, total_procs, total_running))
+    if old_avail != dummymp.config.CPU_AVAIL:
+        info("CPU availability changed to %i/%i CPUs!" % (dummymp.config.CPU_AVAIL, dummymp.getTotalCPUs()))
+        old_avail = dummymp.config.CPU_AVAIL
 
 def main():
     parser = args.make_argparser()
