@@ -52,7 +52,7 @@ class DummyMPLogHandler(logging.Handler):
         """Method override to forward logging records to the internal
         Queue object."""
         try:
-            # Format: [ [queueMsgID, PID], record ]
+            # Format: [ [queueMsgID, PID, internal PID], record ]
             self.queue.put([[config.DUMMYMP_LOG_ID, os.getpid(), self.int_pid], record])
         except:
             # Something went wrong...

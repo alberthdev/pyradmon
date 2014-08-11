@@ -100,9 +100,9 @@ def set_priority_mode(mode):
                              very angry co-workers knocking down your
                              door with pitchforks, so use sparingly!
     
-    Regardless of priority mode, the number of processors/CPUs it takes
-    advantage of will always be capped at the maximum number specified,
-    if specified.
+    Regardless of priority mode, if the number of CPUs to use is
+    specified, the number of processors/CPUs it takes advantage of will
+    always be capped at the maximum number specified.
     
     Args:
         mode: Integer constant specifying the mode for DummyMP to use.

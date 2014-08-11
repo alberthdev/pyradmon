@@ -27,6 +27,8 @@ import psutil
 #######################################################################
 
 # Job running modes
+# See set_priority_mode() documentation in interface.py for more
+# information.
 DUMMYMP_GENEROUS    = -1
 DUMMYMP_NORMAL      = -2
 DUMMYMP_AGGRESSIVE  = -3
@@ -34,6 +36,7 @@ DUMMYMP_EXTREME     = -4
 DUMMYMP_NUCLEAR     = -9999
 
 # CPU Thresholds
+# Threshold to consider a process active, in terms of CPU usage %.
 DUMMYMP_THRESHOLD = {
                         DUMMYMP_GENEROUS    : 20,
                         DUMMYMP_NORMAL      : 30,
@@ -43,6 +46,8 @@ DUMMYMP_THRESHOLD = {
                     }
 
 # CPU Usage Measurement Intervals
+# psutil interval to detect CPU usage in processes
+# (akin to the top -d ## argument)
 DUMMYMP_MINTERVAL = {
                         DUMMYMP_GENEROUS    : 0.5,
                         DUMMYMP_NORMAL      : 0.35,
@@ -52,6 +57,7 @@ DUMMYMP_MINTERVAL = {
                     }
 
 # Interval to refresh CPU usage measurement
+# Amount of time between CPU usage measurements, in seconds.
 DUMMYMP_MREFRESH = {
                         DUMMYMP_GENEROUS    : 5,
                         DUMMYMP_NORMAL      : 10,
@@ -70,10 +76,16 @@ DUMMYMP_STRING = {
                  }
 
 # Queue IDs
+# Internal IDs to track queue messages
 DUMMYMP_LOG_ID = 1
 DUMMYMP_RET_ID = 2
 
 # Deepcopy Flags
+# Flags determining whether to perform a deepcopy or not.
+# A deepcopy is generally required to save the "state" of the arguments
+# as they are passed in, especially with list and dict arguments.
+# If the deepcopy is handled at the calling level, the internal
+# deepcopy can be disabled.
 DUMMYMP_ARGS_DEEPCOPY = True
 DUMMYMP_KWARGS_DEEPCOPY = True
 
@@ -81,7 +93,7 @@ DUMMYMP_KWARGS_DEEPCOPY = True
 # State Variables
 #######################################################################
 
-# Queues, processes, process queue, returns
+# Queues, processes, need-to-be-started process queue, returns
 global dummymp_queues, dummymp_procs, dummymp_start_procs, dummymp_rets
 dummymp_queues = []
 dummymp_procs = []
@@ -107,7 +119,8 @@ global CPU_AVAIL, LAST_CPU_CHECK, CPU_CHECK_TIMEDELTA_THRESHOLD
 CPU_AVAIL = psutil.cpu_count()
 LAST_CPU_CHECK = datetime.datetime(1900, 1, 1)
 
-# If not NUCLEAR, make a threshold. If NUCLEAR, don't.
+# If the mode is not NUCLEAR, make a threshold for when to refresh CPU
+# status. If the mode is set to NUCLEAR, don't.
 if DUMMYMP_MODE != DUMMYMP_NUCLEAR:
     CPU_CHECK_TIMEDELTA_THRESHOLD = datetime.timedelta(seconds=DUMMYMP_MREFRESH[DUMMYMP_MODE])
 else:
@@ -115,5 +128,9 @@ else:
 
 # Process callbacks
 global PROCESS_START_CALLBACK, PROCESS_END_CALLBACK
+
+# Start callback - callback when a process starts
 PROCESS_START_CALLBACK = None
+
+# End callback - callback when a process terminates
 PROCESS_END_CALLBACK = None
