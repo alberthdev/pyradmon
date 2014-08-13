@@ -69,7 +69,6 @@ def fetch_key_from_subplot_dict(subplot_dict):
     return "".join(keys)
 
 def subst_data(plot_dict, data_dict):
-    #print "subst_data called"
     plot_dict_new = copy.deepcopy(plot_dict)
     for plot_id in plot_dict_new:
         plot = plot_dict_new[plot_id]
@@ -98,7 +97,7 @@ def subst_data(plot_dict, data_dict):
                             subplot["data"]["y"][eleID] = data_dict[subplot["data"]["y"][eleID]]
             else:
                 warn("No data found to convert!")
-    #print "subst_data complete"
+    
     return plot_dict_new
 
 def title_output_replace(input_title_output, metadata_dict, data_dict, rel_channels_dict, is_title = False, custom_vars = None):
@@ -131,7 +130,7 @@ def title_output_replace(input_title_output, metadata_dict, data_dict, rel_chann
     
     return input_title_output
 
-def plot(plot_dict, data_dict, metadata_dict, rel_channels_dict, custom_vars = None, make_dirs = False, use_old_plot = False, old_plot = None):
+def plot(plot_dict, data_dict, metadata_dict, rel_channels_dict, custom_vars = None, make_dirs = False):
     # Make a working copy for our use.
     plot_dict_copy = copy.deepcopy(plot_dict)
     plot_dict = plot_dict_copy
@@ -148,19 +147,9 @@ def plot(plot_dict, data_dict, metadata_dict, rel_channels_dict, custom_vars = N
         plot_dpi = plot["settings"]["dpi"]
         plot_target_size = plot["settings"]["target_size"]
         
-        size_frac = Fraction(plot_target_size[0], plot_target_size[1])
-        size_frac_parts = [size_frac.numerator, size_frac.denominator]
-        factor = plot_target_size[0] / size_frac_parts[0]
-        
-        #print "DEBUG: total_plots = %i, plot_target_size = %s, len(plot['plots'])=%i" % (total_plots, str(plot_target_size), len(plot["plots"]))
-        
         fig = plt.figure(figsize=(plot_target_size[0] / plot_dpi, plot_target_size[1] / plot_dpi), dpi = plot_dpi)
-        #fig = plt.figure(figsize=(size_frac_parts[0], size_frac_parts[1]), dpi = factor)
-        # 595x770
-        #fig = plt.figure(figsize=(plot_target_size[0] / 100, plot_target_size[1] / 100), dpi = 100)
         
         if isset("title", plot):
-            #print "Replacing title..."
             plot_title = plot["title"]
             plot_title = title_output_replace(plot_title, metadata_dict, data_dict, rel_channels_dict, True, custom_vars)
             
@@ -193,35 +182,26 @@ def plot(plot_dict, data_dict, metadata_dict, rel_channels_dict, custom_vars = N
         # Add the plot title to the plot
         fig.suptitle(plot_title, fontsize=18)
         
-        # Fix dates
-        #fig.autofmt_xdate()
-        #plt.gca().xaxis.set_major_formatter(mdates.DateFormatter('%m/%d/%Y'))
-        #plt.gca().xaxis.set_major_locator(mdates.DayLocator())
+        # Adjust spacing so that the plot title has some room!
+        plt.subplots_adjust(hspace = 1.2, left=0.15, top=0.88)
         
         for subplotID in xrange(0, len(plot["plots"])):
-            #print "Plot"
             axe = fig.add_subplot(total_plots, 1, subplotID + 1)
             
             subplotkey = fetch_key_from_subplot_dict(plot["plots"][subplotID])
             
             subplot = plot["plots"][subplotID][subplotkey]
-            #print subplot
+            
             if isset("axes", subplot):
                 if isset("x", subplot["axes"]):
-                    if isset("ticks", subplot["axes"]["x"]):
-                        #if (subplot["axes"]["x"]["ticks"]):
-                        #####axe.xaxis.set_major_locator(matplotlib.ticker.MaxNLocator(subplot["axes"]["x"]["ticks"]))
-                        pass
-                        #else:
-                        #    print "WARNING: Non-integer ticks for X-axis on subplot %i." % subplotID
+                    # Note: X axis ticks setting disabled for now - setting
+                    # number of ticks for the X axis tends to mess up the
+                    # dates!
                     if isset("label", subplot["axes"]["x"]):
                         axe.xaxis.set_label_text(subplot["axes"]["x"]["label"])
                 if isset("y", subplot["axes"]):
                     if isset("ticks", subplot["axes"]["y"]):
-                        #if isdigit(subplot["axes"]["y"]["ticks"]):
                         axe.yaxis.set_major_locator(matplotlib.ticker.MaxNLocator(subplot["axes"]["y"]["ticks"]))
-                        #else:
-                        #    print "WARNING: Non-integer ticks for Y-axis on subplot %i." % subplotID
                     if isset("label", subplot["axes"]["y"]):
                         axe.yaxis.set_label_text(subplot["axes"]["y"]["label"])
             
@@ -270,7 +250,7 @@ def plot(plot_dict, data_dict, metadata_dict, rel_channels_dict, custom_vars = N
                         y_id = 0
                         plotted_graphs = 0
                         debug("y_id and plotted_graphs RESET to zero")
-                        #print subplot["data"]["y"]
+                        
                         for y_dat in subplot["data"]["y"]:
                             if len(y_dat) != len(subplot["data"]["x"][0]):
                                 warn("WARNING: Data length for X differs from data length for Y!")
@@ -337,50 +317,26 @@ def plot(plot_dict, data_dict, metadata_dict, rel_channels_dict, custom_vars = N
                             
                             if skip_graph:
                                 skip_graph = False
-                                #debug("skip_graph set, so skipping graph!")
                                 continue
-                            
-                            #print "Hello"
-                            
-                            #plot_kwargs["marker"] = '.'
-                            
-                            #if use_old_plot and old_plot:
                             
                             plt.plot(np.array(subplot["data"]["x"][0]), np.array(y_dat), **plot_kwargs)
                             y_id += 1
                             plotted_graphs += 1
-                            #debug("Finished graphing, y_id now at %i, plotted_graphs now at %i" % (y_id, plotted_graphs))
             
             # Indicate if subplot is empty or not!
-            #debug("y_id = %i" % y_id)
-            #debug("plotted_graphs = %i" % plotted_graphs)
             if plotted_graphs == 0:
-                #debug("No data was plotted, so adding placeholder text.")
                 plt.text(0.5, 0.5, 'Data not available', horizontalalignment='center',
                         verticalalignment='center', fontsize=24,
                         transform=axe.transAxes)
             
             if isset("legend", subplot):
-                #print "Legend area detected..."
                 legend_kwargs = {}
                 box = axe.get_position()
                 axe.set_position([box.x0 + box.width * 0.1, box.y0, box.width * 0.9, box.height])
-                '''if isset("title", subplot["legend"]):
-                    legend_kwargs["title"] = subplot["legend"]["title"]'''
                 
                 if "title" in subplot["legend"]:
                     legend_kwargs["title"] = subplot["legend"]["title"]
                 legend = axe.legend(loc='center left', bbox_to_anchor=(-0.3, 0.5), borderaxespad=0., handlelength=0, **legend_kwargs)
-                
-                #print "Adding legend..."
-                '''if isset("line", subplot["legend"]):
-                    if subplot["legend"]["line"] == True:
-                        legend = axe.legend(loc='center left', bbox_to_anchor=(-0.3, 0.5), borderaxespad=0., handlelength=0, **legend_kwargs)
-                    else:
-                        # We have to do this in a rather hacky way...
-                        legend = axe.legend(loc='center left', bbox_to_anchor=(-0.3, 0.5), borderaxespad=0., handlelength=0, **legend_kwargs)
-                        import ipdb
-                        ipdb.set_trace()'''
                 
                 if legend:
                     plt.setp(legend.get_title(),fontsize='large')
@@ -389,34 +345,15 @@ def plot(plot_dict, data_dict, metadata_dict, rel_channels_dict, custom_vars = N
                     rects = []
                     labels = []
                     for c in subplot["data"]["colors"]:
-                        #rects.append(plt.Rectangle((0, 0), 1, 1, fc=c, ec=c))
-                        #debug("COLOR: "+c)
                         rects.append(matplotlib.patches.Patch(fc=c, ec=c))
                     for l in subplot["data"]["labels"]:
                         labels.append(l.replace("%AVERAGE%", "N/A"))
                     ext_leg = plt.legend(rects, labels, loc='center left', bbox_to_anchor=(-0.3, 0.5), borderaxespad=0., handlelength=0, **legend_kwargs)
-                    
-                
-                #lt = l.get_texts()
-                #for llt in lt:
-                #    plt.setp(llt,fontsize=10)
-                
-                '''if isset("border", subplot["legend"]):
-                    if not subplot["legend"]["border"]:
-                        legend.draw_frame(False)'''
             
             if isset("title", subplot):
                 axe.set_title(subplot["title"], fontsize='large')
             
-            # Set date format
-            #ticks = axe.get_xticks()
-            #n = len(ticks)//6
-            #axe.set_xticks(ticks[::n])
             axe.xaxis.set_major_formatter(mdates.DateFormatter('%d%b\n%Y'))
-        
-        # Fix dates
-        #plt.gcf().autofmt_xdate()
-        
         
         fig.patch.set_facecolor('white')
         
@@ -437,14 +374,9 @@ def plot(plot_dict, data_dict, metadata_dict, rel_channels_dict, custom_vars = N
             warn("Output path not specified, will save to 'magical_plot_please_specify_output_path_next_time.png'")
             plot_output = "magical_plot_please_specify_output_path_next_time.png"
         
-        #print "Saving to: %s (size: %ix%i at %s res, dpi %i)" % (plot_output, plot_target_size[0], plot_target_size[1], str(((plot_target_size[0] + 0.0) / plot_dpi, (plot_target_size[1] + 0.0) / plot_dpi)), plot_dpi)
         plt.savefig(plot_output, facecolor=fig.get_facecolor(), edgecolor='none', figsize=((plot_target_size[0] + 0.0) / plot_dpi, (plot_target_size[1] + 0.0) / plot_dpi), dpi = plot_dpi)
         
-        #plt.savefig(plot_output, facecolor=fig.get_facecolor(), edgecolor='none', figsize=(size_frac_parts[0], size_frac_parts[1]), dpi = factor)
-        #plt.savefig(plot_output, facecolor=fig.get_facecolor(), edgecolor='none')
-        
         # Free it all!
-        #plt.clf()
         plt.close()
 
 if __name__ == "__main__":
