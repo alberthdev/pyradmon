@@ -323,13 +323,15 @@ def plot(plot_dict, data_dict, metadata_dict, rel_channels_dict, custom_vars = N
                                     # Zero division detect
                                     if len(y_dat) == 0:
                                         AVG = 0
+                                        STDDEV = 0
                                     else:
                                         y_dat_no_nan = [value for value in y_dat if not math.isnan(value)]
                                         AVG = round(sum(y_dat_no_nan) / len(y_dat_no_nan), 3)
+                                        STDDEV = np.std([float(val) for val in y_dat_no_nan])
                                     
                                     l_label = l_label.replace("%AVERAGE%", str(AVG))
+                                    l_label = l_label.replace("%STDDEV%", str(STDDEV))
                                     plot_kwargs["label"] = l_label
-                                    # todo: implemenet %stddev%
                             else:
                                 l_label = ""
                             
