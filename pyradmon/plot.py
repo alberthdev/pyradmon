@@ -356,7 +356,7 @@ def plot(plot_dict, data_dict, metadata_dict, rel_channels_dict, custom_vars = N
             #debug("plotted_graphs = %i" % plotted_graphs)
             if plotted_graphs == 0:
                 #debug("No data was plotted, so adding placeholder text.")
-                plt.text(0.5, 0.5, 'Eeek! No data here! O_O', horizontalalignment='center',
+                plt.text(0.5, 0.5, 'Data not available', horizontalalignment='center',
                         verticalalignment='center', fontsize=24,
                         transform=axe.transAxes)
             
