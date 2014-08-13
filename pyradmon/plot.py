@@ -29,13 +29,8 @@ from core import *
 from data import VALID_PREFIX
 
 import datetime
-
 import re
-
-from fractions import Fraction
-
 import copy
-
 import warnings
 warnings.filterwarnings("ignore", category=DeprecationWarning) 
 warnings.filterwarnings("ignore", "No labeled objects found. Use label='...' kwarg on individual plots.", UserWarning)
