@@ -40,13 +40,41 @@ import warnings
 warnings.filterwarnings("ignore", category=DeprecationWarning) 
 warnings.filterwarnings("ignore", "No labeled objects found. Use label='...' kwarg on individual plots.", UserWarning)
 
+def fetch_key_from_subplot_dict(subplot_dict):
+    """Fetch the subplot key from the subplot dict.
+    
+    Given the subplot dictionary, fetch and return the subplot key from
+    the subplot dict.
+    
+    Args:
+        plot_dict: The plot dictionary to substitute values into. See
+            plot() help for more information on its format.
+        data_dict: The data dictionary to retrieve values from. See
+            get_data() help (in data.py) for more information on its
+            format.
+    
+    Returns:
+        A string containing the subplot key from the subplot dict,
+        needed to access the subplot dict.
+    
+    Raises:
+        Exception: Occurs when there are more than one key (or no keys)
+            within the subplot dictionary.
+    """
+    keys = subplot_dict.keys()
+    
+    if len(keys) != 1:
+        edie("Subplot dict doesn't have the correct number of keys! (%i keys found!)" % len(keys))
+    
+    return "".join(keys)
+
 def subst_data(plot_dict, data_dict):
     #print "subst_data called"
     plot_dict_new = copy.deepcopy(plot_dict)
     for plot_id in plot_dict_new:
         plot = plot_dict_new[plot_id]
         for subplotID in xrange(0, len(plot["plots"])):
-            subplotkey = "".join(plot["plots"][subplotID].keys())
+            subplotkey = fetch_key_from_subplot_dict(plot["plots"][subplotID])
             
             subplot = plot["plots"][subplotID][subplotkey]
             if isset("data", subplot):
@@ -165,8 +193,7 @@ def plot(plot_dict, data_dict, metadata_dict, rel_channels_dict, custom_vars = N
             #print "Plot"
             axe = fig.add_subplot(total_plots, 1, subplotID + 1)
             
-            # TODO: check for multiple keys, that won't work
-            subplotkey = "".join(plot["plots"][subplotID].keys())
+            subplotkey = fetch_key_from_subplot_dict(plot["plots"][subplotID])
             
             subplot = plot["plots"][subplotID][subplotkey]
             #print subplot
