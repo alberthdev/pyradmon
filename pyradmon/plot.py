@@ -164,17 +164,27 @@ def plot(plot_dict, data_dict, metadata_dict, rel_channels_dict, custom_vars = N
             plot_title = plot["title"]
             plot_title = title_output_replace(plot_title, metadata_dict, data_dict, rel_channels_dict, True, custom_vars)
             
-            if isset("iuse", data_dict):
-                tmp_iuse_arr = []
-                for prefix in VALID_PREFIX:
-                    tmp_iuse_arr = tmp_iuse_arr + data_dict["iuse"][prefix]
-                mode_val, mode_amt = mode(tmp_iuse_arr)
-                if len(mode_val) > 1:
-                    warn("Detected even mode split - assimilation detection may not be accurate.")
-                
-                if mode_val[0] == -1:
-                    #print "Detected iuse: Not Assimilated (iuse = %i)" % data_dict["iuse"]
-                    fig.text(0.67, 0.948, "Not Assimilated", ha="center", va="bottom", size="x-large",color="red")
+            # Do we have an %ASSIMILATION_STATUS% placeholder?
+            if "%ASSIMILATION_STATUS%" in plot["title"]:
+                # Check for iuse
+                if isset("iuse", data_dict):
+                    # Concatenate all of the iuse values together across all prefixes!
+                    tmp_iuse_arr = []
+                    for prefix in VALID_PREFIX:
+                        tmp_iuse_arr = tmp_iuse_arr + data_dict["iuse"][prefix]
+                    
+                    # Determine the mode of the iuse values
+                    mode_val, mode_amt = mode(tmp_iuse_arr)
+                    
+                    # Check if we have multiple modes
+                    if len(mode_val) > 1:
+                        warn("Detected even mode split - assimilation detection may not be accurate.")
+                    
+                    # Now check the first element - if -1, it's not assimilated!
+                    if mode_val[0] == -1:
+                        fig.text(0.67, 0.948, "Not Assimilated", ha="center", va="bottom", size="x-large",color="red")
+                    else:
+                        fig.text(0.67, 0.948, "Assimilated", ha="center", va="bottom", size="x-large",color="green")
                 else:
                     #print "Detected iuse: Assimilated (iuse = %i)" % data_dict["iuse"]
                     fig.text(0.67, 0.948, "Assimilated", ha="center", va="bottom", size="x-large",color="green")
