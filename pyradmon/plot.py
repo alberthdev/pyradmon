@@ -186,13 +186,12 @@ def plot(plot_dict, data_dict, metadata_dict, rel_channels_dict, custom_vars = N
                     else:
                         fig.text(0.67, 0.948, "Assimilated", ha="center", va="bottom", size="x-large",color="green")
                 else:
-                    #print "Detected iuse: Assimilated (iuse = %i)" % data_dict["iuse"]
-                    fig.text(0.67, 0.948, "Assimilated", ha="center", va="bottom", size="x-large",color="green")
-            else:
-                warn("Unable to determine assimilation!")
-                fig.text(0.67, 0.948, "Unknown (??)", ha="center", va="bottom", size="x-large",color="orange")
-        fig.suptitle(plot_title, fontsize=18) #old: 20
-        plt.subplots_adjust(hspace = 1.2, left=0.15, top=0.88)
+                    # No iuse, so we can't figure out assimilation...
+                    warn("Unable to determine assimilation!")
+                    fig.text(0.67, 0.948, "Unknown (??)", ha="center", va="bottom", size="x-large",color="orange")
+        
+        # Add the plot title to the plot
+        fig.suptitle(plot_title, fontsize=18)
         
         # Fix dates
         #fig.autofmt_xdate()
