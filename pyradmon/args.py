@@ -145,7 +145,7 @@ def add_dump_args(parser, inherit = False):
         {
             'action'    : 'store_true',
             'dest'      : 'dump_suppress_warnings',
-            'help'      : 'Specify whether to suppress data warnings or not. This will hide important warnings about data inconsistencies, so only enable if you are 100% that your data is valid!',
+            'help'      : 'Specify whether to suppress data warnings or not. This will hide important warnings about data inconsistencies, so only enable if you are 100%% sure that your data is valid!',
         }
     
     add_args(parser, inherit, opts)
