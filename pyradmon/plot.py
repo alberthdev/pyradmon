@@ -567,6 +567,9 @@ def plot(plot_dict, data_dict, metadata_dict, rel_channels_dict, custom_vars = N
                                 skip_graph = False
                                 continue
                             
+                            # Ensure that all X values are displayed
+                            axe.set_xlim(left = mdates.date2num(subplot["data"]["x"][0][0]), right = mdates.date2num(subplot["data"]["x"][0][-1]))
+                            
                             plt.plot(np.array(subplot["data"]["x"][0]), np.array(y_dat), **plot_kwargs)
                             y_id += 1
                             plotted_graphs += 1
