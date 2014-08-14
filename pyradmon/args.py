@@ -1300,7 +1300,7 @@ def parse_to_config(parse):
             pyradmon_config["data_start_date"] = parse.data_single_date
             pyradmon_config["data_end_date"] = parse.data_single_date
         
-        # --data-base-directory 
+        # --data-path-format
         if isset_obj("data_path_format", parse):
             pyradmon_config["data_path_format"] = parse.data_path_format
         

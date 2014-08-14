@@ -24,6 +24,7 @@ from core import *
 import args
 import config
 import config_printer
+import enumerate as enum
 from config import *
 
 from enumerate import enumerate
@@ -94,6 +95,11 @@ def main():
         
         info(" ** Enumerating data files...")
         (en, stats) = enumerate(**enum_opts_dict)
+        
+        if not "data_path_format" in enum_opts_dict:
+            warn("No data_path_format specified in configuration. Will use preset default instead.")
+            warn("(Preset default: %s)" % enum.DATA_PATH_FORMAT)
+            enum_opts_dict["data_path_format"] = enum.DATA_PATH_FORMAT
         
         if stats["criteria_total_files"] == 0:
             critical("No data found for specified criteria!")

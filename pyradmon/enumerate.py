@@ -101,8 +101,8 @@ def enumerate(**opts):
     source file (enumerate.py) for capital variable defaults.
 
     Args:
-        base_directory=: The base directory where the data files are
-            located, indicated as a string.
+        data_path_format=: The data path format template describing
+            where the data files are located, indicated as a string.
         experiment_id=: The experiment ID, indicated as a string.
         start_year=: The start year, indicated as a string.
         start_month=: The start month, indicated as a string.

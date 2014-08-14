@@ -239,10 +239,10 @@ def gen_channel_list_generator(chan_arr):
 def gen_channel_list(chan_arr):
     return list(gen_channel_list_generator(chan_arr))
 
-def validate_config(pyradmon_config, skip_dir_check = False):
+def validate_config(pyradmon_config):
     # Validate pyradmon_config
     required_var_list = [
-                            'base_directory',
+                            'data_path_format',
                             'experiment_id',
                             'data_start_date',
                             'data_end_date',
@@ -256,17 +256,6 @@ def validate_config(pyradmon_config, skip_dir_check = False):
     
     if pyradmon_config == None:
         edie("ERROR: No PyRadmon configuration found! A configuration must be defined to run.")
-    
-    if not skip_dir_check:
-        if 'base_directory' in pyradmon_config:
-            if not os.path.isdir(pyradmon_config['base_directory']):
-                edie("ERROR: Directory '%s' specified in base_directory does not exist!" % pyradmon_config['base_directory'])
-            # Yes, this is done on purpose - without base_directory we can't
-            # figure out whether experiment_id is valid or not.
-            if 'experiment_id' in pyradmon_config:
-                if not os.path.isdir(os.path.join(pyradmon_config['base_directory'], pyradmon_config['experiment_id'])):
-                    #logging.critical("ERROR: Experiment ID '%s' specified in experiment_id does not exist!" % pyradmon_config['experiment_id'])
-                    edie("ERROR: Experiment ID '%s' specified in experiment_id does not exist!" % pyradmon_config['experiment_id'])
     
     if 'data_start_date' in pyradmon_config:
         # FORMAT: YYYY-MM-DD HHz
@@ -417,8 +406,8 @@ def validate_plot(plot_dict):
                 if type(subplot["title"]) != str:
                     edie("ERROR: Subplot title '%s' is not a str for subplot '%s'." % (str(subplot["title"]), subplotID))
                 
-def validate(pyradmon_config, plot_dict, skip_dir_check = False):
-    validate_config(pyradmon_config, skip_dir_check)
+def validate(pyradmon_config, plot_dict):
+    validate_config(pyradmon_config)
     validate_plot(plot_dict)
 
 if __name__ == "__main__":
