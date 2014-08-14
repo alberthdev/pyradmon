@@ -408,20 +408,26 @@ def plot(plot_dict, data_dict, metadata_dict, rel_channels_dict, custom_vars = N
             if "%ASSIMILATION_STATUS%" in plot["title"]:
                 # Check for iuse
                 if isset("iuse", data_dict):
-                    # Concatenate all of the iuse values together across all prefixes!
-                    tmp_iuse_arr = []
+                    # Initialize a variable for storing 
+                    iuse_state = None
+                    
+                    # Read iuse and determine if there are any conflicts
                     for prefix in VALID_PREFIX:
-                        tmp_iuse_arr = tmp_iuse_arr + data_dict["iuse"][prefix]
+                        if data_dict["iuse"][prefix][-1] == -1:
+                            if iuse_state and iuse_state != -1:
+                                warn("Assimilation state mismatch - last element uses %i instead of %i! (Changing to former value.)" % (data_dict["iuse"][prefix][-1], iuse_state))
+                            iuse_state = -1
+                        else:
+                            if iuse_state and iuse_state == -1:
+                                warn("Assimilation state mismatch - last element uses %i instead of %i! (Changing to former value.)" % (data_dict["iuse"][prefix][-1], iuse_state))
+                            iuse_state = data_dict["iuse"][prefix][-1]
                     
-                    # Determine the mode of the iuse values
-                    mode_val, mode_amt = mode(tmp_iuse_arr)
+                    # Check to ensure iuse_state has been set!
+                    if not iuse_state:
+                        die("Assimilation state could not be updated! (No prefixes found?)")
                     
-                    # Check if we have multiple modes
-                    if len(mode_val) > 1:
-                        warn("Detected even mode split - assimilation detection may not be accurate.")
-                    
-                    # Now check the first element - if -1, it's not assimilated!
-                    if mode_val[0] == -1:
+                    # Now check the last element - if -1, it's not assimilated!
+                    if iuse_state == -1:
                         fig.text(0.67, 0.948, "Not Assimilated", ha="center", va="bottom", size="x-large",color="red")
                     else:
                         fig.text(0.67, 0.948, "Assimilated", ha="center", va="bottom", size="x-large",color="green")
