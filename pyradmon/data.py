@@ -151,10 +151,38 @@ def get_data(files_to_read, data_vars, selected_channel, data_path_format, all_c
             sure the data is valid!
 
     Returns:
-        A list with the list of file dicts that matches the given
-        search range. Each file is returned as a dictionary, with
-        'instrument_sat' and 'type' of the file specified in the dict,
-        along with the file name 'filename'.
+        If there are multiple selected channels, or if all_channels is
+        True, a dict is returned whose keys are the channel numbers, and
+        whose values are regular data_dicts. (See below for format.)
+        
+        If there's only one channel, a single data_dict is returned.
+        
+        The data_dict has keys with the requested data variables (from
+        data_vars), and values with a list/array of Decimal objects
+        corresponding to the requested data variable keys.
+        
+        Multi-channel example:
+            { 1: 
+                {
+                    'iuse'      : [-1, 1, -1],
+                    'bc_fixang' : [1.23, 1.22, 1.235, 1.201],
+                    ...
+                },
+              2:
+                {
+                    'iuse'      : [-1, 1, -1],
+                    'bc_fixang' : [1.23, 1.22, 1.235, 1.201],
+                    ...
+                },
+                ...
+            }
+        
+        Single-channel example (data_dict):
+            {
+                'iuse'      : [-1, 1, -1],
+                'bc_fixang' : [1.23, 1.22, 1.235, 1.201],
+                ...
+            }
 
     Raises:
         Exception(...) - error exception when either:
