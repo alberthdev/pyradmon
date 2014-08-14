@@ -334,7 +334,7 @@ def get_data(files_to_read, data_vars, selected_channel, data_path_format, all_c
                                     channel_data_dict[data_channel] = {}
                                     for data_var in data_vars:
                                         if data_var in SPECIAL_FIELDS:
-                                            channel_data_dict[data_channel][data_var] = SPECIAL_FIELDS[data_var]
+                                            channel_data_dict[data_channel][data_var] = copy.deepcopy(SPECIAL_FIELDS[data_var])
                                         else:
                                             channel_data_dict[data_channel][data_var] = []
                                 data_dict = channel_data_dict[data_channel]
@@ -411,7 +411,7 @@ def get_data(files_to_read, data_vars, selected_channel, data_path_format, all_c
                                     data_column = column_reader.getColumnIndex("iuse", False)
                                     
                                     debug("DATA_VAR: "+data_var+" | DATA_VAR_TYPE: "+data_var_type)
-                                    # Check to see if we've already found the frequency
+                                    # Check to see if we've already found iuse
                                     if (len(data_dict["iuse"][file_to_read["type"]]) != 0):
                                         # If we found it, does it match the new one? If not, show a warning!
                                         if (int(data_elements[data_column]) != data_dict["iuse"][file_to_read["type"]][0]):
