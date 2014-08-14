@@ -637,6 +637,4 @@ if __name__ == "__main__":
     dat = get_data(en, TEST_DATA_VARS, 4)
 
     import pprint, yaml
-    #pprint.pprint(plot_dict)
-    #print yaml.dump(plot_dict)
     plot(plot_dict, dat, metadata_dict)
