@@ -692,7 +692,7 @@ def plot(plot_dict, data_dict, metadata_dict, rel_channels_dict, custom_vars = N
                         critical("make_dirs in the config section of the config file to true.")
                         die("Output path %s not found!" % os.path.dirname(plot_output))
         else:
-            warn("Output path not specified, will save to 'magical_plot_please_specify_output_path_next_time.png'")
+            warn("Output path not specified, will save to 'magical_plot_please_specify_output_path_next_time.png'!")
             plot_output = "magical_plot_please_specify_output_path_next_time.png"
         
         plt.savefig(plot_output, facecolor=fig.get_facecolor(), edgecolor='none', figsize=((plot_target_size[0] + 0.0) / plot_dpi, (plot_target_size[1] + 0.0) / plot_dpi), dpi = plot_dpi)
