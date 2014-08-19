@@ -267,6 +267,10 @@ def plot(plot_dict, data_dict, metadata_dict, rel_channels_dict, custom_vars = N
                                   'labels': DATA_LABELS,
                                   'x': DATA_FIELD or RAW_DATA,
                                   'y': DATA_FIELD or RAW_DATA,
+                                  'post_processing': {
+                                     'x': POST_PROCESSING_FUNC,
+                                     'y': POST_PROCESSING_FUNC,
+                                   },
                                 }
                               'legend':
                                 {
@@ -332,6 +336,34 @@ def plot(plot_dict, data_dict, metadata_dict, rel_channels_dict, custom_vars = N
             objects on the Y axis, it may not be fully supported.)
             (List/array of floats, Decimals, datetime objects, or
             integers)
+        POST_PROCESSING_FUNC: An array of strings defining lambda
+            functions, without the lambda definition. The lamba is
+            defined as:
+                lambda data,x,y: FUNCTION_GOES_HERE
+            The "data" variable provides the entire data_dict, which is
+            a dictionary whose keys are the data fields, and whose
+            values are a list of the respective data. (Note that this is
+            a single channel data_dict, NOT a multichannel one, since
+            plot only plots one channel.) The "x" and "y" variable
+            provides the currently used data for their axes,
+            respectively. Examples:
+              x: "[(date-datetime.timedelta(days=1)) for date in x]"
+                Equiv: lambda data,x,y: \
+                  [ (date - datetime.timedelta(days=1)) for date in x ]
+                Subtract one day from each timestamp in the X data.
+              x: "y"
+                Equiv: lambda data,x,y: y
+                Return the y data in place of the x data.
+              y: "[ y_item + 1 for y_item in y ]"
+                Equiv: lambda data,x,y: \
+                  [ y_item + 1 for y_item in y ]
+                Increment each value of y by one.
+              y: '[(data["bla"][i]+y[i]) for i in xrange(0, len(y))]'
+                Equiv: lambda data,x,y: \
+                  [ (data["bla"][i] + y[i]) for i in xrange(0, len(y)) ]
+                Add data from data field "bla" to the y data.
+            Note that the strings would be in an array/list for each
+            data point!
         LEGEND_TITLE: The legend title. (String)
         SUBPLOT_TITLE: The subplot title. (String)
     
@@ -490,17 +522,43 @@ def plot(plot_dict, data_dict, metadata_dict, rel_channels_dict, custom_vars = N
                         
                         if isset("post_processing", subplot["data"]):
                             if isset("x", subplot["data"]["post_processing"]):
-                                exec "post_processing_func_x = lambda data,x,y: %s" % subplot["data"]["post_processing"]["x"]
+                                # Apply the lambda function to the data!
+                                subplot["data"]["x"][eleID_x] = post_processing_func_x(data_dict, subplot["data"]["x"][eleID_x], subplot["data"]["y"][eleID_y])
                                 
+                                # Apply the lambda function to the data,
+                                # piece by piece! This takes each
+                                # subarray in the Y data array and
+                                # applies the function to it.
                                 for eleID_x in xrange(0, len(subplot["data"]["x"])):
                                     for eleID_y in xrange(0, len(subplot["data"]["y"])):
-                                        subplot["data"]["x"][eleID_x] = post_processing_func_x(data_dict, subplot["data"]["x"][eleID_x], subplot["data"]["y"][eleID_y])
+                                        if eleID_x < len(subplot["data"]["post_processing"]["x"]):
+                                            # Define the function...
+                                            exec "post_processing_func_x = lambda data,x,y: %s" % subplot["data"]["post_processing"]["x"]
+                                            # ...and run it!
+                                            subplot["data"]["x"][eleID_x] = post_processing_func_x(data_dict, subplot["data"]["x"][eleID_x], subplot["data"]["y"][eleID_y])
+                                        else:
+                                            warn("WARNING: Not enough post_processing functions for the X data.")
+                            
+                            # Check if there is a post_processing
+                            # function for the Y data
                             if isset("y", subplot["data"]["post_processing"]):
-                                exec "post_processing_func_y = lambda data,x,y: %s" % subplot["data"]["post_processing"]["y"]
+                                # Warn about mutliple X
+                                if len(subplot["data"]["x"]) > 1:
+                                    warn("WARNING: Substitution of Y data may be unreliable if you use X due to multiple X.")
                                 
+                                # Apply the lambda function to the data,
+                                # piece by piece! This takes each
+                                # subarray in the X data array and
+                                # applies the function to it.
                                 for eleID_x in xrange(0, len(subplot["data"]["x"])):
                                     for eleID_y in xrange(0, len(subplot["data"]["y"])):
-                                        subplot["data"]["y"][eleID_x] = post_processing_func_y(data_dict, subplot["data"]["x"][eleID_x], subplot["data"]["y"][eleID_y])
+                                        if eleID_y < len(subplot["data"]["post_processing"]["y"]):
+                                            # Define the function...
+                                            exec "post_processing_func_y = lambda data,x,y: %s" % subplot["data"]["post_processing"]["y"]
+                                            # ...and run it!
+                                            subplot["data"]["y"][eleID_x] = post_processing_func_y(data_dict, subplot["data"]["x"][eleID_x], subplot["data"]["y"][eleID_y])
+                                        else:
+                                            warn("WARNING: Not enough post_processing functions for the Y data.")
                         
                         plot_kwargs = {}
                         y_id = 0
