@@ -570,13 +570,18 @@ def plot(plot_dict, data_dict, metadata_dict, rel_channels_dict, custom_vars = N
                                 warn("WARNING: Data length for X differs from data length for Y!")
                                 warn("(Data length for X: %i; Data length for Y: %i)" % (len(subplot["data"]["x"][0]), len(y_dat)))
                             
-                            # todo: implement warnings
+                            # Check if the colors attribute was set!
                             if isset("colors", subplot["data"]):
                                 if type(subplot["data"]["colors"]) == str:
                                     subplot["data"]["colors"] = [ subplot["data"]["colors"] ]
                                 if y_id < len(subplot["data"]["colors"]):
                                     l_color = subplot["data"]["colors"][y_id]
                                     plot_kwargs["color"] = l_color
+                                else:
+                                    if len(subplot["data"]["colors"]) != len(subplot["data"]["y"]):
+                                        # Emit a warning...
+                                        warn("WARNING: Not enough colors specified in the colors field for the data!")
+                                        warn("Colors specified vs. amount of Y data: %i vs. %i" % (len(subplot["data"]["colors"]), len(subplot["data"]["y"])))
                             
                             # DATA
                             if isset("iuse", data_dict):
@@ -619,6 +624,11 @@ def plot(plot_dict, data_dict, metadata_dict, rel_channels_dict, custom_vars = N
                                     l_label = l_label.replace("%AVERAGE%", str(AVG))
                                     l_label = l_label.replace("%STDDEV%", str(STDDEV))
                                     plot_kwargs["label"] = l_label
+                                else:
+                                    if len(subplot["data"]["labels"]) != len(subplot["data"]["y"]):
+                                        # Emit a warning...
+                                        warn("WARNING: Not enough labels specified in the colors field for the data!")
+                                        warn("Labels specified vs. amount of Y data: %i vs. %i" % (len(subplot["data"]["labels"]), len(subplot["data"]["y"])))
                             else:
                                 l_label = ""
                             
