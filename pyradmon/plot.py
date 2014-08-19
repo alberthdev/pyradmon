@@ -472,6 +472,10 @@ def plot(plot_dict, data_dict, metadata_dict, rel_channels_dict, custom_vars = N
         fig.suptitle(plot_title, fontsize=18)
         
         # Adjust spacing so that the plot title has some room!
+        #   hspace - the amount of height reserved for white space
+        #            between subplots
+        #   left - the left side of the subplots of the figure
+        #   top - the top of the subplots of the figure
         plt.subplots_adjust(hspace = 1.2, left=0.15, top=0.88)
         
         # Loop through subplot indexes
@@ -727,6 +731,9 @@ def plot(plot_dict, data_dict, metadata_dict, rel_channels_dict, custom_vars = N
                 # create the legend!
                 if "title" in subplot["legend"]:
                     legend_kwargs["title"] = subplot["legend"]["title"]
+                # bbox_to_anchor - the "bounding box" where the legend will anchor to
+                # borderaxespad - the pad between the axes and legend border
+                # handlelength - the length of the legend handles
                 legend = axe.legend(loc='center left', bbox_to_anchor=(-0.3, 0.5), borderaxespad=0., handlelength=0, **legend_kwargs)
                 
                 # Make the legend title large!
