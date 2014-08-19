@@ -668,6 +668,7 @@ def plot(plot_dict, data_dict, metadata_dict, rel_channels_dict, custom_vars = N
                         rects.append(matplotlib.patches.Patch(fc=c, ec=c))
                     for l in subplot["data"]["labels"]:
                         labels.append(l.replace("%AVERAGE%", "N/A"))
+                        labels.append(l.replace("%STDDEV%", "N/A"))
                     ext_leg = plt.legend(rects, labels, loc='center left', bbox_to_anchor=(-0.3, 0.5), borderaxespad=0., handlelength=0, **legend_kwargs)
             
             if isset("title", subplot):
