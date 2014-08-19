@@ -474,60 +474,88 @@ def plot(plot_dict, data_dict, metadata_dict, rel_channels_dict, custom_vars = N
         # Adjust spacing so that the plot title has some room!
         plt.subplots_adjust(hspace = 1.2, left=0.15, top=0.88)
         
+        # Loop through subplot indexes
         for subplotIndex in xrange(0, len(plot["plots"])):
+            # Add a subplot - select position of subplot based on index
             axe = fig.add_subplot(total_plots, 1, subplotIndex + 1)
             
+            # Grab the correct subplot ID (aka the key)
             subplotIDKey = fetch_key_from_subplot_dict(plot["plots"][subplotIndex])
             
             # Convenience variable
             subplot = plot["plots"][subplotIndex][subplotIDKey]
             
+            # Do we have axes defined?
             if isset("axes", subplot):
+                # Do we have an X axis defined?
                 if isset("x", subplot["axes"]):
                     # Note: X axis ticks setting disabled for now - setting
                     # number of ticks for the X axis tends to mess up the
                     # dates!
+                    
+                    # Check if a label is defined, and if so, make a label!
                     if isset("label", subplot["axes"]["x"]):
                         axe.xaxis.set_label_text(subplot["axes"]["x"]["label"])
+                
+                # Do we have a Y axis defined?
                 if isset("y", subplot["axes"]):
+                    # Check if number of ticks is defined, and if so, change # of ticks accordingly!
                     if isset("ticks", subplot["axes"]["y"]):
                         axe.yaxis.set_major_locator(matplotlib.ticker.MaxNLocator(subplot["axes"]["y"]["ticks"]))
+                    
+                    # Check if a label is defined, and if so, make a label!
                     if isset("label", subplot["axes"]["y"]):
                         axe.yaxis.set_label_text(subplot["axes"]["y"]["label"])
             
+            # Do we have the plot data defined?
             if isset("data", subplot):
+                # Is the data for the X axis defined?
+                # Without an X axis, we can't make a plot!
                 if isset("x", subplot["data"]):
                     # Check to make sure the data is substituted!
+                    # Validate by ensuring that the element is a list!
                     verify_x_data = True
+                    
                     for eleID in xrange(0, len(subplot["data"]["x"])):
                         if (type(subplot["data"]["x"][eleID]) != list):
                             verify_x_data = False
                             break
+                    
+                    # If there's no data substituted in, substitute it
+                    # in now.
                     if not verify_x_data:
                         plot_dict = subst_data(plot_dict, data_dict)
                         plot = plot_dict[plot_id]
                         subplot = plot["plots"][subplotIndex][subplotIDKey]
                     
+                    # Is the data for the Y axis defined?
                     if isset("y", subplot["data"]):
                         # Check to make sure data has been substituted!
+                        # Validate by ensuring that the element is a list!
                         verify_y_data = True
                         for eleID in xrange(0, len(subplot["data"]["y"])):
                             if (type(subplot["data"]["y"][eleID]) != list):
                                 verify_y_data = False
                                 break
+                        
+                        # If there's no data substituted in, substitute
+                        # it in now.
                         if not verify_y_data:
                             plot_dict = subst_data(plot_dict, data_dict)
                             plot = plot_dict[plot_id]
                             subplot = plot["plots"][subplotIndex][subplotIDKey]
                         
+                        # Check for post_processing functions
                         if isset("post_processing", subplot["data"]):
+                            # Check if there is a post_processing
+                            # function for the X data
                             if isset("x", subplot["data"]["post_processing"]):
                                 # Apply the lambda function to the data!
                                 subplot["data"]["x"][eleID_x] = post_processing_func_x(data_dict, subplot["data"]["x"][eleID_x], subplot["data"]["y"][eleID_y])
                                 
                                 # Apply the lambda function to the data,
                                 # piece by piece! This takes each
-                                # subarray in the Y data array and
+                                # subarray in the X data array and
                                 # applies the function to it.
                                 for eleID_x in xrange(0, len(subplot["data"]["x"])):
                                     for eleID_y in xrange(0, len(subplot["data"]["y"])):
@@ -548,7 +576,7 @@ def plot(plot_dict, data_dict, metadata_dict, rel_channels_dict, custom_vars = N
                                 
                                 # Apply the lambda function to the data,
                                 # piece by piece! This takes each
-                                # subarray in the X data array and
+                                # subarray in the Y data array and
                                 # applies the function to it.
                                 for eleID_x in xrange(0, len(subplot["data"]["x"])):
                                     for eleID_y in xrange(0, len(subplot["data"]["y"])):
@@ -565,16 +593,25 @@ def plot(plot_dict, data_dict, metadata_dict, rel_channels_dict, custom_vars = N
                         plotted_graphs = 0
                         debug("y_id and plotted_graphs RESET to zero")
                         
+                        # Loop through Y data arrays
                         for y_dat in subplot["data"]["y"]:
+                            # Validate data length
                             if len(y_dat) != len(subplot["data"]["x"][0]):
                                 warn("WARNING: Data length for X differs from data length for Y!")
                                 warn("(Data length for X: %i; Data length for Y: %i)" % (len(subplot["data"]["x"][0]), len(y_dat)))
                             
                             # Check if the colors attribute was set!
                             if isset("colors", subplot["data"]):
+                                # If the color is a string, make it into
+                                # a list.
                                 if type(subplot["data"]["colors"]) == str:
                                     subplot["data"]["colors"] = [ subplot["data"]["colors"] ]
+                                
+                                # Verify that there are enough colors
+                                # for the data.
                                 if y_id < len(subplot["data"]["colors"]):
+                                    # Grab the color, and toss it into
+                                    # the plot kwargs!
                                     l_color = subplot["data"]["colors"][y_id]
                                     plot_kwargs["color"] = l_color
                                 else:
@@ -583,16 +620,27 @@ def plot(plot_dict, data_dict, metadata_dict, rel_channels_dict, custom_vars = N
                                         warn("WARNING: Not enough colors specified in the colors field for the data!")
                                         warn("Colors specified vs. amount of Y data: %i vs. %i" % (len(subplot["data"]["colors"]), len(subplot["data"]["y"])))
                             
-                            # DATA
+                            # Filter out any invalid data (-9999.99)...
+                            # ...but ensure that "iuse" exists first!
                             if isset("iuse", data_dict):
+                                # Do we need to skip graphing (due to
+                                # all of the values being bad)?
                                 skip_graph = False
+                                
+                                # Loop through prefixes...
                                 for prefix in VALID_PREFIX:
+                                    # Check for negative iuses
                                     if any(iuse < 0 for iuse in data_dict["iuse"][prefix]):
                                         #debug("Detected -1 in iuse field!")
                                         
+                                        # Check to see if all of the
+                                        # values are bad
                                         bad_vals = [ y for y in y_dat if (y <= -9999) ]
                                         
+                                        # Are they all bad apples?
                                         if len(bad_vals) == len(y_dat):
+                                            # Take steps to make an
+                                            # empty plot
                                             axe.xaxis_date()
                                             y_id += 1
                                             
@@ -604,23 +652,35 @@ def plot(plot_dict, data_dict, metadata_dict, rel_channels_dict, custom_vars = N
                                         y_dat = replaced_y
                                         break
                             
+                            # Check for a labels attribute...
                             if isset("labels", subplot["data"]):
+                                # If the label is a string, convert it
+                                # into a list!
                                 if type(subplot["data"]["labels"]) == str:
                                     subplot["data"]["labels"] = [ subplot["data"]["labels"] ]
+                                
+                                # Ensure that we have enough labels
+                                # for the data!
                                 if y_id < len(subplot["data"]["labels"]):
+                                    # Grab the label and perform substitution
                                     l_label = subplot["data"]["labels"][y_id]
                                     l_label = l_label.replace("%COLOR%", "")
                                     l_label = l_label.replace("%ENDCOLOR%", "")
                                     
                                     # Zero division detection
                                     if len(y_dat) == 0:
+                                        # Set AVG and STDDEV to zero.
                                         AVG = 0
                                         STDDEV = 0
                                     else:
+                                        # Filter out NaNs from the Y data...
                                         y_dat_no_nan = [value for value in y_dat if not math.isnan(value)]
+                                        
+                                        # Then perform statistics!
                                         AVG = round(sum(y_dat_no_nan) / len(y_dat_no_nan), 3)
                                         STDDEV = np.std([float(val) for val in y_dat_no_nan])
                                     
+                                    # Now perform substitution!
                                     l_label = l_label.replace("%AVERAGE%", str(AVG))
                                     l_label = l_label.replace("%STDDEV%", str(STDDEV))
                                     plot_kwargs["label"] = l_label
@@ -630,8 +690,11 @@ def plot(plot_dict, data_dict, metadata_dict, rel_channels_dict, custom_vars = N
                                         warn("WARNING: Not enough labels specified in the colors field for the data!")
                                         warn("Labels specified vs. amount of Y data: %i vs. %i" % (len(subplot["data"]["labels"]), len(subplot["data"]["y"])))
                             else:
+                                # Set the label to nothing
                                 l_label = ""
                             
+                            # Check if skip_graph was set, and if so,
+                            # reset it and skip
                             if skip_graph:
                                 skip_graph = False
                                 continue
@@ -639,7 +702,10 @@ def plot(plot_dict, data_dict, metadata_dict, rel_channels_dict, custom_vars = N
                             # Ensure that all X values are displayed
                             axe.set_xlim(left = mdates.date2num(subplot["data"]["x"][0][0]), right = mdates.date2num(subplot["data"]["x"][0][-1]))
                             
+                            # Plot the values!
                             plt.plot(np.array(subplot["data"]["x"][0]), np.array(y_dat), **plot_kwargs)
+                            
+                            # Increment counters...
                             y_id += 1
                             plotted_graphs += 1
             
@@ -649,40 +715,68 @@ def plot(plot_dict, data_dict, metadata_dict, rel_channels_dict, custom_vars = N
                         verticalalignment='center', fontsize=24,
                         transform=axe.transAxes)
             
+            # Check to see if we have a legend defined...
             if isset("legend", subplot):
                 legend_kwargs = {}
+                
+                # Make some room for the legend!
                 box = axe.get_position()
                 axe.set_position([box.x0 + box.width * 0.1, box.y0, box.width * 0.9, box.height])
                 
+                # Set up the position to the left side of the plot, and
+                # create the legend!
                 if "title" in subplot["legend"]:
                     legend_kwargs["title"] = subplot["legend"]["title"]
                 legend = axe.legend(loc='center left', bbox_to_anchor=(-0.3, 0.5), borderaxespad=0., handlelength=0, **legend_kwargs)
                 
+                # Make the legend title large!
+                # (But only if the legend actually exists - if there's
+                # no data, it goes *poof*...)
                 if legend:
                     plt.setp(legend.get_title(),fontsize='large')
                 
+                # If there is no data, things tend to be weird... no
+                # legend will be displayed. If that's the case, let's
+                # make a fake legend!
                 if plotted_graphs == 0:
                     rects = []
                     labels = []
+                    
+                    # Loop through colors and add a Patch object with 
+                    # said color!
                     for c in subplot["data"]["colors"]:
                         rects.append(matplotlib.patches.Patch(fc=c, ec=c))
+                    
+                    # Add the labels back in!
                     for l in subplot["data"]["labels"]:
                         labels.append(l.replace("%AVERAGE%", "N/A"))
                         labels.append(l.replace("%STDDEV%", "N/A"))
+                    
+                    # Finally, add the fake legend to the plot!
                     ext_leg = plt.legend(rects, labels, loc='center left', bbox_to_anchor=(-0.3, 0.5), borderaxespad=0., handlelength=0, **legend_kwargs)
             
+            # If there's a subplot title, make one!
             if isset("title", subplot):
                 axe.set_title(subplot["title"], fontsize='large')
             
+            # Set the date format!
             axe.xaxis.set_major_formatter(mdates.DateFormatter('%d%b\n%Y'))
         
+        # Change the default gray background to white
         fig.patch.set_facecolor('white')
         
+        # Set the output path for the plot
         if isset("output", plot):
+            # Perform substitution on the plot output path
             plot_output = plot["output"]
             plot_output = title_output_replace(plot_output, metadata_dict, data_dict, rel_channels_dict, False, custom_vars)
+            
+            # Check to see if the path exists!
+            # ...but make sure there IS a path to check for!
             if os.path.dirname(plot_output).strip() != "":
                 if not os.path.exists(os.path.dirname(plot_output)):
+                    # Check to see if make_dirs is set, and if so,
+                    # create the path directory.
                     if make_dirs:
                         info("Output path %s not found, creating directory." % os.path.dirname(plot_output))
                         mkdir_p(os.path.dirname(plot_output))
@@ -695,6 +789,7 @@ def plot(plot_dict, data_dict, metadata_dict, rel_channels_dict, custom_vars = N
             warn("Output path not specified, will save to 'magical_plot_please_specify_output_path_next_time.png'!")
             plot_output = "magical_plot_please_specify_output_path_next_time.png"
         
+        # Make and save the plot!
         plt.savefig(plot_output, facecolor=fig.get_facecolor(), edgecolor='none', figsize=((plot_target_size[0] + 0.0) / plot_dpi, (plot_target_size[1] + 0.0) / plot_dpi), dpi = plot_dpi)
         
         # Free it all!
