@@ -93,12 +93,12 @@ def subst_data(plot_dict, data_dict):
         plot = plot_dict_new[plot_id]
         
         # Loop through all of the plots... at least their index first!
-        for subplotID in xrange(0, len(plot["plots"])):
+        for subplotIndex in xrange(0, len(plot["plots"])):
             # Then fetch their key - there should only be one key.
-            subplotkey = fetch_key_from_subplot_dict(plot["plots"][subplotID])
+            subplotIDKey = fetch_key_from_subplot_dict(plot["plots"][subplotIndex])
             
             # Convenience variable
-            subplot = plot["plots"][subplotID][subplotkey]
+            subplot = plot["plots"][subplotIndex][subplotIDKey]
             
             # Check to make sure this subplot has a "data" element
             if isset("data", subplot):
@@ -442,12 +442,13 @@ def plot(plot_dict, data_dict, metadata_dict, rel_channels_dict, custom_vars = N
         # Adjust spacing so that the plot title has some room!
         plt.subplots_adjust(hspace = 1.2, left=0.15, top=0.88)
         
-        for subplotID in xrange(0, len(plot["plots"])):
-            axe = fig.add_subplot(total_plots, 1, subplotID + 1)
+        for subplotIndex in xrange(0, len(plot["plots"])):
+            axe = fig.add_subplot(total_plots, 1, subplotIndex + 1)
             
-            subplotkey = fetch_key_from_subplot_dict(plot["plots"][subplotID])
+            subplotIDKey = fetch_key_from_subplot_dict(plot["plots"][subplotIndex])
             
-            subplot = plot["plots"][subplotID][subplotkey]
+            # Convenience variable
+            subplot = plot["plots"][subplotIndex][subplotIDKey]
             
             if isset("axes", subplot):
                 if isset("x", subplot["axes"]):
@@ -473,7 +474,7 @@ def plot(plot_dict, data_dict, metadata_dict, rel_channels_dict, custom_vars = N
                     if not verify_x_data:
                         plot_dict = subst_data(plot_dict, data_dict)
                         plot = plot_dict[plot_id]
-                        subplot = plot["plots"][subplotID][subplotkey]
+                        subplot = plot["plots"][subplotIndex][subplotIDKey]
                     
                     if isset("y", subplot["data"]):
                         # Check to make sure data has been substituted!
@@ -485,7 +486,7 @@ def plot(plot_dict, data_dict, metadata_dict, rel_channels_dict, custom_vars = N
                         if not verify_y_data:
                             plot_dict = subst_data(plot_dict, data_dict)
                             plot = plot_dict[plot_id]
-                            subplot = plot["plots"][subplotID][subplotkey]
+                            subplot = plot["plots"][subplotIndex][subplotIDKey]
                         
                         if isset("post_processing", subplot["data"]):
                             if isset("x", subplot["data"]["post_processing"]):
