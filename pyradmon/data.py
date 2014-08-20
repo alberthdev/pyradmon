@@ -207,8 +207,14 @@ def extract_fields_via_template(template_regex, matching_groups, input_str, supp
         if matching_groups.count(group) > 1:
             # Consistent group validation
             tmp_groups = []
-            for i in [n for (n, m_group) in enumerate(matching_groups) if m_group == 'll']:
-                tmp_groups.append(m_group)
+            
+            # Loop through each group and grab the indexes for each
+            # group that matches the current group. Then loop through
+            # each returned index!
+            for i in [n for (n, m_group) in enumerate(matching_groups) if m_group == group]:
+                # ...and append the value for each match at that index!
+                tmp_groups.append(match.groups()[i])
+            
             if not identicalEleListCheck(tmp_groups):
                 if not suppress_warnings:
                     warn("WARNING: Detected inconsistency with variable %s! (Values detected: %s)" % (group, str(tmp_groups)))
