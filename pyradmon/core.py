@@ -210,3 +210,8 @@ def check_file(file_path):
 
 def identicalEleListCheck(lst):
     return not lst or lst.count(lst[0]) == len(lst)
+
+def check_int(s):
+    if s[0] in ('-', '+'):
+        return s[1:].isdigit()
+    return s.isdigit()

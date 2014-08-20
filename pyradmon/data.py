@@ -43,11 +43,6 @@ SPECIAL_FIELDS = {
 for prefix in VALID_PREFIX:
     SPECIAL_FIELDS["iuse"][prefix] = []
 
-def check_int(s):
-    if s[0] in ('-', '+'):
-        return s[1:].isdigit()
-    return s.isdigit()
-
 def rel_channels(chans):
     ordered_chans = list(chans)
     ordered_chans.sort()
