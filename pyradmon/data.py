@@ -26,9 +26,6 @@ from core import *
 import copy
 import re
 
-# Test data variables
-############# TODO : write code to remove dups
-
 # Constants
 # Valid prefixes (data types)
 VALID_PREFIX = [ "ges", "anl" ]
@@ -44,18 +41,89 @@ for prefix in VALID_PREFIX:
     SPECIAL_FIELDS["iuse"][prefix] = []
 
 def rel_channels(chans):
+    """Create a relative channel mapping dict from list of channels.
+    
+    Given a list of channels, create a relative channel mapping dict
+    relating a relative channel number to the actual data channel
+    number.
+    
+    Relative channels start at 1, and end at the total length of the
+    channels. For instance::
+    
+        rel_channels([1, 5, 8, 7, 11])
+    
+    ...will return::
+    
+        { 1 : 1, 2 : 5, 3 : 7, 4 : 8, 5 : 11 }
+    
+    Args:
+        chans (list): An array of data channel integers to generate
+            a relative channel dictionary from.
+    
+    Returns:
+        dict: Dictonary with the keys being the relative channels, and
+        the values being the actual data channel corresponding to each
+        relative channel, respectively.
+        
+    """
+    # Make a copy of the channel list
     ordered_chans = list(chans)
+    
+    # ...and then sort it!
     ordered_chans.sort()
+    
+    # Initialize a relative channel dict!
     rel_chan_dict = {}
+    
+    # Go through each channel, and assign relative chans -> data chans.
+    # Since the data chans are ordered, the numbering should line up.
+    # (E.g. 1 -> first data chan, 2 -> second data chan, etc.)
     for i in xrange(1, len(ordered_chans) + 1):
         rel_chan_dict[i] = ordered_chans[i - 1]
+    
+    # Return the relative channel mapping dict!
     return rel_chan_dict
 
 def template_to_regex(template):
+    """Convert a string template to a parsable regular expression.
+    
+    Given a data_path_format string template, parse the template into
+    a parsable regular expression string for extracting each %VAR%
+    variable.
+    
+    Supported %VAR% variables:
+    
+    * %EXPERIMENT_ID% - experiment ID (str)
+    * %INSTRUMENT_SAT% - instrument/satellite ID (str)
+    * %DATA_TYPE% - data type (str)
+    * %YEAR% - full year (int, 4 digits)
+    * %YEAR4% - full year (int, 4 digits)
+    * %YEAR2% - last two digits of year (int, 2 digits)
+    * %MONTH% - integer month (int, 2 digits)
+    * %MONTH2% - integer month (int, 2 digits)
+    * %DAY% - integer day (int, 2 digits)
+    * %DAY2% - integer day (int, 2 digits)
+    * %HOUR% - integer hour (int, 2 digits)
+    * %HOUR2% - integer hour (int, 2 digits)
+    
+    Args:
+        template (str): A string with the data_path_format template to
+            be converted to a parsable regular expression.
+    
+    Returns:
+        tuple: Tuple with the first element being a parsable regular 
+        expression string, and the second element being a list of the 
+        detected %VAR%s, in order found (from left to right).
+        
+    """
+    # Initialize the final template regex string
     template_final = ""
     
+    # Initialize the final matching group list
     matching_groups = []
     
+    # Define the variables to replace, with their corresponding regex
+    # capturing patterns.
     regex_replace_dict = {
                             "%EXPERIMENT_ID%"   : r'(.*)',
                             "%INSTRUMENT_SAT%"  : r'(.*)',
@@ -75,19 +143,60 @@ def template_to_regex(template):
                             "%HOUR2%"           : r'(\d{2})',
                         }
     
+    # Search for %VAR% variables with a %VAR% matching pattern
     matches = re.findall(r'(.*?)(%.*?%)(.*?)', template)
+    
+    # Loop through each match!
     for match in matches:
+        # Grab the %VAR% part in the match.
+        # (match returns a tuple with 3 elements - the misc string on
+        # the left side, the %VAR% part in the middle, and the misc
+        # string on the right side)
         template_part = match[1]
         
+        # Check to see if this %VAR% is in our replacement table!
         if template_part in regex_replace_dict.keys():
+            # Add it to the matching group list for future indexing
+            # reference!
             matching_groups.append(template_part)
+            
+            # Then make the variable to regex replacement.
             template_part = template_part.replace(template_part, regex_replace_dict[template_part])
         
+        # Finally, assemble the string back together.
         template_final += re.escape(match[0]) + template_part + re.escape(match[2])
     
+    # Return the regex template and the list of matching groups!
     return (template_final, matching_groups)
 
 def extract_fields_via_template(template_regex, matching_groups, input_str, suppress_warnings = False):
+    """Extract field data from an input string given regex and groups.
+    
+    Given an input string, extract the field data values from the input 
+    string given the parsable regular expression string and a list of 
+    %VAR%s, in order found (from left to right), to connect regex 
+    matches with fields.
+    
+    
+    
+    Args:
+        template_regex (str): A string with a parsable regular
+            expression to be run on the input string.
+        matching_groups (list): A list of %VAR%s, in the matching group
+            order of template_regex.
+        input_str (str): An input string to parse with the regex given
+            in template_regex.
+        suppress_warnings (bool, optional): A boolean determining
+            whether to suppress warnings or not. By default, this is 
+            set to False - warnings are not suppressed.
+    
+    Returns:
+        dict: Dictionary with the keys being the %VAR% variables, and 
+        the values being the corresponding values, respectively. 
+        Integer value types will be integers, while string value types 
+        will be strings.
+        
+    """
     match = re.match(template_regex, input_str)
     if not match:
         return None
@@ -141,15 +250,17 @@ def get_data(files_to_read, data_vars, selected_channel, data_path_format, all_c
         selected_channel (int): An integer (or array of integers)
             specifying the data channel(s) to use for extracting the 
             data.
-        all_channels (bool): A boolean specifying whether to use all of
-            the data or not. This overrides the selected_channel 
-            option.
-        data_assim_only (bool): A boolean specifying whether to only
-            use assimilated data or not. (Determined by iuse > 0!)
-        suppress_warnings (bool): A boolean specifying whether to
+        all_channels (bool, optional): A boolean specifying whether to 
+            use all of the data or not. This overrides the 
+            selected_channel option. By default, this is set to False.
+        data_assim_only (bool, optional): A boolean specifying whether 
+            to only use assimilated data or not. (Determined by iuse > 
+            0!) By default, this is set to False.
+        suppress_warnings (bool, optional): A boolean specifying whether to
             suppress warnings or not. This will hide potentially 
             important warnings about data consistency, so only use if 
-            you're 100% sure the data is valid!
+            you're 100% sure the data is valid! By default, this is set 
+            to False - warnings are not suppressed.
 
     Returns:
         dict: If there are multiple selected channels, or if 
@@ -478,21 +589,17 @@ def get_data(files_to_read, data_vars, selected_channel, data_path_format, all_c
 def get_data_columns(files_to_read):
     """Returns a dict of the data columns in a file.
 
-    TODO
+    Given a list of dicts containing information on files to read, scan
+    each file and return all of the column names in the files.
 
     Args:
-        files_to_read: A list of file dicts, returned by enumerate().
+        files_to_read (list): A list of file dicts, returned by
+            :py:func:`.enumerate()`. See :py:func:`.enumerate()` for 
+            more information about the file dict format.
 
     Returns:
-        TODO
-
-    Raises:
-        Exception(...) - error exception when either:
-            - an ambiguous variable is found
-            - the column index for a data variable can not be found
-              (and therefore makes the data variable invalid)
-            - the channel number can't be read (and therefore the data
-              is corrupt)
+        dict: Column dictionary whose keys are the column names, and 
+        whose values are the column indexes, respectively.
     
     Note:
         Warnings will be printed when inconsistencies with the data
@@ -575,30 +682,66 @@ def get_data_columns(files_to_read):
                         # the column header!
                         if data_line_counter > 2:
                             column_reader_data += data_line
+    return None
 
 def post_data_columns(data_columns):
+    """Add important data columns to the column list and return them.
+
+    Given a dict of data columns containing a list of data columns to 
+    read, add additional important data columns to the column list, and 
+    return the changed list.
+    
+    Note that a data columns dict is given as input, and a simple data 
+    column list is given as output.
+    
+    This function is generally used when just dumping all of the
+    columns, and not doing any plotting.
+    
+    Args:
+        data_columns (dict): A dict containing the data columns that 
+            need to be extracted.
+
+    Returns:
+        list: The list of strings containing the data columns that need 
+        to be extracted, with any additional required columns that were 
+        missing from the original list.
+    
+    """
+    # Initialize data column list
     data_columns_list = []
+    
+    # Loop through each column
     for col in data_columns:
+        # Check if the column selected is the raw frequency column.
+        # If it is, replace it with "frequency" instead.
         if col == "freq/wavenum":
             if "frequency" not in data_columns_list:
                 data_columns_list.append("frequency")
             continue
+        
+        # Check if there are any subcolumns.
+        # If so, loop through each subcolumn, and create entries for
+        # each subcolumn in the COL|SUBCOL format.
         if len(data_columns[col]['subcolumns']) > 0:
             for subcol in data_columns[col]['subcolumns']:
                 if (col + "|" + subcol) not in data_columns_list:
                     data_columns_list.append(col + "|" + subcol)
         else:
+            # Check if it exists. If not, just append it in!
             if col not in data_columns_list:
                 data_columns_list.append(col)
+    
+    # Ensure that the "timestamp" column exists. If not, add it!
     if "timestamp" not in data_columns_list:
         data_columns_list.append("timestamp")
+    
+    # Return the final list!
     return data_columns_list
 
 if __name__ == "__main__":
     # Use test data
     from enumerate import enumerate
     from test import *
-    import pprint
+    
     en = enumerate()
     dat = get_data(en, TEST_DATA_VARS, 4)
-    #pprint.pprint(dat)
