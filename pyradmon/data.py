@@ -377,12 +377,15 @@ def get_data(files_to_read, data_vars, selected_channel, data_path_format, all_c
     total_files = len(files_to_read)
     file_counter = 0
     
+    # Create the template regex and the matching groups from the
+    # data_path_format template.
+    (template_regex, matching_groups) = template_to_regex(data_path_format)
+    
     # Iterate through all of the files!
     for file_to_read in files_to_read:
         # with structure auto-closes the file...
         file_counter += 1
         
-        (template_regex, matching_groups) = template_to_regex(data_path_format)
         field_data = extract_fields_via_template(template_regex, matching_groups, file_to_read["filename"], suppress_warnings)
         
         if ("%YEAR4%" in field_data) and ("%MONTH2%" in field_data) and ("%DAY2%" in field_data) and ("%HOUR2%" in field_data):
