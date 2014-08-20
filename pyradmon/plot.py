@@ -44,14 +44,15 @@ def fetch_key_from_subplot_dict(subplot_dict):
     the subplot dict.
     
     Args:
-        plot_dict: The plot dictionary to substitute values into. See
-            plot() help for more information on its format.
-        data_dict: The data dictionary to retrieve values from. See
-            get_data() help (in data.py) for more information on its
-            format.
+        plot_dict (dict): The plot dictionary to substitute values
+            into. See :py:func:`plot()` help for more information on 
+            its format.
+        data_dict (dict): The data dictionary to retrieve values from.
+            See :py:func:`.get_data()` help (in data.py) for more 
+            information on its format.
     
     Returns:
-        A string containing the subplot key from the subplot dict,
+        str: A string containing the subplot key from the subplot dict,
         needed to access the subplot dict.
     
     Raises:
@@ -73,15 +74,16 @@ def subst_data(plot_dict, data_dict):
     data_dict.
     
     Args:
-        plot_dict: The plot dictionary to substitute values into. See
-            plot() help for more information on its format.
-        data_dict: The data dictionary to retrieve values from. See
-            get_data() help (in data.py) for more information on its
-            format.
+        plot_dict (dict): The plot dictionary to substitute values
+            into. See :py:func:`plot()` help for more information on 
+            its format.
+        data_dict (dict): The data dictionary to retrieve values from.
+            See :py:func:`.get_data()` help (in data.py) for more
+            information on its format.
     
     Returns:
-        A plot dictionary with all of its values substituted in. See
-        plot() help for more information on its format.
+        dict: A plot dictionary with all of its values substituted in.
+        See :py:func:`plot()` help for more information on its format.
     """
     # Make a full copy of the plot dictionary so that we can work on
     # our own copy (and not modify the original).
@@ -135,56 +137,58 @@ def subst_data(plot_dict, data_dict):
 def title_output_replace(input_title_output, metadata_dict, data_dict, rel_channels_dict, is_title = False, custom_vars = None):
     """Substitute %VAR% variables with provided values and constants.
     
-    Given a title (or output path) string template, replace %VAR%
+    Given a title (or output path) string template, replace %VAR% 
     variables with the appropriate value or constant.
     
     Variables supported include:
-        %EXPERIMENT_ID% - Experiment ID, sourced from metadata_dict.
-        %INSTRUMENT_SAT% - Instrument/satellite ID, sourced from
-            metadata_dict.
-        %CHANNEL% - Channel number, sourced from metadata_dict.
-        %RELCHANNEL% - Relative channel number, indirectly sourced from
-            rel_channels_dict.
-        %FREQUENCY% - Frequency of the selected channel, sourced from
-            the frequency field in data_dict.
-        %ASSIMILATION_STATUS% - Placeholder for the assimilation status,
-            which is determined from the iuse field in data_dict (not
-            done here).
-        %START_DATE% - Start date in YYYYMMDD format, sourced from
-            metadata_dict.
-        %END_DATE% - End date in YYYYMMDD format, sourced from
-            metadata_dict.
-        Additional custom %VARS% sourced from custom_vars, if specified.
+    
+    * %EXPERIMENT_ID% - Experiment ID, sourced from metadata_dict.
+    * %INSTRUMENT_SAT% - Instrument/satellite ID, sourced from
+      metadata_dict.
+    * %CHANNEL% - Channel number, sourced from metadata_dict.
+    * %RELCHANNEL% - Relative channel number, indirectly sourced from
+      rel_channels_dict.
+    * %FREQUENCY% - Frequency of the selected channel, sourced from the
+      frequency field in data_dict.
+    * %ASSIMILATION_STATUS% - Placeholder for the assimilation status,
+      which is determined from the iuse field in data_dict (not done
+      here).
+    * %START_DATE% - Start date in YYYYMMDD format, sourced from
+      metadata_dict.
+    * %END_DATE% - End date in YYYYMMDD format, sourced from
+      metadata_dict.
+    * Additional custom %VARS% sourced from custom_vars, if specified.
     
     Args:
-        input_title_output: The string with the title (or output path)
-            template.
-        metadata_dict: The metadata dictionary containing data source
-            information.
-        data_dict: The data dictionary to retrieve values from for
-            certain %VAR% variables. See get_data() help (in data.py)
-            for more information on its format.
-        rel_channels_dict: The relative channels dictionary to map
-            relative channels to actual data channels. Its keys are the
-            relative channels, and its values are the actual data
-            channels. (In this case, the mapping is reversed later to
-            allow easy conversion from data channel to relative
+        input_title_output (str): The string with the title (or output 
+            path) template.
+        metadata_dict (dict): The metadata dictionary containing data
+            source information.
+        data_dict (dict): The data dictionary to retrieve values from
+            for certain %VAR% variables. See get_data() help (in 
+            data.py) for more information on its format.
+        rel_channels_dict (dict): The relative channels dictionary to
+            map relative channels to actual data channels. Its keys are 
+            the relative channels, and its values are the actual data 
+            channels. (In this case, the mapping is reversed later to 
+            allow easy conversion from data channel to relative 
             channel.)
-        is_title: Boolean indicating whether the string templace is a
-            title or not. This affects how and what variables are
+        is_title (bool): Boolean indicating whether the string templace
+            is a title or not. This affects how and what variables are 
             replaced. By default, this is set to False.
-        custom_vars: Dictionary containing custom variables to be
-            replaced. Its keys are %VAR% variables without the percent
-            sign, and its values are what should take their places.
-            For instance, given { "TESTVAR": "test123" }, the template
-            "%TESTVAR%" should be replaced with "test123". By default,
-            this is set to None - this argument is optional if there
-            are no custom variables.
+        custom_vars (dict): Dictionary containing custom variables to
+            be replaced. Its keys are %VAR% variables without the 
+            percent sign, and its values are what should take their 
+            places. For instance, given { "TESTVAR": "test123" }, the 
+            template "%TESTVAR%" should be replaced with "test123". By 
+            default, this is set to None - this argument is optional if 
+            there are no custom variables.
     
     Returns:
-        A string with %VAR% variables replaced with the appropriate
-        value or constant. Some %VAR% variables may not be replaced if
-        they do not exist, or certain conditions are not met.
+        str: A string with %VAR% variables replaced with the 
+        appropriate value or constant. Some %VAR% variables may not be 
+        replaced if they do not exist, or certain conditions are not 
+        met.
     """
     # Replace experiment ID variable
     input_title_output = input_title_output.replace("%EXPERIMENT_ID%", metadata_dict["experiment_id"])
@@ -229,178 +233,198 @@ def title_output_replace(input_title_output, metadata_dict, data_dict, rel_chann
 def plot(plot_dict, data_dict, metadata_dict, rel_channels_dict, custom_vars = None, make_dirs = False):
     """Given plot settings and data/constants, produce a plot.
     
-    Given plot settings defined in a special plot dict, and various data
-    and constants sourced from other dicts, plot specified data and
-    save the resulting plot.
+    Given plot settings defined in a special plot dict, and various 
+    data and constants sourced from other dicts, plot specified data 
+    and save the resulting plot.
     
     The plot dictionary takes on a hierarchical format:
-    {
-      'PLOT_ID' : {
-                   'output': OUTPUT_PATH_TEMPLATE,
-                   'settings': 
-                     {
-                       'dpi': PLOT_DPI,
-                       'target_size': TARGET_SIZE,
-                     },
-                   'title': PLOT_TITLE,
-                   'plots':
-                      [
-                        {
-                          'SUBPLOT_ID' : 
+    
+    .. code-block:: python
+    
+        {
+          'PLOT_ID' : {
+                       'output': OUTPUT_PATH_TEMPLATE,
+                       'settings': 
+                         {
+                           'dpi': PLOT_DPI,
+                           'target_size': TARGET_SIZE,
+                         },
+                       'title': PLOT_TITLE,
+                       'plots':
+                          [
                             {
-                              'axes':
+                              'SUBPLOT_ID' : 
                                 {
-                                  'x':
+                                  'axes':
                                     {
-                                      'label': AXIS_LABEL,
-                                      'ticks': NUM_OF_TICKS,
-                                    },
-                                  'y':
+                                      'x':
+                                        {
+                                          'label': AXIS_LABEL,
+                                          'ticks': NUM_OF_TICKS,
+                                        },
+                                      'y':
+                                        {
+                                          'label': AXIS_LABEL,
+                                          'ticks': NUM_OF_TICKS,
+                                        },
+                                    }
+                                  'data':
                                     {
-                                      'label': AXIS_LABEL,
-                                      'ticks': NUM_OF_TICKS,
-                                    },
-                                }
-                              'data':
-                                {
-                                  'color': LINE_COLORS,
-                                  'labels': DATA_LABELS,
-                                  'x': DATA_FIELD or RAW_DATA,
-                                  'y': DATA_FIELD or RAW_DATA,
-                                  'post_processing': {
-                                     'x': POST_PROCESSING_FUNC,
-                                     'y': POST_PROCESSING_FUNC,
-                                   },
-                                }
-                              'legend':
-                                {
-                                  'title': LEGEND_TITLE,
-                                }
-                              'title': SUBPLOT_TITLE,
-                            },
-                        }
-                      ],
-                  },
-    }
+                                      'color': LINE_COLORS,
+                                      'labels': DATA_LABELS,
+                                      'x': DATA_FIELD or RAW_DATA,
+                                      'y': DATA_FIELD or RAW_DATA,
+                                      'post_processing': {
+                                         'x': POST_PROCESSING_FUNC,
+                                         'y': POST_PROCESSING_FUNC,
+                                       },
+                                    }
+                                  'legend':
+                                    {
+                                      'title': LEGEND_TITLE,
+                                    }
+                                  'title': SUBPLOT_TITLE,
+                                },
+                            }
+                          ],
+                      },
+        }
     
     Fields:
-        PLOT_ID: The ID of the plot you wish to make. This can be
-            anything - whether something simple as "plot1" or something
-            creative as "whackyplot". The ID of the plot should be
-            unique. (String)
-        OUTPUT_PATH_TEMPLATE: The path template specifying where the
-            plot should be saved to. This can either be a regular path
-            or a path template, with variables that can be replaced at
-            runtime. See title_output_replace() for the variables that
-            can be used. (String)
-        PLOT_DPI: The DPI, or Dots Per Inch, of the output image that
-            matplotlib should render to. The larger the DPI, the larger
-            the text/graphics will be. (Integer)
-        TARGET_SIZE: A two element list/array specifying the target size
-            of the resulting plot image, in pixels. Both the X and the Y
-            part of TARGET_SIZE will be divided by PLOT_DPI to calculate
-            the proper scaling of the plot. NOTE - TARGET_SIZE will
-            attempt to get the nearest size specified. Due to matplotlib
-            limitations, the size specified here may not be the final
-            image output size. (List/array of integers)
-        PLOT_TITLE: The plot title. This can be either a regular title
-            string, or a title template, with variables that can be
-            replaced at runtime. See title_output_replace() for the
-            variables that can be used. (String)
-        SUBPLOT_ID: The ID of the subplot you wish to make. This can be
-            anything - whether something simple as "subplot1" or
-            something creative as "hellosubplot". The ID of the subplot
-            should be unique. (String)
-        AXIS_LABEL: The axis label for the corresponding axis. (String)
-        NUM_OF_TICKS: An integer number of ticks for the corresponding
-            axis. (Integer)
-        LINE_COLORS: A list/array of color strings specifying the color
-            for each Y data plotted, respectively. Colors include blue,
-            green, red, cyan, magenta, yellow, black, and white. (You
-            can also specify the first letter of the color.) (List/array
-            of strings)
-        DATA_LABELS: A list/array of labels specifying the label for
-            each Y data plotted, respectively. The labels will be shown
-            in a legend, if enabled. Each label includes minimal
-            templating: "%AVERAGE%" will be replaced with the data
-            average, and "%STDDEV%" will be replaced with the data
-            standard deviation. (List/array of strings)
-        DATA_FIELD: A list/array of data fields specifying which data
-            field should be plotted for the corresponding axis. This is
-            dependent on the data available in data_dict. (List/array of
-            strings)
-        RAW_DATA: An array of floats, Decimals, datetime objects,or
-            integers containing the raw data to be plotted to the
-            respective axis. (datetime objects should be limited to the
-            X axis. While it's technically possible to plot datetime
-            objects on the Y axis, it may not be fully supported.)
-            (List/array of floats, Decimals, datetime objects, or
-            integers)
-        POST_PROCESSING_FUNC: An array of strings defining lambda
-            functions, without the lambda definition. The lamba is
-            defined as:
-                lambda data,x,y: FUNCTION_GOES_HERE
-            The "data" variable provides the entire data_dict, which is
-            a dictionary whose keys are the data fields, and whose
-            values are a list of the respective data. (Note that this is
-            a single channel data_dict, NOT a multichannel one, since
-            plot only plots one channel.) The "x" and "y" variable
-            provides the currently used data for their axes,
-            respectively. Examples:
-              x: "[(date-datetime.timedelta(days=1)) for date in x]"
-                Equiv: lambda data,x,y: \
-                  [ (date - datetime.timedelta(days=1)) for date in x ]
-                Subtract one day from each timestamp in the X data.
-              x: "y"
-                Equiv: lambda data,x,y: y
-                Return the y data in place of the x data.
-              y: "[ y_item + 1 for y_item in y ]"
-                Equiv: lambda data,x,y: \
-                  [ y_item + 1 for y_item in y ]
-                Increment each value of y by one.
-              y: '[(data["bla"][i]+y[i]) for i in xrange(0, len(y))]'
-                Equiv: lambda data,x,y: \
-                  [ (data["bla"][i] + y[i]) for i in xrange(0, len(y)) ]
-                Add data from data field "bla" to the y data.
-            Note that the strings would be in an array/list for each
-            data point!
-        LEGEND_TITLE: The legend title. (String)
-        SUBPLOT_TITLE: The subplot title. (String)
+    
+    * PLOT_ID:
+        The ID of the plot you wish to make. This can be anything - 
+        whether something simple as "plot1" or something creative as 
+        "whackyplot". The ID of the plot should be unique. (String)
+    * OUTPUT_PATH_TEMPLATE:
+        The path template specifying where the plot should be saved to. 
+        This can either be a regular path or a path template, with 
+        variables that can be replaced at runtime. See 
+        :py:func:`.title_output_replace()` for the variables that can 
+        be used. (String)
+    * PLOT_DPI: 
+        The DPI, or Dots Per Inch, of the output image that matplotlib 
+        should render to. The larger the DPI, the larger the 
+        text/graphics will be. (Integer)
+    * TARGET_SIZE:
+        A two element list/array specifying the target size of the 
+        resulting plot image, in pixels. Both the X and the Y part of 
+        TARGET_SIZE will be divided by PLOT_DPI to calculate the proper 
+        scaling of the plot.
+        
+        **NOTE** - TARGET_SIZE will attempt to get the nearest size 
+        specified. Due to matplotlib limitations, the size specified 
+        here may not be the final image output size. (List/array of 
+        integers)
+    * PLOT_TITLE:
+        The plot title. This can be either a regular title string, or a 
+        title template, with variables that can be replaced at runtime. 
+        See title_output_replace() for the variables that can be used. 
+        (String)
+    * SUBPLOT_ID:
+        The ID of the subplot you wish to make. This can be anything - 
+        whether something simple as "subplot1" or something creative as 
+        "hellosubplot". The ID of the subplot should be unique. 
+        (String)
+    * AXIS_LABEL:
+        The axis label for the corresponding axis. (String)
+    * NUM_OF_TICKS:
+        An integer number of ticks for the corresponding axis. 
+        (Integer)
+    * LINE_COLORS:
+        A list/array of color strings specifying the color for each Y 
+        data plotted, respectively. Colors include blue, green, red, 
+        cyan, magenta, yellow, black, and white. (You can also specify 
+        the first letter of the color.) (List/array of strings)
+    * DATA_LABELS:
+        A list/array of labels specifying the label for each Y data 
+        plotted, respectively. The labels will be shown in a legend, if 
+        enabled. Each label includes minimal templating: "%AVERAGE%" 
+        will be replaced with the data average, and "%STDDEV%" will be 
+        replaced with the data standard deviation. (List/array of 
+        strings)
+    * DATA_FIELD:
+        A list/array of data fields specifying which data field should 
+        be plotted for the corresponding axis. This is dependent on the 
+        data available in ``data_dict``. (List/array of strings)
+    * RAW_DATA:
+        An array of floats, Decimals, datetime objects,or integers 
+        containing the raw data to be plotted to the respective axis. 
+        (:py:mod:`datetime` objects should be limited to the X axis. 
+        While it's technically possible to plot :py:mod:`datetime` 
+        objects on the Y axis, it may not be fully supported.) 
+        (List/array of floats, Decimals, datetime objects, or integers)
+    * POST_PROCESSING_FUNC:
+        An array of strings defining lambda functions, without the 
+        lambda definition. The lamba is defined as::
+        
+            lambda data,x,y: FUNCTION_GOES_HERE
+        
+        The "data" variable provides the entire data_dict, which is a 
+        dictionary whose keys are the data fields, and whose values are 
+        a list of the respective data. (Note that this is a single 
+        channel data_dict, NOT a multichannel one, since plot only 
+        plots one channel.) The "x" and "y" variable provides the 
+        currently used data for their axes, respectively. Examples::
+        
+          x: "[(date-datetime.timedelta(days=1)) for date in x]"
+            Equiv: lambda data,x,y: \\
+              [ (date - datetime.timedelta(days=1)) for date in x ]
+            Subtract one day from each timestamp in the X data.
+          x: "y"
+            Equiv: lambda data,x,y: y
+            Return the y data in place of the x data.
+          y: "[ y_item + 1 for y_item in y ]"
+            Equiv: lambda data,x,y: \\
+              [ y_item + 1 for y_item in y ]
+            Increment each value of y by one.
+          y: '[(data["bla"][i]+y[i]) for i in xrange(0, len(y))]'
+            Equiv: lambda data,x,y: \\
+              [ (data["bla"][i] + y[i]) for i in xrange(0, len(y)) ]
+            Add data from data field "bla" to the y data.
+        
+        Note that the strings would be in an array/list for each data 
+        point!
+    * LEGEND_TITLE:
+        The legend title. (String)
+    * SUBPLOT_TITLE:
+        The subplot title. (String)
     
     Args:
-        plot_dict: The plot dictionary with information on how to make
-            the plots. Format details can be found above.
-        data_dict: The data dictionary to retrieve the values to plot
-            from. See get_data() help (in data.py) for more information
-            on its format.
-        metadata_dict: The metadata dictionary containing data source
-            information. This dictionary should include the following
-            elements: instrument_sat, experiment_id, channel,
-            start_year, start_month, start_day, start_hour, end_year,
-            end_month, end_day, and end_hour. The dictionary is used for
-            template replacement in plot titles and output paths.
-        rel_channels_dict: The relative channels dictionary to map
-            relative channels to actual data channels. Its keys are the
-            relative channels, and its values are the actual data
-            channels. (In this case, the mapping is reversed later to
-            allow easy conversion from data channel to relative
+        plot_dict (dict): The plot dictionary with information on how 
+            to make the plots. Format details can be found above.
+        data_dict (dict): The data dictionary to retrieve the values to
+            plot from. See get_data() help (in data.py) for more 
+            information on its format.
+        metadata_dict (dict): The metadata dictionary containing data
+            source information. This dictionary should include the 
+            following elements: instrument_sat, experiment_id, channel, 
+            start_year, start_month, start_day, start_hour, end_year, 
+            end_month, end_day, and end_hour. The dictionary is used 
+            for template replacement in plot titles and output paths.
+        rel_channels_dict (dict): The relative channels dictionary to 
+            map relative channels to actual data channels. Its keys are 
+            the relative channels, and its values are the actual data 
+            channels. (In this case, the mapping is reversed later to 
+            allow easy conversion from data channel to relative 
             channel.)
-        custom_vars: Dictionary containing custom variables to be
-            replaced in title and output path templates. Its keys are
-            %VAR% variables without the percent sign, and its values are
-            what should take their places. For instance, given
-            { "TESTVAR": "test123" }, the template "%TESTVAR%" should be
-            replaced with "test123". By default, this is set to
-            None - this argument is optional if there are no custom
+        custom_vars (dict): Dictionary containing custom variables to
+            be replaced in title and output path templates. Its keys 
+            are %VAR% variables without the percent sign, and its 
+            values are what should take their places. For instance,
+            given { "TESTVAR": "test123" }, the template "%TESTVAR%"
+            should be replaced with "test123". By default, this is set
+            to None - this argument is optional if there are no custom
             variables.
-        make_dirs: Boolean indicating whether to automatically create
-            output path directories or not. This defaults to False to
-            ensure that the path specified is correct.
+        make_dirs (bool): Boolean indicating whether to automatically
+            create output path directories or not. This defaults to 
+            False to ensure that the path specified is correct.
     
     Returns:
-        A string with %VAR% variables replaced with the appropriate
-        value or constant. Some %VAR% variables may not be replaced if
-        they do not exist, or certain conditions are not met.
+        str: A string with %VAR% variables replaced with the 
+        appropriate value or constant. Some %VAR% variables may not be 
+        replaced if they do not exist, or certain conditions are not 
+        met.
     """
     # Make a working copy for our use.
     plot_dict_copy = copy.deepcopy(plot_dict)

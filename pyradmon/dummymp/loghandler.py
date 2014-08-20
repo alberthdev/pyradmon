@@ -27,18 +27,19 @@ class DummyMPLogHandler(logging.Handler):
     """DummyMP logging handler to allow multiprocess logging.
     
     This class is a custom logging handler to allow spawned processes
-    (from multiprocessing) to log without any issues. This works by
-    intercepting emitted log records, and sending them via queue to the
-    master process. The master process will process each record and call
-    logging.handle() to emit the logging record at the master process
-    level.
+    (from :py:mod:`multiprocessing`) to log without any issues. This
+    works by intercepting emitted log records, and sending them via
+    queue to the master process. The master process will process each
+    record and call :py:meth:`logging.Logger.handle` to emit the logging
+    record at the master process level.
     
     Note that this class can be used as a general multiprocess logging
     handler simply by removing the int_pid attribute.
     
     Attributes:
-        queue: The Queue object to forward logging records to.
-        int_pid: The internal PID used to reference the process.
+        queue (:py:class:`multiprocessing.Queue`): The Queue object to forward
+            logging records to.
+        int_pid (int): The internal PID used to reference the process.
     """
     
     def __init__(self, int_pid, queue):

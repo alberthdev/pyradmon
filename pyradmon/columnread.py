@@ -222,10 +222,12 @@ class ColumnReadBase():
 #     1.23    234   123455   12519   12419239.2
 class ColumnReadPipes(ColumnReadBase):
     """Subclass of ColumnReadBase, processing columns delimited with
-    pipes. The table structure looks like:
+    pipes. The table structure looks like::
+    
         !hello |   hi | helloooooooooo |      maybe
         !      |      |     hi    byee |           
           1.23    234   123455   12519   12419239.2
+    
     This subclass overrides the _process_data method to set up the
     self.column_dict structure.
     """
@@ -329,10 +331,12 @@ class ColumnReadPipes(ColumnReadBase):
 # implemented (yet). To implement, follow the same steps as before with columns.
 class ColumnReadSpaces(ColumnReadBase):
     """Subclass of ColumnReadBase, processing columns delimited with
-    spaces. The table structure looks like:
+    spaces. The table structure looks like::
+    
         !hello     hi   helloooooooooo        maybe
         !                   hi    byee             
           1.23    234   123455   12519   12419239.2
+    
     This subclass overrides the _process_data method to set up the
     self.column_dict structure.
     

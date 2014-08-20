@@ -128,32 +128,39 @@ def get_data(files_to_read, data_vars, selected_channel, data_path_format, all_c
     with the data specified by the data variable list.
 
     Args:
-        files_to_read: A list of file dicts, returned by enumerate().
-        data_vars: A list of strings defining data variables to extract
-            from the files. Special data variables include:
-                timestamp: A list of timestamps that can be used for
-                    plotting. The timestamps are datetime.datetime
-                    objects that matplotlib can use for timeseries
-                    plots.
-                frequency: A single string that specifies what
-                    frequency is being used for the data.
+        files_to_read (list): A list of file dicts, returned by
+            :py:func:`.enumerate()`.
+        data_vars (list): A list of strings defining data variables to
+            extract from the files. Special data variables include:
+            
+            * timestamp:
+                A list of timestamps that can be used for plotting. The 
+                timestamps are :py:class:`datetime.datetime` objects 
+                that matplotlib can use for timeseries plots.
+            * frequency:
+                A single string that specifies what frequency is being 
+                used for the data.
+            
             All other data variables will return a decimal list of the
             data.
-        selected_channel: An integer (or array of integers) specifying
-            the data channel(s) to use for extracting the data.
-        all_channels: A boolean specifying whether to use all of the
-            data or not. This overrides the selected_channel option.
-        data_assim_only: A boolean specifying whether to only use
-            assimilated data or not. (Determined by iuse > 0!)
-        suppress_warnings: A boolean specifying whether to suppress
-            warnings or not. This will hide potentially important
-            warnings about data consistency, so only use if you're 100%
-            sure the data is valid!
+        selected_channel (int): An integer (or array of integers)
+            specifying the data channel(s) to use for extracting the 
+            data.
+        all_channels (bool): A boolean specifying whether to use all of
+            the data or not. This overrides the selected_channel 
+            option.
+        data_assim_only (bool): A boolean specifying whether to only
+            use assimilated data or not. (Determined by iuse > 0!)
+        suppress_warnings (bool): A boolean specifying whether to
+            suppress warnings or not. This will hide potentially 
+            important warnings about data consistency, so only use if 
+            you're 100% sure the data is valid!
 
     Returns:
-        If there are multiple selected channels, or if all_channels is
-        True, a dict is returned whose keys are the channel numbers, and
-        whose values are regular data_dicts. (See below for format.)
+        dict: If there are multiple selected channels, or if 
+        all_channels is True, a dict is returned whose keys are the 
+        channel numbers, and whose values are regular data_dicts. (See 
+        below for format.)
         
         If there's only one channel, a single data_dict is returned.
         
@@ -162,6 +169,9 @@ def get_data(files_to_read, data_vars, selected_channel, data_path_format, all_c
         corresponding to the requested data variable keys.
         
         Multi-channel example:
+        
+        .. code-block:: python
+        
             { 1: 
                 {
                     'iuse'      : [-1, 1, -1],
@@ -178,6 +188,9 @@ def get_data(files_to_read, data_vars, selected_channel, data_path_format, all_c
             }
         
         Single-channel example (data_dict):
+        
+        .. code-block:: python
+        
             {
                 'iuse'      : [-1, 1, -1],
                 'bc_fixang' : [1.23, 1.22, 1.235, 1.201],
@@ -191,11 +204,13 @@ def get_data(files_to_read, data_vars, selected_channel, data_path_format, all_c
               (and therefore makes the data variable invalid)
             - the channel number can't be read (and therefore the data
               is corrupt)
-        Warnings will be printed when inconsistencies with the data
-        are detected. No exception will be raised. However, these
-        warnings are important, as they can affect the data's
-        quality, so make sure to check for and correct any issues
-        mentionned by warnings!
+    
+    Note:
+        Warnings will be printed when inconsistencies with the data are 
+        detected. No exceptions will be raised. However, these warnings 
+        are important, as they can affect the data's quality, so make 
+        sure to check for and correct any issues mentionned by 
+        warnings!
     """
     debug("PHASE 1")
     # data_vars validation
@@ -483,6 +498,8 @@ def get_data_columns(files_to_read):
               (and therefore makes the data variable invalid)
             - the channel number can't be read (and therefore the data
               is corrupt)
+    
+    Note:
         Warnings will be printed when inconsistencies with the data
         are detected. No exception will be raised. However, these
         warnings are important, as they can affect the data's

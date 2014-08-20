@@ -33,28 +33,32 @@ def poll_procs(interval):
     all of the processes.
     
     Args:
-        interval: Delay before fetching process status. This is akin to
+        interval (int): Delay before fetching process status. This is akin to
             top -d ##, where a delay is specified.
     
     Returns:
-        Tuple with the first element being a list of Process objects,
-        each with a .dict attribute. Each .dict attribute contains
-        information about the process, stored in the form of a dict. It
-        includes:
-            'username': Username of the user who started the process.
-            'cpu_percent': Percent of CPU used by the process.
-            'status': Status of the process (running, stopped, zombie).
+        tuple: Tuple with the first element being a list of Process
+        objects, each with a .dict attribute. Each .dict attribute
+        contains information about the process, stored in the form of a
+        dict. It includes:
+        
+            * ``'username'``: Username of the user who started the process.
+            * ``'cpu_percent'``: Percent of CPU used by the process.
+            * ``'status'``: Status of the process (running, stopped, zombie).
+        
         The second element in the tuple contains a summary dictionary
         with the total number of running, stopped, and zombie processes,
         with keys 'running', 'stopped', and 'zombie', respectively.
+        ::
         
-        (
-            [Process(
-                pid=30159, name='services.exe',
-                dict={'username':USERNAME, ...}
-                ), ...],
-            {'running': ##, 'stopped': ##, ...}
-        )
+            (
+                [Process(
+                    pid=30159, name='services.exe',
+                    dict={'username':USERNAME, ...}
+                    ), ...],
+                {'running': ##, 'stopped': ##, ...}
+            )
+        
     """
     # sleep some time
     time.sleep(interval)
@@ -88,8 +92,8 @@ def needUpdateCPUAvail():
         None
     
     Returns:
-        Boolean indicating whether the CPU availability needs to be
-        updated or not.
+        bool: Boolean indicating whether the CPU availability needs to
+        be updated or not.
     """
     return not ( \
             (config.DUMMYMP_MODE == config.DUMMYMP_NUCLEAR) or \
@@ -105,8 +109,8 @@ def getSpawnProcPIDs():
         None
     
     Returns:
-        An list with the system process IDs of current running spawned
-        DummyMP processes.
+        list: An list with the system process IDs of current running
+        spawned DummyMP processes.
     """
     pids = []
     for proc in config.dummymp_procs:
@@ -123,7 +127,7 @@ def getTotalCPUs():
         None
     
     Returns:
-        An integer with the number of CPUs that are on the system.
+        int: An integer with the number of CPUs that are on the system.
     """
     return psutil.cpu_count()
 
@@ -137,7 +141,7 @@ def getCPUAvail():
         None
     
     Returns:
-        An integer with the number of CPUs that are available.
+        int: An integer with the number of CPUs that are available.
     """
     
     # If the time threshold is met, OR we are in NUCLEAR mode, just

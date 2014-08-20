@@ -30,15 +30,15 @@ from process import _runner
 def process_queue():
     """Process inter-process messages.
     
-    Process the inter-process Queue objects, which receive messages from
-    the spawned process for logging events and function returns.
+    Process the inter-process :py:class:`multiprocessing.Queue` objects,
+    which receive messages from the spawned process for logging events
+    and function returns.
     
     Args:
         None
     
-    Raises:
-        None, but warnings are emitted to log if an invalid message is
-        received.
+    Note:
+        Warnings are emitted to log if an invalid message is received.
     """
     # Get main process logger
     logger = logging.getLogger()
@@ -74,18 +74,20 @@ def process_process():
     
     Process the execution queue by starting processes in said queue,
     handle processes that have completed, and process inter-process
-    messages via process_queue(). (In plain English: start the queued
-    processes, check processes to see if they are done running, and grab
-    any inter-process messages sent from the spawned process.)
+    messages via :py:func:`process_queue()`.
+    
+    (In plain English: start the queued processes, check processes to
+    see if they are done running, and grab any inter-process messages
+    sent from the spawned process.)
     
     Args:
         None
     
     Returns:
-        A boolean indicating whether the execution queue has completed
-        or not. Returns True if it has completed, False if it has not.
-        This return value can be used in a while loop to block until
-        processes have completed. (This is somewhat similar to
+        bool: A boolean indicating whether the execution queue has
+        completed or not. Returns True if it has completed, False if it
+        has not. This return value can be used in a while loop to block
+        until processes have completed. (This is somewhat similar to
         multiprocessing's join().)
     """
     nproc = 0
@@ -218,7 +220,7 @@ def process_until_done():
     
     Process the execution queue until it has indicated that all
     processes in the queue have been completed. (This is somewhat
-    similar to multiprocessing's join().)
+    similar to multiprocessing's :py:meth:`multiprocessing.Process.join()`.)
     
     Args:
         None

@@ -36,12 +36,12 @@ def _runner(process_id, dummymp_queue, func, *args, **kwargs):
     process.
     
     Args:
-        process_id: The internal process ID for the particular process.
-            This is NOT the actual system process ID.
-        dummymp_queue: The Queue object that the process should send
-            data to. The Queue should be a Queue made specifically for
-            this process.
-        func: The function that the process should call.
+        process_id (int): The internal process ID for the particular
+            process. This is NOT the actual system process ID.
+        dummymp_queue (multiprocessing.Queue): The Queue object that the
+            process should send data to. The Queue should be a Queue
+            made specifically for this process.
+        func (function): The function that the process should call.
         *args: The arguments that should be passed to the function.
     
     Returns:
