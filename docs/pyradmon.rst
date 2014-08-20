@@ -1,8 +1,23 @@
 pyradmon package
 ================
 
+Subpackages
+-----------
+
+.. toctree::
+
+    pyradmon.dummymp
+
 Submodules
 ----------
+
+pyradmon.args module
+--------------------
+
+.. automodule:: pyradmon.args
+    :members:
+    :undoc-members:
+    :show-inheritance:
 
 pyradmon.columnread module
 --------------------------
@@ -44,6 +59,14 @@ pyradmon.data module
     :undoc-members:
     :show-inheritance:
 
+pyradmon.debug module
+---------------------
+
+.. automodule:: pyradmon.debug
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 pyradmon.dictr module
 ---------------------
 
@@ -76,6 +99,14 @@ pyradmon.plot module
     :undoc-members:
     :show-inheritance:
 
+pyradmon.prettytable module
+---------------------------
+
+.. automodule:: pyradmon.prettytable
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 pyradmon.process module
 -----------------------
 
@@ -84,10 +115,26 @@ pyradmon.process module
     :undoc-members:
     :show-inheritance:
 
+pyradmon.processing module
+--------------------------
+
+.. automodule:: pyradmon.processing
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 pyradmon.test module
 --------------------
 
 .. automodule:: pyradmon.test
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+pyradmon.wrapper module
+-----------------------
+
+.. automodule:: pyradmon.wrapper
     :members:
     :undoc-members:
     :show-inheritance:
