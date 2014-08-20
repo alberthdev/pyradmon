@@ -33,8 +33,8 @@ def poll_procs(interval):
     all of the processes.
     
     Args:
-        interval (int): Delay before fetching process status. This is akin to
-            top -d ##, where a delay is specified.
+        interval (int): Delay before fetching process status. This is
+            akin to top -d ##, where a delay is specified.
     
     Returns:
         tuple: Tuple with the first element being a list of Process
@@ -42,9 +42,12 @@ def poll_procs(interval):
         contains information about the process, stored in the form of a
         dict. It includes:
         
-            * ``'username'``: Username of the user who started the process.
-            * ``'cpu_percent'``: Percent of CPU used by the process.
-            * ``'status'``: Status of the process (running, stopped, zombie).
+        * ``'username'``:
+            Username of the user who started the process.
+        * ``'cpu_percent'``:
+            Percent of CPU used by the process.
+        * ``'status'``:
+            Status of the process (running, stopped, zombie).
         
         The second element in the tuple contains a summary dictionary
         with the total number of running, stopped, and zombie processes,
