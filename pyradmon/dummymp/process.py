@@ -29,18 +29,18 @@ import config
 def _runner(process_id, dummymp_queue, func, *args, **kwargs):
     """Multiprocess function wrapper for running a function given args.
     
-    This function wraps an existing function with its args, and allows
-    for additional fields related to multiprocessing. In particular, the
-    internal process ID and the multiprocessing Queue object are added
-    to facilitate communication between the subprocess and the master
-    process.
+    This function wraps an existing function with its args, and allows 
+    for additional fields related to multiprocessing. In particular, 
+    the internal process ID and the multiprocessing Queue object are 
+    added to facilitate communication between the subprocess and the 
+    master process.
     
     Args:
         process_id (int): The internal process ID for the particular
             process. This is NOT the actual system process ID.
-        dummymp_queue (multiprocessing.Queue): The Queue object that the
-            process should send data to. The Queue should be a Queue
-            made specifically for this process.
+        dummymp_queue (multiprocessing.Queue): The Queue object that 
+            the process should send data to. The Queue should be a 
+            Queue made specifically for this process.
         func (function): The function that the process should call.
         *args: The arguments that should be passed to the function.
     
@@ -63,12 +63,12 @@ def _runner(process_id, dummymp_queue, func, *args, **kwargs):
                 
                 [ [ DUMMYMP_RET_ID, SYSTEM_PID, INTERNAL_ID ], RETURN_VAL ]
                 
-                When a message of this type is sent, the RETURN_VAL is
-                stored in a dictionary at the master process level to
-                archive the return value from this process for future
-                retrieval. (In plain English: the return values are sent
-                to the main process, and are stored in a dictionary for
-                reference.)
+                When a message of this type is sent, the RETURN_VAL is 
+                stored in a dictionary at the master process level to 
+                archive the return value from this process for future 
+                retrieval. (In plain English: the return values are 
+                sent to the main process, and are stored in a 
+                dictionary for reference.)
         
     """
     # Get the default logger

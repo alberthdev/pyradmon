@@ -49,9 +49,10 @@ def poll_procs(interval):
         * ``'status'``:
             Status of the process (running, stopped, zombie).
         
-        The second element in the tuple contains a summary dictionary
-        with the total number of running, stopped, and zombie processes,
-        with keys 'running', 'stopped', and 'zombie', respectively.
+        The second element in the tuple contains a summary dictionary 
+        with the total number of running, stopped, and zombie 
+        processes, with keys 'running', 'stopped', and 'zombie', 
+        respectively.
         ::
         
             (
