@@ -20,4 +20,4 @@
 # 
 
 global __version__
-__version__ = "0.5a1"
+__version__ = "0.5b1"
