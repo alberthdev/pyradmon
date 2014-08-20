@@ -1,0 +1,17 @@
+# pyradmon_driver.example.rc
+# 
+# This is an example rc file for pyradmon_driver.csh
+#
+# Each of these fields are necessary to run.  This script assumes the txt files 
+# are in the:
+#
+#      $data_dirbase/$expid/obs/Y1979/M02/D01/H00... 
+#
+# format.  This template is adjustable within the radmon config files.
+
+
+expid: e5130_fp
+data_dirbase: /discover/nobackup/wrmccart/
+scratch_dir: /discover/nobackup/wrmccart/scratch/
+output_dir: /discover/nobackup/wrmccart/radmon_out
+pyradmon_path: /gpfsm/dnb02/wrmccart/pyradmon
