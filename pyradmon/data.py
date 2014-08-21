@@ -106,6 +106,9 @@ def template_to_regex(template):
     * %HOUR% - integer hour (int, 2 digits)
     * %HOUR2% - integer hour (int, 2 digits)
     
+    The returned values are generally passed into 
+    :py:func:`extract_fields_via_template` for final field extraction.
+    
     Args:
         template (str): A string with the data_path_format template to
             be converted to a parsable regular expression.
@@ -177,8 +180,6 @@ def extract_fields_via_template(template_regex, matching_groups, input_str, supp
     %VAR%s, in order found (from left to right), to connect regex 
     matches with fields.
     
-    
-    
     Args:
         template_regex (str): A string with a parsable regular
             expression to be run on the input string.
@@ -196,14 +197,40 @@ def extract_fields_via_template(template_regex, matching_groups, input_str, supp
         Integer value types will be integers, while string value types 
         will be strings.
         
+        If the template regular expression is unable to match the input
+        string, this will return None.
+    
+    Example:
+        Given the following template regex string, matching group list,
+        and input string::
+        
+            template_regex = r"MERRA2/(.*)/(\d{4})"
+            matching_groups = [ "%EXPERIMENT_ID%", "%YEAR4%" ]
+            input_string = "MERRA2/d5124_m2_jan91/Y1991"
+           
+        The resulting dictionary should look like this::
+        
+            {
+                "%EXPERIMENT_ID%"   : "d5124_m2_jan91",
+                "%YEAR4%"           : 1991,
+            }
+    
     """
+    # Run the regex on the input string.
     match = re.match(template_regex, input_str)
+    
+    # If it doesn't produce any matches, return None.
     if not match:
         return None
     
+    # Initialize the field data dict
     field_data = {}
     
+    # Loop through each matching group!
     for group in matching_groups:
+        # Check to see if the field/group exists in multiple places
+        # (e.g. "data/%YEAR4%/dat/%YEAR4%")
+        # If it does, validate that they are consistent!
         if matching_groups.count(group) > 1:
             # Consistent group validation
             tmp_groups = []
@@ -215,19 +242,26 @@ def extract_fields_via_template(template_regex, matching_groups, input_str, supp
                 # ...and append the value for each match at that index!
                 tmp_groups.append(match.groups()[i])
             
+            # Check to see if the values are the same within the list!
             if not identicalEleListCheck(tmp_groups):
                 if not suppress_warnings:
                     warn("WARNING: Detected inconsistency with variable %s! (Values detected: %s)" % (group, str(tmp_groups)))
         
+        # Check to see if we have grabbed the value for the field yet
         if group not in field_data:
+            # Grab the first index for the group
             rel_index = matching_groups.index(group)
             
+            # Sanity check to ensure we are within the match object's
+            # bounds
             if rel_index <= (len(match.groups()) - 1):
                 field_data[group] = match.groups()[rel_index]
             else:
+                # Oops! Not enough matches to grab the value
                 if not suppress_warnings:
                     warn("WARNING: Could not fetch value from match! (Variable: %s)" % group)
     
+    # Return the final field data dict!
     return field_data
 
 def get_data(files_to_read, data_vars, selected_channel, data_path_format, all_channels = False, data_assim_only = False, suppress_warnings = False):
@@ -324,7 +358,7 @@ def get_data(files_to_read, data_vars, selected_channel, data_path_format, all_c
         sure to check for and correct any issues mentionned by 
         warnings!
     """
-    debug("PHASE 1")
+    
     # data_vars validation
     for data_var in data_vars:
         # Make sure the variable is not a special field, since a
@@ -336,14 +370,18 @@ def get_data(files_to_read, data_vars, selected_channel, data_path_format, all_c
                 edie("ERROR: Ambiguous variable '%s' found - %s must be prefixed before the actual var!" % \
                     (data_var, VALID_PREFIX[0] if len(VALID_PREFIX) == 1 else \
                         " or ".join(VALID_PREFIX) if len(VALID_PREFIX) == 2 else (", ".join(VALID_PREFIX[:-1]) + ", or " + VALID_PREFIX[-1])))
+    
     # Last one - check for any dups!
-    data_vars_dups = set([x for x in data_vars if data_vars.count(x) > 1])
-    data_vars_dups_l = list(data_vars_dups)
+    # Use set to create a unique list of duplicate data variables.
+    data_vars_dups_l = list(set([x for x in data_vars if data_vars.count(x) > 1]))
+    
+    # Check to see if any duplicate variables exist!
+    # If so, raise an Exception...
     if len(data_vars_dups_l) > 0:
         edie("ERROR: Duplicate variables found - %s!" % \
                     (data_vars_dups_l[0] + " is a duplicate" if len(data_vars_dups_l) == 1 else \
                         " and ".join(data_vars_dups_l) + " are duplicates" if len(data_vars_dups_l) == 2 else (", ".join(data_vars_dups_l[:-1]) + ", and " + data_vars_dups_l[-1] + " are duplicates")))
-    debug("PHASE 2")
+    
     # Initialize an empty data dictionary!
     data_dict = {}
     
@@ -353,28 +391,45 @@ def get_data(files_to_read, data_vars, selected_channel, data_path_format, all_c
     # Initialize the dictionary's keys and values based on the data
     # variables specified.
     # NOTE: all_channels will be handled below!
+    
+    # Check selected channel - is it a list with more than one element?
+    # (Basically, is there more than one channel to deal with?)
     if (type(selected_channel) == list) and (len(selected_channel) > 1):
+        # If so, loop through each channel!
         for channel in selected_channel:
+            # Initialize a dict for each channel!
             channel_data_dict[channel] = {}
+            # Now loop through each data variable...
             for data_var in data_vars:
+                # If the data variable is special, initialize it the
+                # special data variable with a copy.deepcopy.
+                # (Especially for lists and dicts, this is a must!)
+                # If not, just initialize it as an ordinary array.
                 if data_var in SPECIAL_FIELDS:
                     channel_data_dict[channel][data_var] = copy.deepcopy(SPECIAL_FIELDS[data_var])
                 else:
                     channel_data_dict[channel][data_var] = []
     else:
+        # Check to make sure that we are not grabbing all channels...
         if not all_channels:
+            # Loop through each data variable...
             for data_var in data_vars:
+                # If the data variable is special, initialize it with a
+                # the special data variable with a copy.deepcopy.
+                # (Especially for lists and dicts, this is a must!)
+                # If not, just initialize it as an ordinary array.
                 if data_var in SPECIAL_FIELDS:
                     data_dict[data_var] = copy.deepcopy(SPECIAL_FIELDS[data_var])
                 else:
                     data_dict[data_var] = []
-    debug("PHASE 3")
     
-    #debug(data_dict)
-    
+    # Initialize ignored channels array
     ignore_channels = []
     
+    # Get the number of total files
     total_files = len(files_to_read)
+    
+    # ...and initialize the file counter!
     file_counter = 0
     
     # Create the template regex and the matching groups from the
@@ -383,23 +438,27 @@ def get_data(files_to_read, data_vars, selected_channel, data_path_format, all_c
     
     # Iterate through all of the files!
     for file_to_read in files_to_read:
-        # with structure auto-closes the file...
+        # Increment internal file counter
         file_counter += 1
         
+        # Extract the path field data from the filename
         field_data = extract_fields_via_template(template_regex, matching_groups, file_to_read["filename"], suppress_warnings)
         
+        # Check if we have enough date info.
+        # If we do, build the date tag! If not, show an error.
         if ("%YEAR4%" in field_data) and ("%MONTH2%" in field_data) and ("%DAY2%" in field_data) and ("%HOUR2%" in field_data):
             date_tag = field_data["%YEAR4%"] + field_data["%MONTH2%"] + field_data["%DAY2%"] + "_" + field_data["%HOUR2%"] + "z"
         else:
             die("Not enough date information found to build date tag...")
         
+        # Every 100 files, print a message to indicate status
         if file_counter % 100 == 0:
             info("Processed %i/%i files... (date tag: %s)" % (file_counter, total_files, date_tag))
         
         debug("PHASE 4: %s" % file_to_read)
+        
+        # with structure auto-closes the file...
         with open(file_to_read["filename"], 'r') as data_file:
-            #print "Reading file: %s" % file_to_read["filename"]
-            
             # Count the lines we've read so that we can do specific
             # things for certain lines.
             data_line_counter = 0
@@ -419,20 +478,34 @@ def get_data(files_to_read, data_vars, selected_channel, data_path_format, all_c
             # And the column header data variable itself!
             column_reader_data = ""
             
+            # Loop through each line in the data file...
             for data_line in data_file:
+                # Increment the line counter
                 data_line_counter += 1
+                
+                # Grab the line, clean extra whitespace with strip(),
+                # and split() by space.
                 data_elements = data_line.strip().split()
-                #print data_elements
+                
+                # Check to see if we're on the second line...
                 if data_line_counter == 2:
                     # Perform validation on the file's metadata
+                    # First, ensure that we only have 3 things to look
+                    # at! If not, warn about it!
                     if len(data_elements) == 3:
+                        # Check the first element - it should match the
+                        # file's instrument_sat tag. If it doesn't
+                        # match, warn about it!
                         if (data_elements[0] != file_to_read["instrument_sat"]):
                             if not suppress_warnings:
                                 warn("Instrument and satellite data inside file does not match file name tag!")
                         
-                        # 19910228_18z
+                        # Build the file date tag from the file
+                        # metadata
                         data_file_date_tag = data_elements[1][:-2] + "_" + data_elements[1][-2:] + "z"
                         
+                        # Compare it to the file's date tag - if they
+                        # don't match, warn about it!
                         if date_tag != data_file_date_tag:
                             if not suppress_warnings:
                                 warn("Timestamp inside file does not match file name timestamp!")
@@ -446,10 +519,8 @@ def get_data(files_to_read, data_vars, selected_channel, data_path_format, all_c
                 elif len(data_elements) > 2:
                     # Parse non-comments - basically actual file data.
                     if not data_line.strip().startswith("!"):
-                        #print " * Parse data"
                         # Get the column reader going, if not already.
                         if not column_reader:
-                            #print " * Column reader trigger"
                             column_reader = ColumnReadPipes(column_reader_data)
                         
                         counted_channels += 1
@@ -459,26 +530,65 @@ def get_data(files_to_read, data_vars, selected_channel, data_path_format, all_c
                         if check_int(data_elements[0]):
                             data_channel = int(data_elements[0])
                             
+                            # Here, check if we have multiple channels
+                            # enabled, or if we want to retrieve all
+                            # channels. 
                             if all_channels or ((type(selected_channel) == list) and (len(selected_channel) > 1)):
+                                # If the data channel doesn't exist,
+                                # initialize everything!
+                                # 
+                                # We do this here for all_channels
+                                # because we don't have any idea how
+                                # many channels (or even what channels)
+                                # exist! When looping through, we then
+                                # have a good idea of which channel to
+                                # use!
                                 if not data_channel in channel_data_dict:
+                                    # Initialize a dict for each
+                                    # channel!
                                     channel_data_dict[data_channel] = {}
+                                    # Now loop through each data
+                                    # variable...
                                     for data_var in data_vars:
+                                        # If the data variable is
+                                        # special, initialize the
+                                        # special data variable with a
+                                        # copy.deepcopy. (Especially
+                                        # for lists and dicts, this is
+                                        # a must!) If not, just
+                                        # initialize it as an ordinary
+                                        # array.
                                         if data_var in SPECIAL_FIELDS:
                                             channel_data_dict[data_channel][data_var] = copy.deepcopy(SPECIAL_FIELDS[data_var])
                                         else:
                                             channel_data_dict[data_channel][data_var] = []
+                                
+                                # Finally, regardless of all_channels
+                                # status, set our data_dict to the
+                                # current channel dict!
                                 data_dict = channel_data_dict[data_channel]
                                 debug("Multi-channel mode - RESET triggered. (At channel: %i)" % data_channel)
                             
-                            # Match the channel with the desired one.
+                            # Match the channel with the desired
+                            # one(s).
                             if all_channels or ((type(selected_channel) == int) and (data_channel == selected_channel)) or \
                                 ((type(selected_channel) == list) and (data_channel in selected_channel)):
-                                #print " * Channel found trigger"
-                                # iuse enforcement
+                                
+                                # iuse enforcement - check if the
+                                # data_assim_only option is set!
                                 if data_assim_only:
+                                    # Grab the data_column from our
+                                    # column reader - this returns an
+                                    # integer index. Warnings are NOT
+                                    # suppressed.
                                     data_column = column_reader.getColumnIndex("iuse", False)
                                     
+                                    # Check if the resulting iuse data
+                                    # is an integer...
                                     if check_int(data_elements[data_column]):
+                                        # Check if the iuse data is
+                                        # less than 0, indicating that
+                                        # the data is not assimilated!
                                         if int(data_elements[data_column]) < 0:
                                             debug("SKIP: %s (channel: %i) (file: %s)" % (data_var, data_channel, file_to_read["filename"]))
                                             data_dict["iuse"][file_to_read["type"]].append(int(data_elements[data_column]))
@@ -493,12 +603,18 @@ def get_data(files_to_read, data_vars, selected_channel, data_path_format, all_c
                                 
                                 # Timestamp data variable handling
                                 if ("timestamp" in data_vars):
+                                    # Create datetime object
                                     timestamp = datetime.datetime(int(date_tag[:4]), int(date_tag[4:6]), int(date_tag[6:8]), int(date_tag[-3:-1]))
+                                    # If it doesn't exist yet, add it
+                                    # in!
                                     if not timestamp in data_dict["timestamp"]:
                                         data_dict["timestamp"].append(timestamp)
                                     debug("TIMESTAMP! %s (channel: %i) (file: %s)" % (data_var, data_channel, file_to_read["filename"]))
+                                
+                                # Loop through data variables
                                 for data_var in data_vars:
-                                    # Ignore special fields
+                                    # Ignore special fields - they are
+                                    # already handled.
                                     if data_var in SPECIAL_FIELDS:
                                         continue
                                     
@@ -506,9 +622,8 @@ def get_data(files_to_read, data_vars, selected_channel, data_path_format, all_c
                                     # the type.
                                     data_var_type = data_var.split('|')[0]
                                     
-                                    #print "%s vs %s" % (data_var_type, file_to_read["type"])
-                                    
-                                    # Ensure that data types are consistent
+                                    # Ensure that data types are
+                                    # consistent.
                                     if data_var_type == file_to_read["type"]:
                                         # Remove the data variable type
                                         real_data_var = '|'.join(data_var.split('|')[1:])
@@ -525,25 +640,33 @@ def get_data(files_to_read, data_vars, selected_channel, data_path_format, all_c
                                 if "frequency" in data_vars:
                                     data_column = column_reader.getColumnIndex("freq/wavenum", False)
                                     
-                                    # Check to see if we've already found the frequency
+                                    # Check to see if we've already
+                                    # found the frequency
                                     if (data_dict["frequency"] != ""):
-                                        # If we found it, does it match the new one? If not, show a warning!
+                                        # If we found it, does it match
+                                        # the new one? If not, show a
+                                        # warning!
                                         if (data_elements[data_column] != data_dict["frequency"]):
                                             if not suppress_warnings:
                                                 warn("Frequency within same channel differs from before!")
                                                 warn("(Old frequency: %s, new frequency: %s, file: %s)" % (data_dict["frequency"], data_elements[data_column], file_to_read["filename"]))
                                     else:
-                                        # Save the frequency for the first (and final) time
+                                        # Save the frequency for the
+                                        # first (and final) time
                                         data_dict["frequency"] = data_elements[data_column]
                                 
-                                # iuse (assimilated) data variable handling
+                                # iuse (assimilated) data variable
+                                # handling
                                 if "iuse" in data_vars:
+                                    # Grab the iuse column index
                                     data_column = column_reader.getColumnIndex("iuse", False)
                                     
-                                    debug("DATA_VAR: "+data_var+" | DATA_VAR_TYPE: "+data_var_type)
-                                    # Check to see if we've already found iuse
+                                    # Check to see if we've already
+                                    # found iuse (from the above check)
                                     if (len(data_dict["iuse"][file_to_read["type"]]) != 0):
-                                        # If we found it, does it match the new one? If not, show a warning!
+                                        # If we found it, does it match
+                                        # the new one? If not, show a
+                                        # warning!
                                         if (int(data_elements[data_column]) != data_dict["iuse"][file_to_read["type"]][0]):
                                             debug("iuse within same channel differs from before!")
                                             debug("(Old iuse: %i, new iuse: %s, file: %s)" % (int(data_dict["iuse"][file_to_read["type"]][0]), data_elements[data_column], file_to_read["filename"]))
@@ -555,7 +678,10 @@ def get_data(files_to_read, data_vars, selected_channel, data_path_format, all_c
                                         warn("iuse is not a digit! Setting to unknown. (iuse = %s)" % data_elements[data_column])
                                         data_dict["iuse"][file_to_read["type"]].append(-1)
                                 
+                                # Save our data!
                                 if (all_channels) or (type(selected_channel) == list) and (len(selected_channel) > 1):
+                                    # If it doesn't exist, initialize a
+                                    # new one!
                                     if not data_channel in channel_data_dict:
                                         channel_data_dict[data_channel] = {}
                                     channel_data_dict[data_channel].update(data_dict)
@@ -563,36 +689,45 @@ def get_data(files_to_read, data_vars, selected_channel, data_path_format, all_c
                                     # Only one channel, so break.
                                     break
                         else:
-                            # Channel number field isn't a number... not good. Go boom!
+                            # Channel number field isn't a number...
+                            # not good. Go boom!
                             edie("ERROR: Data format seems corrupt (first element is non-int)...")
                     else:
-                        #print " * Parse comment"
+                        # Parse the comment lines (prefixed with !)...
+                        # Both metadata and column header are comment
+                        # lines!
                         
-                        # Read in the column header... but only if we've read the
-                        # first two lines, aka the metadata. Those are NOT part of
-                        # the column header!
+                        # Read in the column header... but only if
+                        # we've read the first two lines, aka the
+                        # metadata. Those are NOT part of the column
+                        # header!
                         if data_line_counter > 2:
                             column_reader_data += data_line
     
-    info("Processed %i/%i files... (date tag: %s)" % (file_counter, total_files, date_tag))
+    # Print one last message when complete!
+    # ...but only if the number of files is not divisible by 100!
+    # (Since we print anyway every 100 files, if it's divisible by 100,
+    # it'll be already printed!)
+    if file_counter % 100 != 0:
+        info("Processed %i/%i files... (date tag: %s)" % (file_counter, total_files, date_tag))
     
     # Post-process iuse data
     for prefix in VALID_PREFIX:
         if prefix in data_dict["iuse"]:
             data_dict[prefix+"|iuse"] = data_dict["iuse"][prefix]
     
-    #raw_input()
     if (all_channels) or ((type(selected_channel) == list) and (len(selected_channel) > 1)):
-        #print "Returning multi-channel data dict..."
+        # Return multi-channel data dict...
         
-        # Remove channels that failed the iuse test!
+        # ...but first, remove channels that failed the iuse test!
         if data_assim_only and len(ignore_channels) > 0:
             for chan in ignore_channels:
                 del channel_data_dict[chan]
         
+        # ...and finally, return!
         return channel_data_dict
     else:
-        #print "Returning single channel data dict..."
+        # Return single channel data dict...
         return data_dict
 
 def get_data_columns(files_to_read):
@@ -617,12 +752,20 @@ def get_data_columns(files_to_read):
         quality, so make sure to check for and correct any issues
         mentionned by warnings!
     """
+    # Create the template regex and the matching groups from the
+    # data_path_format template.
+    (template_regex, matching_groups) = template_to_regex(data_path_format)
     
     # Iterate through all of the files!
     for file_to_read in files_to_read:
-        (template_regex, matching_groups) = template_to_regex(data_path_format)
+        # Increment internal file counter
+        file_counter += 1
+        
+        # Extract the path field data from the filename
         field_data = extract_fields_via_template(template_regex, matching_groups, file_to_read["filename"], suppress_warnings)
         
+        # Check if we have enough date info.
+        # If we do, build the date tag! If not, show an error.
         if ("%YEAR4%" in field_data) and ("%MONTH2%" in field_data) and ("%DAY2%" in field_data) and ("%HOUR2%" in field_data):
             date_tag = field_data["%YEAR4%"] + field_data["%MONTH2%"] + field_data["%DAY2%"] + "_" + field_data["%HOUR2%"] + "z"
         else:
@@ -630,19 +773,12 @@ def get_data_columns(files_to_read):
         
         # with structure auto-closes the file...
         with open(file_to_read["filename"], 'r') as data_file:
-            #print "Reading file: %s" % file_to_read["filename"]
-            
             # Count the lines we've read so that we can do specific
             # things for certain lines.
             data_line_counter = 0
             
             # Save the number of total channels.
             total_channels = 0
-            
-            # Keep track of the number of channels found.
-            # (Unused for efficiency, since we break after we find the
-            # desired channel.)
-            counted_channels = 0
             
             # Column reader instance - set to None so we can set it up
             # when we've read in enough column header data.
@@ -651,17 +787,27 @@ def get_data_columns(files_to_read):
             # And the column header data variable itself!
             column_reader_data = ""
             
+            # Loop through each line in the data file...
             for data_line in data_file:
+                # Increment the line counter
                 data_line_counter += 1
+                
+                # Grab the line, clean extra whitespace with strip(),
+                # and split() by space.
                 data_elements = data_line.strip().split()
-                #print data_elements
+                
+                # Check to see if we're on the second line...
                 if data_line_counter == 2:
                     # Perform validation on the file's metadata
                     if len(data_elements) == 3:
+                        # Check the first element - it should match the
+                        # file's instrument_sat tag. If it doesn't
+                        # match, warn about it!
                         if (data_elements[0] != file_to_read["instrument_sat"]):
                             warn("Instrument and satellite data inside file does not match file name tag!")
                         
-                        # 19910228_18z
+                        # Build the file date tag from the file
+                        # metadata
                         data_file_date_tag = data_elements[1][:-2] + "_" + data_elements[1][-2:] + "z"
                         
                         if date_tag != data_file_date_tag:
@@ -675,22 +821,25 @@ def get_data_columns(files_to_read):
                 elif len(data_elements) > 2:
                     # Parse non-comments - basically actual file data.
                     if not data_line.strip().startswith("!"):
-                        #print " * Parse data"
                         # Get the column reader going, if not already.
                         if not column_reader:
-                            #print " * Column reader trigger"
                             column_reader = ColumnReadPipes(column_reader_data)
                         
+                        # Get the column dictionary, and return it!
                         columns_found = column_reader.getColumnDict()
                         return columns_found
                     else:
-                        #print " * Parse comment"
+                        # Parse the comment lines (prefixed with !)...
+                        # Both metadata and column header are comment
+                        # lines!
                         
                         # Read in the column header... but only if we've read the
                         # first two lines, aka the metadata. Those are NOT part of
                         # the column header!
                         if data_line_counter > 2:
                             column_reader_data += data_line
+    
+    # If all else fails, return nothing. (None)
     return None
 
 def post_data_columns(data_columns):
