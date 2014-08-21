@@ -181,6 +181,9 @@ def main():
         outstr = "| " + "Data range:".ljust(maxlen) + "%s - %s" % (start_date_str, end_date_str)
         outstrs.append(outstr)
         
+        # TODO: correct this measurement so that it reflects actual
+        # interval, since interval is not necessarily measured per
+        # hour!
         outstr = "| " + "Average interval:".ljust(maxlen) + "%s hrs" % (str(stats["average_interval"]))
         outstrs.append(outstr)
         
