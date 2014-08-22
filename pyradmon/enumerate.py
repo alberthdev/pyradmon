@@ -22,12 +22,11 @@
 import os
 import sys
 
+import datetime
+import re
+
 from dictr import *
 from core import *
-
-import datetime
-
-import re
 
 # Variables to determine what to look for!
 # These are the default variables - the actual variables can be
