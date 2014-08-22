@@ -20,9 +20,11 @@
 #   and data specifications.
 # 
 from columnread import *
+from core import *
+
 import datetime
 from decimal import Decimal
-from core import *
+
 import copy
 import re
 
