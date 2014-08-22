@@ -11,14 +11,6 @@ Subpackages
 Submodules
 ----------
 
-pyradmon.args module
---------------------
-
-.. automodule:: pyradmon.args
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
 pyradmon.columnread module
 --------------------------
 
@@ -27,42 +19,10 @@ pyradmon.columnread module
     :undoc-members:
     :show-inheritance:
 
-pyradmon.config module
-----------------------
-
-.. automodule:: pyradmon.config
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-pyradmon.config_printer module
-------------------------------
-
-.. automodule:: pyradmon.config_printer
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-pyradmon.core module
---------------------
-
-.. automodule:: pyradmon.core
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
 pyradmon.data module
 --------------------
 
 .. automodule:: pyradmon.data
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-pyradmon.debug module
----------------------
-
-.. automodule:: pyradmon.debug
     :members:
     :undoc-members:
     :show-inheritance:
@@ -99,30 +59,6 @@ pyradmon.plot module
     :undoc-members:
     :show-inheritance:
 
-pyradmon.prettytable module
----------------------------
-
-.. automodule:: pyradmon.prettytable
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-pyradmon.process module
------------------------
-
-.. automodule:: pyradmon.process
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-pyradmon.processing module
---------------------------
-
-.. automodule:: pyradmon.processing
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
 pyradmon.test module
 --------------------
 
@@ -130,15 +66,6 @@ pyradmon.test module
     :members:
     :undoc-members:
     :show-inheritance:
-
-pyradmon.wrapper module
------------------------
-
-.. automodule:: pyradmon.wrapper
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
 
 Module contents
 ---------------

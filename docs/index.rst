@@ -8,34 +8,28 @@ PyRadmon Documentation
 
 .. module:: pyradmon
 
-**PyRadmon** is a radiance monitoring tool written completely in **Python**. It is designed to:
+.. warning:: 
 
-* enumerate
-    Given the data and criteria, search and select satellite measurement data files.
-* process
-    Given a list of data files and some data criteria, search and extract data from the data files.
-* plot
-    Given the extracted data and plot options, plot the details and statistics of the satellite measurements.
+   This documentation is currently under construction. Significant 
+   changes to the documentation are possible!
 
-Why PyRadmon?
--------------
-**PyRadmon** offers many major improvements from its predecessor, including:
+**PyRadmon** is a radiance monitoring tool written completely in 
+**Python**.
 
-* simplified configuration
-* simplified running
-* faster plot and statistic generation
+Quick Start
+-----------
+Want to get a head start on using **PyRadmon**? Get going!
 
-Getting Started
----------------
-For running and using **PyRadmon** to search, extract, and plot data, see Getting Started - Users.
-
-For interfacing with **PyRadmon** API to search, extract, plot data, and much more, see Getting Started - Developers.
+:doc:`userdocs/getting-started`
 
 Contents
 --------
 .. toctree::
    :maxdepth: 2
    
+   userdocs/introduction
+   userdocs/getting-pyradmon
+   userdocs/getting-started
    modules
 
 
