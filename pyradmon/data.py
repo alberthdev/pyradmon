@@ -59,8 +59,8 @@ def rel_channels(chans):
         { 1 : 1, 2 : 5, 3 : 7, 4 : 8, 5 : 11 }
     
     Args:
-        chans (list): An array of data channel integers to generate
-            a relative channel dictionary from.
+        chans (list of int): An array of data channel integers to 
+            generate a relative channel dictionary from.
     
     Returns:
         dict: Dictonary with the keys being the relative channels, and
@@ -185,8 +185,8 @@ def extract_fields_via_template(template_regex, matching_groups, input_str, supp
     Args:
         template_regex (str): A string with a parsable regular
             expression to be run on the input string.
-        matching_groups (list): A list of %VAR%s, in the matching group
-            order of template_regex.
+        matching_groups (list of str): A list of %VAR%s, in the 
+            matching group order of template_regex.
         input_str (str): An input string to parse with the regex given
             in template_regex.
         suppress_warnings (bool, optional): A boolean determining
@@ -274,10 +274,11 @@ def get_data(files_to_read, data_vars, selected_channel, data_path_format, all_c
     with the data specified by the data variable list.
 
     Args:
-        files_to_read (list): A list of file dicts, returned by
+        files_to_read (list of dict): A list of file dicts, returned by
             :py:func:`.enumerate()`.
-        data_vars (list): A list of strings defining data variables to
-            extract from the files. Special data variables include:
+        data_vars (list of str): A list of strings defining data 
+            variables to extract from the files. Special data variables 
+            include:
             
             * timestamp:
                 A list of timestamps that can be used for plotting. The 
@@ -289,9 +290,9 @@ def get_data(files_to_read, data_vars, selected_channel, data_path_format, all_c
             
             All other data variables will return a decimal list of the
             data.
-        selected_channel (int): An integer (or array of integers)
-            specifying the data channel(s) to use for extracting the 
-            data.
+        selected_channel (int or list of int): An integer (or array of 
+            integers) specifying the data channel(s) to use for 
+            extracting the data.
         all_channels (bool, optional): A boolean specifying whether to 
             use all of the data or not. This overrides the 
             selected_channel option. By default, this is set to False.
@@ -739,7 +740,7 @@ def get_data_columns(files_to_read):
     each file and return all of the column names in the files.
 
     Args:
-        files_to_read (list): A list of file dicts, returned by
+        files_to_read (list of dict): A list of file dicts, returned by
             :py:func:`.enumerate()`. See :py:func:`.enumerate()` for 
             more information about the file dict format.
 
@@ -862,9 +863,9 @@ def post_data_columns(data_columns):
             need to be extracted.
 
     Returns:
-        list: The list of strings containing the data columns that need 
-        to be extracted, with any additional required columns that were 
-        missing from the original list.
+        list of str: The list of strings containing the data columns 
+        that need to be extracted, with any additional required columns 
+        that were missing from the original list.
     
     """
     # Initialize data column list
