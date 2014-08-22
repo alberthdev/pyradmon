@@ -1,5 +1,5 @@
 config:
-  data_path_format: "/gpfsm/dnb51/projects/p14/scratch/%EXPERIMENT_ID%/ana/Y%YEAR4%/M%MONTH2%/%EXPERIMENT_ID%.ana.satbang.%YEAR4%%MONTH2%%DAY2%_%HOUR2%z.txt"
+  data_path_format: "MERRA2/%EXPERIMENT_ID%/ana/Y%YEAR4%/M%MONTH2%/%EXPERIMENT_ID%.ana.satbang.%YEAR4%%MONTH2%%DAY2%_%HOUR2%z.txt"
   data_experiment_id   : "e5110_fp"
   data_instrument_sat  : "amsua_n18"
   data_channels        : "1-15"
