@@ -45,6 +45,62 @@ INSTRUMENT_SAT    = "ssmi_f08"
 DATA_TYPE         = "anl|ges"
 
 def make_subst_variable(year, month, day, hour, experiment_id, instrument_sat, data_type):
+    """Create a dict with var substitution values for data_path_format.
+    
+    Given information about the requested data, create a dictionary 
+    with variables to be substituted as keys, and the respective 
+    information from the given data information as values.
+    
+    Variables are %VAR% variables for data_path_format, without the
+    percent signs ("%").
+    
+    Variables include:
+    
+    * %YEAR%, %YEAR4%, %YEAR2%
+        Current year of the data. Expressed as a 4 digit integer except 
+        with %YEAR2%, which is expressed as a 2 digit integer from the 
+        last 2 digits of the full year (abbreviated year). Sourced from 
+        the argument `year`.
+    * %MONTH%, %MONTH2%
+        Current month. Expressed as a 2 digit integer. Sourced from the 
+        argument `month`.
+    * %DAY%, %DAY2%
+        Current day. Expressed as a 2 digit integer. Sourced from the 
+        argument `day`.
+    * %HOUR%, %HOUR2%
+        Current hour. Expressed as a 2 digit integer. Sourced from the 
+        argument `hour`.
+    * %EXPERIMENT_ID%
+        Experiment ID of the data. Expressed as a string. Sourced from 
+        the argument `experiment_id`.
+    * %INSTRUMENT_SAT%
+        Instrument/satellite ID of the data. Expressed as a string. 
+        Sourced from the argument `instrument_sat`.
+    * %DATA_TYPE%
+        Data type of the data. Expressed as a string. Sourced from the 
+        argument `data_type`.
+    
+    Args:
+        year (int): An integer with the full 4 digit year.
+        month (int): An integer with the full 2 digit month.
+        day (int): An integer with the full 2 digit day.
+        hour (int): An integer with the full 2 digit hour.
+        experiment_id (str): A string with the experiment ID for the
+            data.
+        instrument_sat (str): A string with the instrument/satellite ID
+            for the data.
+        data_type (str): A string with the data type for the data.
+            (Typically one of the values in data.VALID_PREFIX, or 
+            multiple values seperated by a pipe ("|").)
+    
+    Returns:
+        dict: Dictonary with the keys being the data_path_format %VAR% 
+        variables without the percent signs ("%"), and the values being 
+        their respective values, provided from the data information 
+        passed into this function.
+        
+    """
+    # Convert the date parts into strings and pad them with zeros!
     syear  = str(year).zfill(2)
     smonth = str(month).zfill(2)
     sday   = str(day).zfill(2)
@@ -55,6 +111,7 @@ def make_subst_variable(year, month, day, hour, experiment_id, instrument_sat, d
         print "ERROR: Date is invalid!"
         sys.exit(1)
     
+    # Build the dictionary!
     subst_var = {}
     
     subst_var["YEAR"]  = syear
@@ -76,13 +133,41 @@ def make_subst_variable(year, month, day, hour, experiment_id, instrument_sat, d
     
     subst_var["DATA_TYPE"] = data_type
     
+    # Return the final dictionary
     return subst_var
 
 def path_substitute(path_format, variables):
+    """Substitute variables in the path format template, and return.
+    
+    Given a variables dictionary (from :py:func:`make_subst_variable`) 
+    and the data path format template, substitute variables from the 
+    dictionary into the template, and return the resulting path string.
+    
+    Args:
+        path_format (str): The data path format template describing
+            where the data files are located, indicated as a string.
+        variables (dict): A dictionary whose keys are the %VAR%
+            variables without the percent signs ("%"), and whose values
+            are the respective values to the %VAR% variables.
+    
+    Returns:
+        str: Path string with all of the supported %VAR% variables 
+        substituted in. For more information about which %VAR% 
+        variables are substituted, see :py:func:`make_subst_variable` 
+        help.
+        
+    """
+    # Copy the path_format into final_path
     final_path = path_format
+    
+    # Iterate the variables dict's keys
     for variable in variables:
+        # Create a case-insensitive regex...
         var_re = re.compile(re.escape('%' + variable + '%'), re.IGNORECASE)
+        # ...and perform the substitution!
         final_path = var_re.sub(variables[variable], final_path)
+    
+    # Return the substituted path!
     return final_path
 
 def enumerate(**opts):
@@ -95,34 +180,39 @@ def enumerate(**opts):
     be specified. For arguments not specified, the default capital
     letter version of the variable will be used instead. See the
     source file (enumerate.py) for capital variable defaults.
-
+    
     Args:
-        data_path_format=: The data path format template describing
-            where the data files are located, indicated as a string.
-        experiment_id=: The experiment ID, indicated as a string.
-        start_year=: The start year, indicated as a string.
-        start_month=: The start month, indicated as a string.
-        start_day=: The start day, indicated as a string.
-        start_hour=: The start hour, indicated as a string.
-        end_year=: The end year, indicated as a string.
-        end_month=: The end month, indicated as a string.
-        end_day=: The end day, indicated as a string.
-        end_hour=: The end hour, indicated as a string
-        instrument_sat=: Instrument satellite, indicated as a string or
-            array of strings.
-        data_type=: "anl", "ges", or "anl|ges" string to indicate
+        None
+    
+    Keyword Args:
+        data_path_format (str): The data path format template 
+            describing where the data files are located, indicated as a 
+            string.
+        experiment_id (str): The experiment ID, indicated as a string.
+        start_year (str): The start year, indicated as a string.
+        start_month (str): The start month, indicated as a string.
+        start_day (str): The start day, indicated as a string.
+        start_hour (str): The start hour, indicated as a string.
+        end_year (str): The end year, indicated as a string.
+        end_month (str): The end month, indicated as a string.
+        end_day (str): The end day, indicated as a string.
+        end_hour (str): The end hour, indicated as a string
+        instrument_sat (str or list of str): Instrument satellite,
+            indicated as a string or array of strings.
+        data_type (str): "anl", "ges", or "anl|ges" string to indicate
             analyzed or guessed data.
-        time_delta=: datetime.timedelta object to increment the date
+        time_delta (:py:class:`datetime.timedelta`): 
+            :py:class:`datetime.timedelta` object to increment the date 
             with. Default is one hour.
         
-        For all variables except time_delta, the default value is the
-        capitalized global variable version specified in this file.
+    For all variables except time_delta, the default value is the
+    capitalized global variable version specified in this file.
         
     Returns:
-        A list with the list of file dicts that matches the given
-        search range. Each file is returned as a dictionary, with
-        'instrument_sat' and 'type' of the file specified in the dict,
-        along with the file name 'filename'.
+        list of dict: A list with the list of file dicts that matches 
+        the given search range. Each file is returned as a dictionary, 
+        with 'instrument_sat' and 'type' of the file specified in the 
+        dict, along with the file name 'filename'.
 
     Raises:
         Exception(...) - error exception when either:
@@ -169,6 +259,8 @@ def enumerate(**opts):
     time_delta = opts["time_delta"] if "time_delta" in opts \
         else None
     
+    # Split up the data types, as necessary. (Basically, are there
+    # pipes ("|") in the data type definition?)
     if data_type:
         if len(data_type.split('|')) > 1:
             data_type = data_type.split('|')
@@ -184,46 +276,66 @@ def enumerate(**opts):
     # Now loop and generate a list of files to read!
     files_to_read = []
     
-    # Data vars
+    # Data statistics variables:
+    # Available instrument/satellite IDs:
     available_instrument_sat = []
+    # Available data types:
     available_data_type = []
+    # Interval counter:
+    # (amount of time before a measurement was found)
     interval_count = 0
+    # Measurement counter:
+    # (times that a measurement was made when a file was found)
     interval_measurements = 0
     
+    # Total files found
     total_files = 0
+    
+    # Files found that met the criteria
     criteria_total_files = 0
     
+    # Average interval before finding a measurement
     average_interval = 0
     
+    # Check for custom time delta. If it's custom, let the user know!
     if time_delta:
         info("Using custom delta for file enumeration.")
     
     while 1:
+        # Check if we meet criteria!
         if (cur_date <= end_date):
-            # Rebuild formatted parts
+            # Rebuild formatted parts - first, convert the date parts
+            # into strings and pad them with zeros!
             syear  = str(cur_date.year).zfill(2)
             smonth = str(cur_date.month).zfill(2)
             sday   = str(cur_date.day).zfill(2)
             shour  = str(cur_date.hour).zfill(2)
             
+            # Loop through each data type!
             for indv_data_type in data_type:
+                # Create a substitution dictionary given criteria
+                # information
                 subs_var = make_subst_variable(syear, smonth, sday, shour, experiment_id, instrument_sat, indv_data_type)
                 
+                # Then go ahead and substitute those variables in from
+                # the dictionary!
                 file_path = path_substitute(data_path_format, subs_var)
                 
                 if check_file(file_path):
                     # Success! Calculate the interval average!
                     average_interval = ((average_interval * interval_measurements) + interval_count) / (interval_measurements + 1)
                     
-                    # Reset interval count and increment measurement count.
+                    # Reset interval count and increment measurement
+                    # count.
                     interval_count = 0
                     interval_measurements += 1
                     
                     # Add new entry
                     newdatdict = { "instrument_sat" : instrument_sat, "type" : indv_data_type, "filename" : file_path, "date" : cur_date }
                     
-                    # BUGFIX: If using minutes or less, this will cause duplicate entries.
-                    # Check to make sure we're not adding dups!
+                    # BUGFIX: If using minutes or less, this will cause
+                    # duplicate entries. Check to make sure we're not
+                    # adding dups!
                     
                     if not newdatdict in files_to_read:
                         files_to_read.append(newdatdict)
@@ -233,21 +345,28 @@ def enumerate(**opts):
                     
                     if not indv_data_type in available_data_type:
                         available_data_type.append(indv_data_type)
-                        
+                    
+                    # Increment the total files that fit within our
+                    # criteria, and the overall total files count!
                     criteria_total_files += 1
                     total_files += 1
                 else:
+                    # Increment the interval!
                     interval_count += 1
                     pass
                 
             # Increment time
+            # Check for a time delta - if one exists, use that to
+            # increment. Otherwise, just add 1 hour.
             if time_delta:
                 cur_date = cur_date + time_delta
             else:
                 cur_date = cur_date + datetime.timedelta(hours=1)
         else:
+            # We've exceeded end date, break out!
             break
     
+    # Build final statistics dict!
     stats_dict = {}
     stats_dict["start_year"]               = int(start_year)
     stats_dict["start_month"]              = int(start_month)
