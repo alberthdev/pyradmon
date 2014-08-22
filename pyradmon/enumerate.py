@@ -114,8 +114,6 @@ def enumerate(**opts):
             analyzed or guessed data.
         time_delta=: datetime.timedelta object to increment the date
             with. Default is one hour.
-        allow_warn_pass=: boolean to determine whether to ignore
-            warnings or halt if a warning is found.
         
         For all variables except time_delta, the default value is the
         capitalized global variable version specified in this file.
