@@ -17,6 +17,27 @@
 # Test Data -
 #   data for testing out the library!
 # 
+"""Test data for testing out the PyRadmon library.
+
+This module contains test data for testing out the PyRadmon library.
+This module's test data is sometimes used as default when no other data
+is specified. (This is particularly the case in :py:func:`.enumerate`.)
+
+This module simply serves as an example (and occasionally, test data)
+for PyRadmon's internal APIs.
+
+Attributes:
+    TEST_DATA_VARS (list): List of data variables.
+    TEST_DATA_VARS (list): Bad list of data variables. (This list has
+        duplicates - this list was used to ensure that duplicates would
+        not crash PyRadmon, which was an issue before.)
+    plot_dict (dict): Plot dictionary for use in :py:func:`.plot()`.
+    plot_dict_with_pp (dict): Plot dictionary for use in
+        :py:func:`.plot()`. This plot dictionary has post_processing
+        enabled.
+    metadata_dict (dict): Metadata dictionary for use in
+        :py:func:`.plot()`.
+"""
 
 TEST_DATA_VARS = [
                 "timestamp",
