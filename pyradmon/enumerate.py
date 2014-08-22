@@ -44,9 +44,6 @@ END_HOUR          = "18"
 INSTRUMENT_SAT    = "ssmi_f08"
 DATA_TYPE         = "anl|ges"
 
-# Ignore warnings?
-ALLOW_WARN_PASS    = True
-
 def make_subst_variable(year, month, day, hour, experiment_id, instrument_sat, data_type):
     syear  = str(year).zfill(2)
     smonth = str(month).zfill(2)
@@ -182,23 +179,9 @@ def enumerate(**opts):
     else:
         data_type = [ "" ]
     
-    
-    allow_warn_pass = opts["allow_warn_pass"] if "allow_warn_pass" in opts \
-        else ALLOW_WARN_PASS
-    
     # Make reference datetimes
     cur_date = datetime.datetime(int(start_year), int(start_month), int(start_day), int(start_hour))
     end_date = datetime.datetime(int(end_year), int(end_month), int(end_day), int(end_hour))
-    
-    old_month = 0
-    old_year = 0
-    
-    found_correct_range = False
-    
-    year_re = re.compile(r'^Y\d{4}$')
-    month_re = re.compile(r'^M\d{2}$')
-    day_re = re.compile(r'^D\d{2}$')
-    hour_re = re.compile(r'^H\d{2}$')
     
     # Now loop and generate a list of files to read!
     files_to_read = []
