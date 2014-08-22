@@ -24,19 +24,33 @@ class ColumnReadBase():
 
     This is the base class for column readers. It implements the base
     methods and sets the base variables up for future use.
+    
+    A column dictionary is created for the column reader::
+    
+        { 
+            'COLUMN_NAME': {
+                       'name'       : 'COLUMN_NAME',  # Column name
+                       'column_id'  : NNN,            # Column index
+                       'subcolumns' : [               # Subcolumn names
+                                       'SUBCOLUMN_NAME',
+                                       'SUBCOLUMN_NAME',
+                                      ],
+                       }
+        }
 
     Attributes:
-        data: The raw string data for the columns.
-        column_dict: The column dictionary created from the raw string
-            data.
-        unique_char: A string indicating a character that is unlikely
-            to be used in a column name. This is usually one character
-            in length, and is usually the column delimiter.
-        max_col_levels: An integer representing the maximum number of
-            column levels possible. Note that the functions in this
-            class are only designed to handle a maximum of 2 levels.
-            Adding more levels will require rewriting the data
+        data (str): The raw string data for the columns.
+        column_dict (dict): The column dictionary created from the raw
+            string data.
+        unique_char (str): A string indicating a character that is 
+            unlikely to be used in a column name. This is usually one 
+            character in length, and is usually the column delimiter.
+        max_col_levels (int): An integer representing the maximum 
+            number of column levels possible. Note that the functions 
+            in this class are only designed to handle a maximum of 2 
+            levels. Adding more levels will require rewriting the data 
             processing and the fetching functions!
+    
     """
     def __init__(self, data):
         """Initializes ColumnReadBase with raw string data "data"."""
@@ -120,6 +134,30 @@ class ColumnReadBase():
         print "getColumnID(): WARNING: "+msg
     
     def getColumnDict(self):
+        """Return the internal column dictionary.
+        
+        Return the internal column dictionary that the object currently
+        has.
+        
+        Args:
+            None
+        
+        Returns:
+            dict: A dictionary representing the column structure 
+            detected by the column reader. General structure::
+            
+                { 
+                   'COLUMN_NAME': {
+                       'name'       : 'COLUMN_NAME',  # Column name
+                       'column_id'  : NNN,            # Column index
+                       'subcolumns' : [               # Subcolumn names
+                                       'SUBCOLUMN_NAME',
+                                       'SUBCOLUMN_NAME',
+                                      ],
+                   }
+                }
+        
+        """
         return self.column_dict
     
     def getColumnIndex(self, col_search_name, suppress_warnings = True):
@@ -130,23 +168,25 @@ class ColumnReadBase():
         given the column name (and optionally, the subcolumn name).
 
         Args:
-            col_search_name: The name of the column, and optionally,
-                the subcolumn name. If specifying a subcolumn, the
-                format should look like "COLUMN_NAME!SUBCOLUMN_NAME",
-                where the ! is the delimiter set in self.unique_char.
-                By default, the delimiter is a pipe character, '|'.
-            suppress_warnings: A boolean indiciating whether to
+            col_search_name (str): The name of the column, and 
+                optionally, the subcolumn name. If specifying a 
+                subcolumn, the format should look like 
+                "COLUMN_NAME!SUBCOLUMN_NAME", where the ! is the 
+                delimiter set in self.unique_char. By default, the 
+                delimiter is a pipe character, '|'.
+            suppress_warnings (bool): A boolean indiciating whether to
                 suppress warnings or not. By default, this is set to
                 True.
 
         Returns:
-            An integer representing the column index of the specified
-            column (and optionally, subcolumn). If nothing found,
-            this will return None. 
+            int or None: An integer representing the column index of 
+            the specified column (and optionally, subcolumn). If 
+            nothing found, this will return None. 
 
-        Raises:
-            None - only warnings will be printed, if enabled. It is up
-            to the receiving end to detect None returns.
+        Note:
+            Warnings will be printed, if enabled. It is up to the 
+            receiving end to detect None returns.
+        
         """
         # Format of name:
         # COL_NAME
@@ -340,9 +380,10 @@ class ColumnReadSpaces(ColumnReadBase):
     This subclass overrides the _process_data method to set up the
     self.column_dict structure.
     
-    NOTE: This is pretty much done. however, support for spaces in 
-        subcolumns is not implemented (yet). To implement, follow
-        the same steps as before with columns in the code below.
+    NOTE:
+        This is pretty much done. However, support for spaces in 
+        subcolumns is not implemented (yet). To implement, follow the 
+        same steps as before with columns in the code below.
     """
     def _process_data(self):
         data = self.data
