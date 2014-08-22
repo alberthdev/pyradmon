@@ -35,6 +35,24 @@ logger = logging.getLogger()
 #     Maybe add returns when log can't be written to?
 #     Add additional logging options?
 def init(loglevel=logging.DEBUG, logstream=None, logpath=None):
+    """Initialize logging given logging settings.
+
+    Given logging settings, initialize logging for the program.
+    
+    **This function affects global logging. It is NOT module limited.** 
+    Any logging that uses the regular :py:mod:`logging` calls (and not 
+    a custom :py:class:`logging.Logger` object) will be affected by 
+    running this.
+    
+    Args:
+        loglevel (int): An integer constant specifying a logging level
+            from the :py:mod:`logging` module. By default, this is set
+            to :py:const:`logging.DEBUG`.
+        logstream (file): A file stream specifying streams or file 
+            handles to log to.
+        logpath (str): A string specifying a file path to log to.
+    
+    """
     global logger, has_init
     logger.setLevel(loglevel)
     
@@ -72,15 +90,22 @@ def init(loglevel=logging.DEBUG, logstream=None, logpath=None):
             logger.addHandler(sh)
     
     has_init = True
-    
-    # Old statement:
-    #logging.basicConfig(filename=logpath,
-    #	level=loglevel,
-    # 	format='[%(asctime)s] [%(levelname)s] %(message)s',
-    #	datefmt='%m/%d/%Y %I:%M:%S %p'
-    #	)
 
 def check_init():
+    """Check if logging has been initialized.
+
+    Return a boolean determining whether logging has been initialized 
+    or not.
+    
+    Args:
+        None
+    
+    Returns:
+        bool: Boolean indicating whether logging has been initialized 
+        or not. True if logging has been initialized with 
+        :py:func:`init()`, False if not.
+    
+    """
     global has_init
     return has_init
 
