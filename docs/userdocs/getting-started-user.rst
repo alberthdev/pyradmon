@@ -19,7 +19,9 @@ Speedy Start
 The first thing you probably want to do is make a plot, right? It's 
 really simple!
 
-#. First, create a new file called myconfig.yaml. Copy the following text into
+#. **Creating Your Configuration File, Part 1**\
+   
+   First, create a new file called myconfig.yaml. Copy the following text into
    this new file:
    
    .. code-block:: yaml
@@ -97,3 +99,19 @@ really simple!
    | %HOUR%             |                                           |
    +--------------------+-------------------------------------------+
    
+   Once done, your config file should look similar (but not necessary 
+   exactly) this::
+   
+    config:
+      data_path_format: MERRA2/%EXPERIMENT_ID%/obs/Y%YEAR4%/M%MONTH2%/D%DAY2%/H%HOUR2%/%EXPERIMENT_ID%.diag_%INSTRUMENT_SAT%_%DATA_TYPE%.%YEAR4%%MONTH2%%DAY2%_%HOUR2%z.txt
+      data_step: anl|ges
+      data_start_date: 1991-01-01 00z
+      data_end_date: 1991-02-28 18z
+      experiment_id: d5124_m2_jan91
+      data_instrument_sat: ssmi_f08
+      data_channels: 1-7
+   
+#. **Creating Your Configuration File, Part 2**
+   
+   So now you have your data source parameters. What now? Well, data 
+   isn't interesting without graphing it! 
