@@ -1,11 +1,13 @@
+NOTE:  For 5.11 version, npred_read should equal 5!
+
 Example gsidiag_bin2txt.nl:
 
  &NLCONFIG
-  debug = .false.
-  npred_read = 7
-  sst_ret = .false.
-  iversion = -9999
-  append_txt_suffix = .false.
+  debug = .false.,
+  npred_read = 7,
+  sst_ret = .false.,
+  iversion = -9999,
+  append_txt_suffix = .false.,
 /
 
 Options:
