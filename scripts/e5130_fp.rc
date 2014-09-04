@@ -1,5 +1,6 @@
 expid: e5130_fp
-data_dirbase: /discover/nobackup/wrmccart/
+data_dirbase: /discover/nobackup/wrmccart/radmon_cron/
 # this assumes the txt files are in $data_dirbase/$expid/obs/Y1979/M02/D01/H00... format (the template is adjustable within the radmon config files)
 scratch_dir: /discover/nobackup/wrmccart/scratch/
 output_dir: /discover/nobackup/wrmccart/radmon_out
+pyradmon_path: /discover/nobackup/wrmccart/pyradmon
