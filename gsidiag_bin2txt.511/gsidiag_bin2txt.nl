@@ -1,4 +1,4 @@
  &NLCONFIG
   debug = .false. ,
-  iversion = 19180,
+  npred_read = 5
 /
