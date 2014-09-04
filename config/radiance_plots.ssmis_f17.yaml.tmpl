@@ -13,7 +13,7 @@ plot1:
   output: >>>OUTPUT_DIR<<</%EXPERIMENT_ID%/%START_DATE%-%END_DATE%/%INSTRUMENT_SAT%/%INSTRUMENT_SAT%_bcor_ch%RELCHANNEL%.png
   settings:
     dpi: 50
-    target_size: [595, 678]
+    target_size: [595, 932]
   title: '%INSTRUMENT_SAT%   %START_DATE%-%END_DATE%
 
     Channel %CHANNEL%  %FREQUENCY%       %ASSIMILATION_STATUS%
@@ -125,6 +125,53 @@ plot1:
         y: [ges|bc_clw|mean, ges|bc_clw|stddev]
       legend: {border: false, line: true}
       title: CLW
+  - subplot8_id:
+      axes:
+        x: {label: null, ticks: 6}
+        y: {label: null, ticks: 5}
+      data:
+        colors: [blue, red]
+        labels: ['Avg (K)
+
+            %AVERAGE%', 'Sdv (K)
+
+            %AVERAGE%']
+        x: timestamp
+        y: [ges|bc_coslat|mean, ges|bc_coslat|stddev]
+      legend: {border: false, line: true}
+      title: Cosine Lat
+  - subplot9_id:
+      axes:
+        x: {label: null, ticks: 6}
+        y: {label: null, ticks: 5}
+      data:
+        colors: [blue, red]
+        labels: ['Avg (K)
+
+            %AVERAGE%', 'Sdv (K)
+
+            %AVERAGE%']
+        x: timestamp
+        y: [ges|bc_sinlat|mean, ges|bc_sinlat|stddev]
+      legend: {border: false, line: true}
+      title: Sine lat
+  - subplot10_id:
+      axes:
+        x: {label: null, ticks: 6}
+        y: {label: null, ticks: 5}
+      data:
+        colors: [blue]
+        labels: ['Avg (K)
+
+            %AVERAGE%']
+        x: timestamp
+        y: [ges|bc_sinlat|mean]
+      post_processing:
+# new y = ges|bc_sinlat|mean + ges|bc_coslat|mean
+# will pull out sdv stuff, just plot sum of means
+        y: [ '[ (data["ges|bc_coslat|mean"][i] + y[i]) for i in xrange(0, len(y)) ]' ]
+      legend: {border: false, line: true}
+      title: (Sine lat + Cosine lat)
 plot2:
   output: >>>OUTPUT_DIR<<</%EXPERIMENT_ID%/%START_DATE%-%END_DATE%/%INSTRUMENT_SAT%/%INSTRUMENT_SAT%_anl_ch%RELCHANNEL%.png
   settings:
