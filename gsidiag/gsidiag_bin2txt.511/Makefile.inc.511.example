@@ -1,0 +1,3 @@
+F90=/usr/local/intel/Compiler/11.0/083/bin/intel64/ifort
+FFLAGS_IN=-D_REAL8_
+GSI_LOC=/home/dao_ops/GEOSadas-5_11_0_p1/GEOSadas/src/GEOSgcs_GridComp/GEOSana_GridComp/GEOSaana_GridComp/GSI_GridComp/

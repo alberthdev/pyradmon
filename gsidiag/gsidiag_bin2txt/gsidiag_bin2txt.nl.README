@@ -1,0 +1,32 @@
+Example gsidiag_bin2txt.nl:
+
+ &NLCONFIG
+  debug = .false.,
+  npred_read = 7,
+  sst_ret = .false.,
+  iversion = -9999,
+  append_txt_suffix = .false.,
+/
+
+Options:
+
+- debug = .true. or .false. (default = .false)
+--- Simply prints out a lot more (and probably excessive) information
+
+- npred_read = 7
+--- Specify the number of predictors to read (default = 7)
+
+- sst_ret (default = .false.)
+--- this logical is set for the read_diag.  Unless you know you use it, you 
+       probably don't need to set it.
+
+- iversion (default = -9999, essentially not set/passed forward to read_diag)
+--- It may be necessary to override the iversion number.  This has been the 
+       case at GMAO since roughly local GEOSadas version 5.12. 
+
+- append_txt_suffix (default = .false.)
+--- At GMAO, the diag files are typically:
+         - experiment.diag_inst_plat_ges.YYYYMMDD_HHz.bin
+         - experiment.diag_inst_plat_anl.YYYYMMDD_HHz.bin
+       if this flag is false, it replaces .bin with .txt.  If it is set, it 
+       appends infile with a .txt suffix
