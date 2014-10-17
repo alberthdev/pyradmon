@@ -1,7 +1,7 @@
 #!/bin/csh -f
 
 set ESMADIR=/gpfsm/dnb02/wrmccart/progress_cvs/GEOSadas-5_13_0
-source $ESMADIR/src/g5_modules loadmodules
+source $ESMADIR/src/g5_modules loadmodules > /dev/null
 
 if ( $#argv > 3 || $#argv < 3 ) then
     echo "usage: determine_inst.csh <experiment base directory with diags> <start YYYYMMDD> <end YYYYMMDD>"
