@@ -2,13 +2,13 @@ Getting PyRadmon
 ***********************************************************************
 
 You can grab the latest source code
-`here <https://github.com/alberthrocks/pyradmon>`_.
+`here <https://github.com/alberthdev/pyradmon>`_.
 
 Stable Release
 --------------
 
 To get a stable release, go to the
-`releases page <https://github.com/alberthrocks/pyradmon/releases>`_
+`releases page <https://github.com/alberthdev/pyradmon/releases>`_
 and grab your preferred release. Beta and alpha versions of PyRadmon
 are also available on this page.
 
@@ -26,7 +26,7 @@ Downloading from Git
 
 To get the latest code, run the following command::
 
-    git clone https://github.com/alberthrocks/pyradmon.git
+    git clone https://github.com/alberthdev/pyradmon.git
 
 If your version of Git is old, you may receive errors like these::
 
@@ -50,7 +50,7 @@ version.
 
 If you are unable to update your Git for whatever reason, you can alternatively try::
 
-    svn co https://github.com/alberthrocks/pyradmon
+    svn co https://github.com/alberthdev/pyradmon
 
 Updating Git Source
 +++++++++++++++++++
